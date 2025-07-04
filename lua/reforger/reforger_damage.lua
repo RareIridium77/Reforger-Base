@@ -1,6 +1,6 @@
 if not Reforger then return end
 
-print("[Reforger] Damage Initialized")
+Reforger.Log("Reforger_Damage Initialized")
 
 function Reforger.ApplyPlayerDamage(ply, damage, attacker, inflictor)
     if not IsValid(ply) or not ply:IsPlayer() or ply:HasGodMode() then return false end
