@@ -3,9 +3,9 @@
 **Reforger Base** is a shared system for my Garry's Mod addons under the [Reforger] tag.  
 Its main purpose is to provide a unified damage and logic framework for different vehicle systems, such as:
 
-- **LVS**
-- **Simfphys** 
-- **Glide Vehicles**
+- **[LVS](https://github.com/SpaxscE/lvs_base)**
+- **[Simfphys](https://github.com/SpaxscE/simfphys_base)** 
+- **[Gmod Glide](https://github.com/StyledStrike/gmod-glide)**
 
 ## Features
 
