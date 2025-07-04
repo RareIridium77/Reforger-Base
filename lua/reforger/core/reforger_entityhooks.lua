@@ -18,7 +18,6 @@ function Reforger.CallEntityFunctions(ent)
     if not istable(Reforger.EntityHooks) then return end
 
     for idf, func in pairs(Reforger.EntityHooks) do
-        Reforger.DevLog("Calling '"..idf.."' for entity.")
         if isfunction(func) then
             local success, err = pcall(func, ent)
             if not success then
