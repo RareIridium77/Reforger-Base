@@ -13,6 +13,10 @@ Its main purpose is to provide a unified damage and logic framework for differen
 - Player damage simulation inside vehicles
 - Easy hook integration for extending or overriding behavior
 
+# Possibly Conflicting Addons
+
+- [Damage Players In Seats](https://steamcommunity.com/sharedfiles/filedetails/?id=428278317) (May increase damage to players in vehicle)
+
 ## License
 
 You can freely use and modify this base within your GMod projects, but attribution is appreciated.
