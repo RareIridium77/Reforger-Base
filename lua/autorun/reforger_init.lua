@@ -3,11 +3,24 @@ if CLIENT then return end
 Reforger = Reforger or {}
 Reforger.VERSION = "0.2.3"
 
-include("reforger/core/logger.lua")
-include("reforger/core/entityhooks.lua")
-include("reforger/core/util.lua")
+
+-- Including core files
+include("reforger/core/reforger_logger.lua")
+include("reforger/core/reforger_entityhooks.lua")
+include("reforger/core/reforger_utils.lua")
+
+-- Including files
 include("reforger/reforger_scanners.lua")
 include("reforger/reforger_damage.lua")
+
+-- Hooks
+
+local function InitPostEntity()
+    timer.Simple(5, function()
+        hook.Run("Reforger.Init")
+        Reforger.DevLog("Reforger version: "..Reforger.VERSION)
+    end)
+end
 
 local function EntityCreated(ent)
     timer.Simple(0, function()
@@ -18,14 +31,8 @@ local function EntityCreated(ent)
     end)
 end
 
+hook.Add("InitPostEntity", "Reforger.InitPostEntity", InitPostEntity)
 hook.Add("OnEntityCreated", "Reforger.EntityHook", EntityCreated)
-
-hook.Add("InitPostEntity", "Reforger.InitPostEntity", function()
-    timer.Simple(5, function()
-        hook.Run("Reforger.Init")
-        Reforger.DevLog("Reforger version: "..Reforger.VERSION)
-    end)
-end)
 
 -- Concommands
 
