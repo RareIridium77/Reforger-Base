@@ -65,7 +65,7 @@ function Reforger.CacheRotors(veh)
     local vehicle_type = Reforger.GetVehicleType(veh)
     local vehicle_base = Reforger.GetVehicleBase(veh)
     if vehicle_base == "simfphys" then return end
-    if vehicle_type ~= "helicopter" or vehicle_type ~= "plane" then return end
+    if vehicle_type ~= "helicopter" and vehicle_type ~= "plane" then return end
 
     timer.Simple(0, function()
         veh._ReforgerRotors = Reforger.FindRotors(veh)
