@@ -1,6 +1,6 @@
 if not Reforger then return end -- overthinker moment
 
-Reforger.Log("Reforger Helicopter special loaded")
+Reforger.Log("Reforger Rotor special loaded")
 
 function Reforger.FindRotorsAlongRay(veh, dmginfo)
     if not IsValid(veh) then return nil end
@@ -42,18 +42,18 @@ function Reforger.FindRotorsAlongRay(veh, dmginfo)
     return closestRotor
 end
 
-function Reforger.FindHeliRotors(heli)
-    if not IsValid(heli) then return {} end
+function Reforger.FindRotors(veh)
+    if not IsValid(veh) then return {} end
 
     local rotors = {}
 
-    if heli.IsGlideVehicle then
-        if IsValid(heli.mainRotor) then table.insert(rotors, heli.mainRotor) end
-        if IsValid(heli.tailRotor) then table.insert(rotors, heli.tailRotor) end
+    if veh.IsGlideVehicle then
+        if IsValid(veh.mainRotor) then table.insert(rotors, veh.mainRotor) end
+        if IsValid(veh.tailRotor) then table.insert(rotors, veh.tailRotor) end
     end
 
-    if heli.LVS then
-        local lvs_rotors = Reforger.PairEntityAll(heli, "lvs_helicopter_rotor")
+    if veh.LVS then
+        local lvs_rotors = Reforger.PairEntityAll(veh, "lvs_helicopter_rotor")
         if istable(lvs_rotors) then
             rotors = lvs_rotors
         end
@@ -62,24 +62,24 @@ function Reforger.FindHeliRotors(heli)
     return rotors
 end
 
-function Reforger.CacheHeliRotors(heli)
-    if not IsValid(heli) then return end
+function Reforger.CacheRotors(veh)
+    if not IsValid(veh) then return end
 
     local vehicle_type = Reforger.GetVehicleType(veh)
     local vehicle_base = Reforger.GetVehicleBase(veh)
     if vehicle_base ~= "simfphys" then return end
-    if vehicle_type ~= "helicopter" then return end
+    if vehicle_type ~= "helicopter" or vehicle_type ~= "plane" then return end
 
     timer.Simple(0, function()
-        heli._ReforgerRotors = Reforger.FindHeliRotors(heli)
+        veh._ReforgerRotors = Reforger.FindRotors(veh)
 
-        Reforger.DevLog("Cached " .. #heli._ReforgerRotors .. " rotors for " .. tostring(heli))
+        Reforger.DevLog("Cached " .. #veh._ReforgerRotors .. " rotors for " .. tostring(veh))
     end)
 end
 
-function Reforger.GetHeliRotors(heli)
-    if not IsValid(heli) then return {} end
-    return heli._ReforgerRotors or {}
+function Reforger.GetHeliRotors(veh)
+    if not IsValid(veh) then return {} end
+    return veh._ReforgerRotors or {}
 end
 
 concommand.Add("reforger_check_rotors", function(ply, cmd)
@@ -88,7 +88,7 @@ concommand.Add("reforger_check_rotors", function(ply, cmd)
     local tr = ply:GetEyeTraceNoCursor()
     if not IsValid(tr.Entity) then return end
 
-    local rotors = Reforger.FindHeliRotors(tr.Entity)
+    local rotors = Reforger.FindRotors(tr.Entity)
 
     if istable(rotors) then PrintTable(rotors) end
 end)
@@ -99,7 +99,7 @@ concommand.Add("reforger_destroy_rotors", function(ply, cmd)
     local tr = ply:GetEyeTraceNoCursor()
     if not IsValid(tr.Entity) then return end
 
-    local rotors = Reforger.FindHeliRotors(tr.Entity)
+    local rotors = Reforger.FindRotors(tr.Entity)
 
     if istable(rotors) then
         for _, rotor in ipairs(rotors) do

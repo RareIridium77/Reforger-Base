@@ -18,3 +18,9 @@ function Reforger.CacheAmmorack(veh)
         end
     end
 end
+
+function Reforger.IsAmmorackDestroyed(veh)
+    if not IsValid(veh) or veh.reforger_ammorack == nil then return false end
+
+    return veh.reforger_ammorack:GetDestroyed()
+end

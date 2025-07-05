@@ -15,8 +15,8 @@ include("reforger/reforger_scanners.lua")
 include("reforger/reforger_damage.lua")
 
 -- Special scenario
-include("reforger/reforger_helicopters.lua")
-
+include("reforger/reforger_rotors.lua")
+include("reforger/reforger_tanks.lua")
 
 -- Hooks
 
