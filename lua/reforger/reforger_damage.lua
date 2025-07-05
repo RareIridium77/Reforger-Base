@@ -16,7 +16,7 @@ function Reforger.ApplyPlayerDamage(ply, damage, attacker, inflictor)
     player_dmginfo:SetDamage( 2 * damage )
     player_dmginfo:SetAttacker( attacker )
     player_dmginfo:SetInflictor( inflictor )
-    player_dmginfo:SetDamageType( DMG_ACID + DMG_DIRECT + DMG_BULLET ) -- funny hell
+    player_dmginfo:SetDamageType( DMG_DIRECT ) -- funny hell
 
     -- Just a gmod moment
 
@@ -31,7 +31,7 @@ end
 function Reforger.ApplyPlayerFireDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
 
-    local IsFireDamage = dmginfo:IsDamageType( DMG_BURN ) or (veh.IsGlideVehicle and dmginfo:IsDamageType( DMG_DIRECT )) -- Glide vehicles has own fun with damage
+    local IsFireDamage = veh:IsOnFire()
 
     if IsFireDamage then
         local veh_players = Reforger.GetEveryone(veh)

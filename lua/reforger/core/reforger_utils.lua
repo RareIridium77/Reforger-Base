@@ -13,6 +13,10 @@ function Reforger.GetVehicleType(ent)
         return Reforger.VehicleTypes.UNDEFINED
     end
 
+    if ent.reforgerType ~= nil then
+        return ent.reforgerType
+    end
+
     local types = Reforger.VehicleTypes
     local vehicle_base = Reforger.GetVehicleBase(ent)
     local vehicle_type = types.UNDEFINED
@@ -77,3 +81,51 @@ function Reforger.IsValidReforger(ent)
     if not IsValid(ent) then return false end
     return ent.LVS or ent.IsGlideVehicle or ent:GetClass() == "gmod_sent_vehicle_fphysics_base" or ent:GetClass() == "simfphys_tankprojectile"
 end
+
+concommand.Add("reforger_dump_nwvars", function(ply, cmd, args)
+    if not IsValid(ply) then return end
+
+    local tr = ply:GetEyeTrace()
+    if not IsValid(tr.Entity) then
+        ply:ChatPrint("Смотрим не на сущность.")
+        return
+    end
+
+    local ent = tr.Entity
+    print("[NWVars DUMP] Сущность: " .. tostring(ent))
+
+    local keys = ent:GetNetworkVars()
+    if not keys then
+        print("NW таблица не найдена. Возможно серверная часть ограничена.")
+        return
+    end
+
+    PrintTable(keys)
+end)
+
+concommand.Add("reforger_explode_armored", function(ply, cmd, args)
+    if not IsValid(ply) then return end
+
+    local tr = ply:GetEyeTrace()
+    local ent = tr.Entity
+
+    if not IsValid(ent) then
+        ply:ChatPrint("Не смотрите на технику.")
+        return
+    end
+
+    local isArmored = Reforger.GetVehicleType(ent) == "armored"
+    if not isArmored then
+        ply:ChatPrint("Это не бронетехника.")
+        return
+    end
+
+    local turretDestroyed = ent:GetNWBool("NWTurretDestroyed", false)
+
+    if turretDestroyed then
+        ply:ChatPrint("Башня уже уничтожена.")
+    else
+        ent:SetTurretDestroyed(true)
+        ply:ChatPrint("Башня уничтожена, подрываем технику!")
+    end
+end)

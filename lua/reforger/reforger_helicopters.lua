@@ -65,6 +65,11 @@ end
 function Reforger.CacheHeliRotors(heli)
     if not IsValid(heli) then return end
 
+    local vehicle_type = Reforger.GetVehicleType(veh)
+    local vehicle_base = Reforger.GetVehicleBase(veh)
+    if vehicle_base ~= "simfphys" then return end
+    if vehicle_type ~= "helicopter" then return end
+
     timer.Simple(0, function()
         heli._ReforgerRotors = Reforger.FindHeliRotors(heli)
 
