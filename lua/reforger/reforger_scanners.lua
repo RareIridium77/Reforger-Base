@@ -19,7 +19,10 @@ function Reforger.PairEntityAll(parent, className)
 
     local result = {}
 
-    for _, child in ipairs(parent:GetChildren()) do
+    local children = parent:GetChildren()
+    if not istable(children) or #children == 0 then return {} end
+
+    for _, child in ipairs(children) do
         if IsValid(child) and child:GetClass() == className then
             table.insert(result, child)
         end
@@ -40,7 +43,7 @@ function Reforger.FindClosestByClass(veh, dmginfo, className)
     local closestEnt = nil
     local closestDist = Len * 2
 
-    for _, ent in ipairs(ents.FindByClass(className)) do
+    for _, ent in ipairs(Reforger.PairEntityAll(veh, className)) do
         if not IsValid(ent) then continue end
         if ent:GetParent() ~= veh then continue end
 

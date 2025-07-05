@@ -2,6 +2,25 @@ if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Reforger Rotor special loaded")
 
+function Reforger.RotorsGetDamage(veh, dmginfo)
+    if not IsValid(veh) then return end
+
+    local rotor = Reforger.FindRotorsAlongRay(veh, dmginfo)
+    print(rotor)
+    if not IsValid(rotor) then return end
+
+    if rotor.rotorHealth == nil then
+        rotor.rotorHealth = 0.5 * Reforger.GetHealth(veh)
+    end
+
+    rotor.rotorHealth = rotor.rotorHealth - dmginfo:GetDamage() / 2
+
+    if rotor.rotorHealth <= 0 and rotor.Destroy then
+        rotor:Destroy()
+        Reforger.DevLog("Rotor destroyed: " .. tostring(rotor))
+    end
+end
+
 function Reforger.FindRotorsAlongRay(veh, dmginfo)
     if not IsValid(veh) then return nil end
 
@@ -17,7 +36,7 @@ function Reforger.FindRotorsAlongRay(veh, dmginfo)
     local closestRotor = nil
     local closestDist = Len * 2
 
-    local rotors = Reforger.GetHeliRotors(veh)
+    local rotors = Reforger.GetRotors(veh)
     if not istable(rotors) or #rotors == 0 then return nil end
 
     for _, rotor in ipairs(rotors) do
@@ -45,11 +64,18 @@ end
 function Reforger.FindRotors(veh)
     if not IsValid(veh) then return {} end
 
+    if veh._ReforgerRotors ~= nil and istable(veh._ReforgerRotors) then return veh._ReforgerRotors end
+
     local rotors = {}
+    local vehicle_type = Reforger.GetVehicleType(veh)
 
     if veh.IsGlideVehicle then
         if IsValid(veh.mainRotor) then table.insert(rotors, veh.mainRotor) end
         if IsValid(veh.tailRotor) then table.insert(rotors, veh.tailRotor) end
+
+        if #rotors == 0 and (vehicle_type == "plane" or vehicle_type == "helicopter") then
+            rotors = Reforger.PairEntityAll(veh, "glide_rotor")
+        end
     end
 
     if veh.LVS then
@@ -77,7 +103,7 @@ function Reforger.CacheRotors(veh)
     end)
 end
 
-function Reforger.GetHeliRotors(veh)
+function Reforger.GetRotors(veh)
     if not IsValid(veh) then return {} end
     return veh._ReforgerRotors or {}
 end

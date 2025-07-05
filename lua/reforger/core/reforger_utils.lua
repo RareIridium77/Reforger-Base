@@ -82,6 +82,22 @@ function Reforger.IsValidReforger(ent)
     return ent.LVS or ent.IsGlideVehicle or ent:GetClass() == "gmod_sent_vehicle_fphysics_base" or ent:GetClass() == "simfphys_tankprojectile"
 end
 
+function Reforger.GetHealth(ent)
+    if not Reforger.IsValidReforger() then return -1 end
+    
+    local veh_base = Reforger.GetVehicleBase()
+
+    if veh_base == "lvs" and ent.GetHP then
+        return ent:GetHP()
+    elseif veh_base == "glide" and ent.GetChassisHealth then
+        return ent:GetChassisHealth()
+    elseif veh_base == "simfphys" and ent.GetCurHealth then
+        return ent:GetCurHealth()
+    end
+
+    return ent.Health and ent:Health() or -1
+end
+
 concommand.Add("reforger_dump_nwvars", function(ply, cmd, args)
     if not IsValid(ply) then return end
 
