@@ -14,8 +14,14 @@ function Reforger.AddEntityFunction(idf, func)
 end
 
 function Reforger.CallEntityFunctions(ent)
-    if not IsValid(ent) then return end
+    if not Reforger.IsValidReforger(ent) then return end
     if not istable(Reforger.EntityHooks) then return end
+
+    hook.Run("Reforger.EntityFunctionsCalled", ent)
+
+    local veh_type = Reforger.GetVehicleType(ent)
+
+    if veh_type == "helicopter" then Reforger.CacheHeliRotors(ent) end
 
     for idf, func in pairs(Reforger.EntityHooks) do
         if isfunction(func) then

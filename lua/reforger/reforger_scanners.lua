@@ -1,4 +1,4 @@
-if not Reforger then return end
+if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Reforger_Scanners Initialized")
 

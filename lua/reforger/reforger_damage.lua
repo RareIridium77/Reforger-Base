@@ -1,4 +1,4 @@
-if not Reforger then return end
+if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Reforger_Damage Initialized")
 
@@ -16,7 +16,7 @@ function Reforger.ApplyPlayerDamage(ply, damage, attacker, inflictor)
     player_dmginfo:SetDamage( 2 * damage )
     player_dmginfo:SetAttacker( attacker )
     player_dmginfo:SetInflictor( inflictor )
-    player_dmginfo:SetDamageType( DMG_ACID + DMG_DIRECT + DMG_BULLET )
+    player_dmginfo:SetDamageType( DMG_ACID + DMG_DIRECT + DMG_BULLET ) -- funny hell
 
     -- Just a gmod moment
 
@@ -57,10 +57,11 @@ function Reforger.DamagePlayer(veh, dmginfo)
     local basePos = ply:EyePos()
 
     local hitboxes = {
-        {name = "head", dmu = 5, pos = basePos, min = Vector(-5, -5, -7), max = Vector(5, 5, 12), color = Color(238, 255, 0, 150)},   -- Голова
+        {name = "head", hgroup = 1, dmu = 5, pos = basePos, min = Vector(-5, -5, -7), max = Vector(5, 5, 12), color = Color(238, 255, 0, 150)},   -- Голова
     }
     
     local dmgMultiplier = 1
+    local newHitGroup = 0 -- Generic
 
     local Len = veh:BoundingRadius()
     local dmgPos = dmginfo:GetDamagePosition()
@@ -75,14 +76,19 @@ function Reforger.DamagePlayer(veh, dmginfo)
 
         if hit then
             dmgMultiplier = hb.dmu
+            newHitGroup = hb.hgroup
+
             debugoverlay.Box(hb.pos, hb.min, hb.max, 1, hb.color)
             debugoverlay.Sphere(dmgPos, 2, 1, Color(255, 255, 0), true)
-            Reforger.DevLog("HitBox detected: "..hb.name)
+
+            Reforger.DevLog("HitBox detected: "..hb.name.." h "..ply:Health())
             break
         end
     end
 
     if dmgMultiplier == 0 then return end
+
+    if isnumber(newHitGroup) then ply:SetLastHitGroup(newHitGroup) end
 
     local damaged = Reforger.ApplyPlayerDamage(
         ply,
@@ -95,7 +101,7 @@ function Reforger.DamagePlayer(veh, dmginfo)
         local eyepos = ply:EyePos()
         local eff = EffectData()
 
-        eff:SetOrigin(eyepos + ply:GetAimVector() * 2)
+        eff:SetOrigin(eyepos + ply:GetAimVector() * 1.25)
 
         util.Effect("BloodImpact", eff)
         sound.Play("Flesh.ImpactHard", eyepos, 75, 100)

@@ -6,12 +6,17 @@ Reforger.VERSION = "0.2.3"
 
 -- Including core files
 include("reforger/core/reforger_logger.lua")
-include("reforger/core/reforger_entityhooks.lua")
 include("reforger/core/reforger_utils.lua")
+
+include("reforger/core/reforger_entityhooks.lua")
 
 -- Including files
 include("reforger/reforger_scanners.lua")
 include("reforger/reforger_damage.lua")
+
+-- Special scenario
+include("reforger/reforger_helicopters.lua")
+
 
 -- Hooks
 
