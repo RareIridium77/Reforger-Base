@@ -8,6 +8,8 @@ function Reforger.CacheAmmorack(veh)
     if vehicle_base ~= "lvs" then return end
     if vehicle_type ~= "armored" then return end
 
+    if IsValid(veh.reforger_ammorack) then return end
+
     local ammorack_ent = Reforger.PairEntity(veh, "lvs_wheeldrive_ammorack")
     
     if IsValid(ammorack_ent) then
