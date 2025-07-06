@@ -22,7 +22,7 @@ function Reforger.CallEntityFunctions(ent)
     ent.reforgerType = Reforger.GetVehicleType(ent)
 
     Reforger.CacheRotors(ent)
-    Reforger.CacheAmmorack(veh)
+    Reforger.CacheAmmorack(ent)
 
     for idf, func in pairs(Reforger.EntityHooks) do
         if isfunction(func) then
