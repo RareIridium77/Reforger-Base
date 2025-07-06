@@ -19,8 +19,11 @@ include("reforger/core/server/reforger_entityhooks.lua")
 include("reforger/modules/server/reforger_scanners.lua")
 include("reforger/modules/server/reforger_damage.lua")
 
+-- LVS
+include("reforger/modules/server/lvs/reforger_lvs_bulletsystem.lua")
+include("reforger/modules/server/lvs/reforger_lvs_data.lua")
+
 -- Special scenario
-include("reforger/modules/server/reforger_lvs_data.lua")
 include("reforger/modules/server/reforger_rotors.lua")
 include("reforger/modules/server/reforger_tanks.lua")
 include("reforger/modules/server/reforger_pods.lua")
@@ -43,8 +46,13 @@ local function EntityCreated(ent)
     end)
 end
 
+local function GlobalThink()
+    hook.Run("Reforger.GlobalThink", Reforger)
+end
+
 hook.Add("InitPostEntity", "Reforger.InitPostEntity", InitPostEntity)
 hook.Add("OnEntityCreated", "Reforger.EntityHook", EntityCreated)
+hook.Add("Think", "Reforger.GlobalThinkHook", GlobalThink)
 
 -- Concommands
 
@@ -56,6 +64,8 @@ end
 
 concommand.Add("reforger_init", function(ply)
     AdminDevToolValidation(ply)
+    
     hook.Run("Reforger.Init")
-    Reforger.DevLog("Manual reforger_init called")
+    
+    ply:ChatPrint("Manual reforge_init called")
 end)

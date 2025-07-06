@@ -18,7 +18,6 @@ function Reforger.RotorsGetDamage(veh, dmginfo)
 
     if rotor.rotorHealth <= 0 and isfunction(rotor.Destroy) then
         rotor:Destroy()
-        Reforger.DevLog("Rotor destroyed: " .. tostring(rotor))
     end
 end
 

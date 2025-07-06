@@ -91,7 +91,7 @@ function Reforger.DamagePlayer(veh, dmginfo)
 
     local ent = tr.Entity
 
-    if IsValid(ent) and ent.IsReforgerEntity then
+    if IsValid(ent) and ent.IsReforgerEntity and ent.Player ~= dmginfo:GetAttacker() then
         Reforger.ApplyDamageToEnt(
             ent,
             dmginfo:GetDamage(),
