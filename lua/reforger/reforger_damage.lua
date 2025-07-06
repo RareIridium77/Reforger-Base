@@ -2,6 +2,13 @@ if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Reforger_Damage Initialized")
 
+Reforger.PlayerBypassTypes = [
+    [DMG_BLAST] = true,
+    [DMG_BLAST_SURFACE] = true,
+    [DMG_BUCKSHOT] = false,
+    [DMG_CLUB] = false
+]
+
 function Reforger.ApplyPlayerDamage(ply, damage, attacker, inflictor)
     if not IsValid(ply) or not ply:IsPlayer() or ply:HasGodMode() then return false end
 
@@ -54,20 +61,24 @@ function Reforger.DamagePlayer(veh, dmginfo)
     local ply = Reforger.FindClosestPlayer(veh, dmginfo)
     if not IsValid(ply) then return end
 
-    local basePos = ply:EyePos()
+    local dmgForce = dmginfo:GetDamageForce():Length()
+    local dmgPos = dmginfo:GetDamagePosition()
+    local dmgDir = dmginfo:GetDamageForce():GetNormalized()
+    local vehType = veh.reforgerType or Reforger.GetVehicleType(veh)
 
-    local hitboxes = {
-        {name = "head", hgroup = 1, dmu = 5, pos = basePos, min = Vector(-5, -5, -7), max = Vector(5, 5, 12), color = Color(238, 255, 0, 150)},   -- Голова
-    }
-    
+    local penetrationThreshold = 50000
+
+    if dmgForce < penetrationThreshold and not Reforger.PlayerBypassTypes[dmginfo:GetDamageType()] then
+        Reforger.DevLog("Penetration blocked: Force too low - "..dmgForce)
+        return
+    end
+
+    local basePos = ply:EyePos()
+    local Len = veh:BoundingRadius()
     local dmgMultiplier = 1
     local newHitGroup = 0 -- Generic
 
-    local Len = veh:BoundingRadius()
-    local dmgPos = dmginfo:GetDamagePosition()
-    local dmgDir = dmginfo:GetDamageForce():GetNormalized()
-
-    if veh.reforgerType == "armored" then
+    if vehType == "armored" then
         Len = Len * 0.5
         dmgMultiplier = dmgMultiplier * 0.5
     end
@@ -75,12 +86,15 @@ function Reforger.DamagePlayer(veh, dmginfo)
     local dmgPenetration = dmgDir * Len
     local dmgStart = dmgPos - dmgDir * (Len * 0.5)
 
-    for _, hb in ipairs(hitboxes) do
-        local localdmgPos = WorldToLocal(dmgPos, Angle(0, 0, 0), hb.pos, veh:GetAngles())
-        local hit = util.IntersectRayWithOBB(dmgStart, dmgDir * Len, hb.pos, veh:GetAngles(), hb.min, hb.max)
+    local hitboxes = {
+        {name = "head", hgroup = 1, dmu = 5, pos = basePos, min = Vector(-5, -5, -7), max = Vector(5, 5, 12), color = Color(238, 255, 0, 150)},
+    }
 
+    for _, hb in ipairs(hitboxes) do
+        local hit = util.IntersectRayWithOBB(dmgStart, dmgDir * Len, hb.pos, veh:GetAngles(), hb.min, hb.max)
+        
         if hit then
-            dmgMultiplier = dmgMultiplier * hb.dmu -- умножаем дополнительно
+            dmgMultiplier = dmgMultiplier * hb.dmu
             newHitGroup = hb.hgroup
 
             debugoverlay.Box(hb.pos, hb.min, hb.max, 1, hb.color)
@@ -91,7 +105,7 @@ function Reforger.DamagePlayer(veh, dmginfo)
         end
     end
 
-    if dmgMultiplier == 0 then return end
+    if dmgMultiplier <= 0 then return end
 
     if isnumber(newHitGroup) then ply:SetLastHitGroup(newHitGroup) end
 
@@ -103,15 +117,13 @@ function Reforger.DamagePlayer(veh, dmginfo)
     )
 
     if damaged and ply:Alive() then
-        local eyepos = ply:EyePos()
         local eff = EffectData()
-
-        eff:SetOrigin(eyepos + ply:GetAimVector() * 1.25)
-
+        eff:SetOrigin(ply:EyePos() + ply:GetAimVector() * 1.25)
         util.Effect("BloodImpact", eff)
-        sound.Play("Flesh.ImpactHard", eyepos, 75, 100)
+        sound.Play("Flesh.ImpactHard", ply:EyePos(), 75, 100)
     end
 end
+
 
 function Reforger.IgniteForever(ent, size)
     if not IsValid(ent) then return end
