@@ -36,11 +36,11 @@ function Reforger.GetVehicleType(ent)
     elseif vehicle_base == "lvs" then
         local vt = ent:GetVehicleType()
 
-        if vt == "tank" then
-            vehicle_type = types.ARMORED
-        end
+        local has_armor = ent._armorParts and #ent._armorParts > 0
 
-        if vt == "car" or vt == "bike" then
+        if vt == "tank" or has_armor then
+            vehicle_type = types.ARMORED
+        else
             vehicle_type = types.LIGHT
 
             local armor_parts = ent._armorParts

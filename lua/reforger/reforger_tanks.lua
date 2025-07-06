@@ -27,6 +27,7 @@ function Reforger.AmmoracksTakeTransmittedDamage(veh, dmginfo)
         for _, ammorack in ipairs(veh.reforger_ammoracks) do
             if IsValid(ammorack) and ammorack.TakeTransmittedDamage then
                 ammorack:TakeTransmittedDamage(dmginfo)
+                Reforger.DevLog(veh.PrintName, " gets ammorack damage. Damage: "..dmginfo:GetDamage())
             end
         end
     end

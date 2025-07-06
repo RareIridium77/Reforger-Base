@@ -66,8 +66,13 @@ function Reforger.DamagePlayer(veh, dmginfo)
     local Len = veh:BoundingRadius()
     local dmgPos = dmginfo:GetDamagePosition()
     local dmgDir = dmginfo:GetDamageForce():GetNormalized()
-    local dmgPenetration = dmgDir * Len
 
+    if veh.reforgerType == "armored" then
+        Len = Len * 0.5
+        dmgMultiplier = dmgMultiplier * 0.5
+    end
+
+    local dmgPenetration = dmgDir * Len
     local dmgStart = dmgPos - dmgDir * (Len * 0.5)
 
     for _, hb in ipairs(hitboxes) do
@@ -75,7 +80,7 @@ function Reforger.DamagePlayer(veh, dmginfo)
         local hit = util.IntersectRayWithOBB(dmgStart, dmgDir * Len, hb.pos, veh:GetAngles(), hb.min, hb.max)
 
         if hit then
-            dmgMultiplier = hb.dmu
+            dmgMultiplier = dmgMultiplier * hb.dmu -- умножаем дополнительно
             newHitGroup = hb.hgroup
 
             debugoverlay.Box(hb.pos, hb.min, hb.max, 1, hb.color)
@@ -106,4 +111,42 @@ function Reforger.DamagePlayer(veh, dmginfo)
         util.Effect("BloodImpact", eff)
         sound.Play("Flesh.ImpactHard", eyepos, 75, 100)
     end
+end
+
+function Reforger.IgniteForever(ent, size)
+    if not IsValid(ent) then return end
+
+    size = size or ent:BoundingRadius()
+
+    if ent._ignitingForever then return end
+    ent._ignitingForever = true
+
+    ent:Ignite(5, size)
+
+    local timerID = "reforger_infinite_fire_" .. ent:EntIndex()
+
+    if timer.Exists(timerID) then return end
+
+    timer.Create(timerID, 4.75, 0, function()
+        if not IsValid(ent) then
+            timer.Remove(timerID)
+            return
+        end
+
+        if not ent:IsOnFire() then
+            ent._ignitingForever = nil
+            timer.Remove(timerID)
+            return
+        end
+
+        ent:Ignite(5, size)
+    end)
+end
+
+function Reforger.StopInfiniteFire(ent)
+    if not IsValid(ent) then return end
+
+    local timerID = "reforger_infinite_fire_" .. ent:EntIndex()
+    timer.Remove(timerID)
+    ent._ignitingForever = nil
 end

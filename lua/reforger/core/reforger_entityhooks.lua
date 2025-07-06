@@ -19,10 +19,12 @@ function Reforger.CallEntityFunctions(ent)
 
     hook.Run("Reforger.EntityFunctionsCalled", ent)
 
-    ent.reforgerType = Reforger.GetVehicleType(ent)
+    timer.Simple(0, function()
+        ent.reforgerType = Reforger.GetVehicleType(ent)
 
-    Reforger.CacheRotors(ent)
-    Reforger.CacheAmmorack(ent)
+        Reforger.CacheRotors(ent)
+        Reforger.CacheAmmorack(ent)
+    end)
 
     for idf, func in pairs(Reforger.EntityHooks) do
         if isfunction(func) then
