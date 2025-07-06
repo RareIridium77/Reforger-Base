@@ -1,22 +1,29 @@
-if CLIENT then return end
-
 Reforger = Reforger or {}
+
 Reforger.VERSION = "0.2.3"
 
+Reforger.CreatedConvars = Reforger.CreatedConvars or {}
+
+if CLIENT then return end
+
+-- Shared files
+AddCSLuaFile("reforger/core/shared/reforger_convars.lua") -- send to client
+include("reforger/core/shared/reforger_convars.lua")
 
 -- Including core files
-include("reforger/core/reforger_logger.lua")
-include("reforger/core/reforger_utils.lua")
-
-include("reforger/core/reforger_entityhooks.lua")
+include("reforger/core/server/reforger_logger.lua")
+include("reforger/core/server/reforger_utils.lua")
+include("reforger/core/server/reforger_entityhooks.lua")
 
 -- Including files
-include("reforger/reforger_scanners.lua")
-include("reforger/reforger_damage.lua")
+include("reforger/modules/server/reforger_scanners.lua")
+include("reforger/modules/server/reforger_damage.lua")
 
 -- Special scenario
-include("reforger/reforger_rotors.lua")
-include("reforger/reforger_tanks.lua")
+include("reforger/modules/server/reforger_lvs_data.lua")
+include("reforger/modules/server/reforger_rotors.lua")
+include("reforger/modules/server/reforger_tanks.lua")
+include("reforger/modules/server/reforger_pods.lua")
 
 -- Hooks
 

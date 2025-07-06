@@ -6,14 +6,15 @@ function Reforger.RotorsGetDamage(veh, dmginfo)
     if not IsValid(veh) then return end
 
     local rotor = Reforger.FindRotorsAlongRay(veh, dmginfo)
+    local vehicle_base = Reforger.GetVehicleBase(veh)
 
     if not IsValid(rotor) then return end
 
-    if rotor.rotorHealth == nil then
-        rotor.rotorHealth = 0.5 * Reforger.GetHealth(veh)
+    if rotor.rotorHealth == nil and vehicle_base == "lvs" then
+        rotor.rotorHealth = rotor.GetHP and rotor:GetHP() or Reforger.GetHealth(veh) * 0.15
     end
 
-    rotor.rotorHealth = rotor.rotorHealth - dmginfo:GetDamage() / 2
+    rotor.rotorHealth = rotor.rotorHealth - dmginfo:GetDamage()
 
     if rotor.rotorHealth <= 0 and isfunction(rotor.Destroy) then
         rotor:Destroy()

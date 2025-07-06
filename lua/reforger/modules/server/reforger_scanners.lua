@@ -71,52 +71,6 @@ function Reforger.FindClosestByClass(veh, dmginfo, className)
     return closestEnt
 end
 
-function Reforger.FindClosestPlayer(veh, dmginfo)
-    if not IsValid(veh) then return nil end
-
-    local Len = veh:BoundingRadius()
-    local dmgPos = dmginfo:GetDamagePosition()
-    local dmgDir = dmginfo:GetDamageForce():GetNormalized()
-    local dmgPenetration = dmgDir * Len
-
-    local dmgStart = dmgPos - dmgDir * (Len * 0.5)
-
-    local closestPlayer = nil
-    local closestPlayerDist = Len * 2
-
-    for _, ply in ipairs(Reforger.GetEveryone(veh) or {}) do
-        if not IsValid(ply) or not ply:IsPlayer() or not ply:Alive() then continue end
-
-        local seat = ply:GetVehicle()
-        if not IsValid(seat) or not seat:IsVehicle() or seat:GetParent() ~= veh then
-            continue 
-        end
-
-        local mins, maxs = ply:OBBMins() / 2, ply:OBBMaxs() / 1.5
-        local pos, ang = seat:GetPos(), seat:GetAngles()
-
-        
-        if dmgPos:Distance(veh:GetPos()) > Len * 5 then
-            dmgPos = ply:GetPos()
-        end
-        
-        local HitPos = util.IntersectRayWithOBB(dmgStart, dmgDir * Len * 1.5, pos, ang, mins, maxs)
-        
-        if HitPos then
-            debugoverlay.BoxAngles(pos, mins, maxs, ang, 1, Color(255, 0, 0, 50))
-
-            local dist = (HitPos - dmgPos):Length()
-
-            if dist < closestPlayerDist then
-                closestPlayer = ply
-                closestPlayerDist = dist
-            end
-        end
-    end
-
-    return closestPlayer
-end
-
 function Reforger.GetEveryone(veh)
     if not IsValid(veh) then return {} end
 

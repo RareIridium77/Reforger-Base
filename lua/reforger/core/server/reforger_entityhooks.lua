@@ -24,6 +24,7 @@ function Reforger.CallEntityFunctions(ent)
 
         Reforger.CacheRotors(ent)
         Reforger.CacheAmmorack(ent)
+        Reforger.LVSInitializeReforgerDT(ent)
     end)
 
     for idf, func in pairs(Reforger.EntityHooks) do
