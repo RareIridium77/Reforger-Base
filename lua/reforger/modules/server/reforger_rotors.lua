@@ -90,20 +90,3 @@ concommand.Add("reforger_check_rotors", function(ply, cmd)
 
     if istable(rotors) then PrintTable(rotors) end
 end)
-
-concommand.Add("reforger_destroy_rotors", function(ply, cmd)
-    if not IsValid(ply) then return end
-
-    local tr = ply:GetEyeTraceNoCursor()
-    if not IsValid(tr.Entity) then return end
-
-    local rotors = Reforger.FindRotors(tr.Entity)
-
-    if istable(rotors) then
-        for _, rotor in ipairs(rotors) do
-            if rotor.Destroy then
-                rotor:Destroy()
-            end
-        end
-    end
-end)

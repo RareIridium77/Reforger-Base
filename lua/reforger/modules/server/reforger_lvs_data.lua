@@ -31,29 +31,3 @@ function Reforger.LVSGetDT(lvs, dtType, dtName)
 
     return nil
 end
-
-concommand.Add("reforger_lvsdt", function(ply, cmd, args)
-    if not IsValid(ply) then return end
-    if not istable(args) or #args < 2 then 
-        print("[Reforger] Invalid arguments. Usage: reforger_lvsdt <Type> <Name>")
-        return 
-    end
-
-    local tr = ply:GetEyeTraceNoCursor()
-    local ent = tr.Entity
-
-    if not IsValid(ent) then 
-        print("[Reforger] Invalid entity.")
-        return
-    end
-
-    local dtType = args[1]
-    local dtName = args[2]
-
-    local val = Reforger.LVSGetDT(ent, dtType, dtName)
-    if val ~= nil then 
-        Reforger.Log(dtName.." value: "..tostring(val))
-    else
-        Reforger.Log("DT variable not found.")
-    end
-end)

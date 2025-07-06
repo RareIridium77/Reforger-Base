@@ -46,3 +46,14 @@ function Reforger.Convar(name)
 
     return nil
 end
+
+function Reforger.SafeInt(name, fallback)
+    if not isstring(name) then return fallback or -1 end
+
+    local cvar = Reforger.Convar(name)
+    if cvar and (IsValid(cvar) or isfunction(cvar.GetInt)) then
+        return cvar:GetInt()
+    end
+
+    return fallback or -1
+end
