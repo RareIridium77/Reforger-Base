@@ -2,12 +2,12 @@ if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Reforger_Damage Initialized")
 
-Reforger.PlayerBypassTypes = [
+Reforger.PlayerBypassTypes = {
     [DMG_BLAST] = true,
     [DMG_BLAST_SURFACE] = true,
     [DMG_BUCKSHOT] = false,
     [DMG_CLUB] = false
-]
+}
 
 function Reforger.ApplyPlayerDamage(ply, damage, attacker, inflictor)
     if not IsValid(ply) or not ply:IsPlayer() or ply:HasGodMode() then return false end
@@ -66,7 +66,7 @@ function Reforger.DamagePlayer(veh, dmginfo)
     local dmgDir = dmginfo:GetDamageForce():GetNormalized()
     local vehType = veh.reforgerType or Reforger.GetVehicleType(veh)
 
-    local penetrationThreshold = 50000
+    local penetrationThreshold = 25
 
     if dmgForce < penetrationThreshold and not Reforger.PlayerBypassTypes[dmginfo:GetDamageType()] then
         Reforger.DevLog("Penetration blocked: Force too low - "..dmgForce)
