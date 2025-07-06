@@ -17,7 +17,7 @@ function ENT:Initialize()
 
     self:SetNoDraw(true)
     self:SetTrigger(true)
-    self:SetNotSolid(false)
+    self:SetNotSolid(false )
 
     self:PhysicsInit( SOLID_BBOX )
     self:SetMoveType( MOVETYPE_NONE )
