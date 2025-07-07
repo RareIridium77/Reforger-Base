@@ -1,7 +1,5 @@
 -- Bru bru bru bru bru I'm so bored
 
-if CLIENT then return end -- overthinker moment
-
 Reforger = Reforger or {}
 Reforger.EntityHooks = Reforger.EntityHooks or {}
 

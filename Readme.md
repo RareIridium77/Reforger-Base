@@ -10,9 +10,11 @@ Its main purpose is to provide a unified damage and logic framework for differen
 # Shared Hooks
 
 - Reforger.Init -- called when Reforger Inits.
+- Reforger.GlobalThink -- Just called by Think. Like general update tick.
+- Reforger.EntityFunctionsCalled(ent) -- called every Reforger.CallEntityFunctions
+
 - Reforger.PreEntityDamage(ent) (return boolean value. false to block, true to provide damage).
 - Reforger.PlayerBurningInVehicle(ply, vehicle) -- called every burn damage to car for player.
-- Reforger.GlobalThink -- Just called by Think. Like general update tick.
 
 **LVS**
 - Reforger.LVS_BulletFired(bullet) -- Called every LVS bullet fire.

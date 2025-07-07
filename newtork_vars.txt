@@ -1,4 +1,0 @@
-Shared NW variables
-
-Player:
-    bool: Reforger.IsBurning -- sets true when player burns in car

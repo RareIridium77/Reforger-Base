@@ -1,5 +1,3 @@
-if CLIENT then return end
-
 Reforger.VehicleTypes = {
     LIGHT = "light",
     ARMORED = "armored",
@@ -87,11 +85,19 @@ end
 function Reforger.IsValidReforger(ent)
     if not IsValid(ent) then return false end
 
-    if ent.LVS or ent.IsGlideVehicle then return true end
+    if ent.LVS or ent.IsGlideVehicle then
+        return true
+    end
 
     local class = ent:GetClass()
-    return Reforger.ValidClasslist[class] or false
+    if Reforger.ValidClasslist and Reforger.ValidClasslist[class] then
+        return true
+    end
+
+    Reforger.DevLog(ent, "[Reforger] Entity is not a valid Reforger target (" .. class .. ")")
+    return false
 end
+
 
 function Reforger.GetHealth(ent)
     if not Reforger.IsValidReforger() then return -1 end

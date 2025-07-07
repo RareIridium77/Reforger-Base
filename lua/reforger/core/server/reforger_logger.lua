@@ -1,7 +1,5 @@
 -- This file contains Reforger logging functions
 
-if CLIENT then return end -- overthinker moment
-
 Reforger = Reforger or {}
 
 local dev_cvar = GetConVar("developer")
