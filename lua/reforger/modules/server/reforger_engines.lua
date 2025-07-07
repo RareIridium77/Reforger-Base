@@ -54,7 +54,7 @@ function Reforger.CacheEngine(veh)
 end
 
 concommand.Add("reforger_debug_enginepos", function(ply, cmd, args)
-    if not IsValid(ply) then return end
+    if not Reforger.AdminDevToolValidation(ply) then return end
 
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity
@@ -159,6 +159,8 @@ local function PrintTableRecursive(tbl, indent, visited)
 end
 
 concommand.Add("reforger_vehicle_table", function(ply, cmd, args)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity
 
@@ -214,6 +216,8 @@ local function SearchTable(tbl, searchTerm, path, visited)
 end
 
 concommand.Add("reforger_search_data", function(ply, cmd, args)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+    
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity
 

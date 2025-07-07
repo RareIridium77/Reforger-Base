@@ -84,6 +84,8 @@ function Reforger.GetRotors(veh)
 end
 
 concommand.Add("reforger_check_rotors", function(ply, cmd)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+    
     if not IsValid(ply) then return end
 
     local tr = ply:GetEyeTraceNoCursor()

@@ -1,5 +1,6 @@
--- Shitty for shitty =D
+if not LVS then return end
 
+-- Shitty for shitty =D
 local function MainThink_Bullet()
     if not LVS then
         hook.Remove("Reforger.GlobalThink", "LVS_Reforger.BulletThink")

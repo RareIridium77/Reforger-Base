@@ -1,3 +1,5 @@
+if not Glide then return end
+
 util.AddNetworkString("Reforger.SendGlideOffsets")
 
 net.Receive("Reforger.SendGlideOffsets", function(_, ply)

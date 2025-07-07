@@ -114,29 +114,8 @@ function Reforger.GetHealth(ent)
     return ent.Health and ent:Health() or -1
 end
 
-concommand.Add("reforger_dump_nwvars", function(ply, cmd, args)
-    if not IsValid(ply) then return end
-
-    local tr = ply:GetEyeTrace()
-    if not IsValid(tr.Entity) then
-        ply:ChatPrint("Смотрим не на сущность.")
-        return
-    end
-
-    local ent = tr.Entity
-    print("[NWVars DUMP] Сущность: " .. tostring(ent))
-
-    local keys = ent:GetNetworkVars()
-    if not keys then
-        print("NW таблица не найдена. Возможно серверная часть ограничена.")
-        return
-    end
-
-    PrintTable(keys)
-end)
-
 concommand.Add("reforger_destroy", function(ply)
-    if not IsValid(ply) then return end
+    if not Reforger.AdminDevToolValidation(ply) then return end
 
     local tr = ply:GetEyeTrace()
     if not IsValid(tr.Entity) then

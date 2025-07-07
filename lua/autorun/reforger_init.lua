@@ -37,14 +37,16 @@ hook.Add("Think", "Reforger.GlobalThinkHook", GlobalThink)
 
 -- Concommands
 
-local function AdminDevToolValidation(ply)
-    if not IsValid(ply) then return end
-    if not ply:IsAdmin() then Reforger.Log("You are not admin.") end
-    if GetConVar("developer"):GetInt() <= 0 then Reforger.Log("Developer mode disabled.") end
+function Reforger.AdminDevToolValidation(ply)
+    if not IsValid(ply) then return false end
+    if not ply:IsAdmin() then Reforger.Log("You are not admin.") return false end
+    if GetConVar("developer"):GetInt() <= 0 then Reforger.Log("Developer mode disabled.") return false end
+
+    return true
 end
 
 concommand.Add("reforger.init", function(ply)
-    AdminDevToolValidation(ply)
+    if not Reforger.AdminDevToolValidation(ply) then return end
     
     hook.Run("Reforger.Init")
     
@@ -52,11 +54,13 @@ concommand.Add("reforger.init", function(ply)
 end)
 
 concommand.Add("reforger.table", function(ply)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+    
     PrintTable(Reforger)
 end)
 
 concommand.Add("reforger.reload", function(ply)
-    AdminDevToolValidation(ply)
+    if not Reforger.AdminDevToolValidation(ply) then return end
 
     Reforger = Reforger or {}
     Reforger.CreatedConvars = {}

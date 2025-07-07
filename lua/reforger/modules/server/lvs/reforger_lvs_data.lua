@@ -1,4 +1,4 @@
-if not Reforger then return end
+if not Reforger or not LVS then return end
 
 function Reforger.LVSInitializeReforgerDT(lvs)
     if not IsValid(lvs) or not lvs.LVS then return end

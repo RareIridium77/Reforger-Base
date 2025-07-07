@@ -59,6 +59,8 @@ function Reforger.GetNetworkValue(ent, nType, nName)
 end
 
 concommand.Add("reforger_dump_net", function(ply, cmd, args)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity
 

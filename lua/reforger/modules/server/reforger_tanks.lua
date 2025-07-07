@@ -31,7 +31,6 @@ function Reforger.AmmoracksTakeTransmittedDamage(veh, dmginfo)
         for _, ammorack in ipairs(veh.reforgerAmmoracks) do
             if IsValid(ammorack) and ammorack.TakeTransmittedDamage then
                 ammorack:TakeTransmittedDamage(dmginfo)
-                Reforger.DevLog(veh.PrintName, " gets ammorack damage. Damage: "..dmginfo:GetDamage())
             end
         end
     end
@@ -78,7 +77,7 @@ function Reforger.DamageDamagableParts(veh, damage)
 end
 
 concommand.Add("reforger_check_ammorack", function(ply, cmd, args)
-    if not IsValid(ply) then return end
+    if not Reforger.AdminDevToolValidation(ply) then return end
 
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity

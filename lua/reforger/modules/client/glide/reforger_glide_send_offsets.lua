@@ -1,4 +1,4 @@
-if not Reforger then return end
+if not Reforger or not Glide then return end
 
 local function OnGlideEntityCreate(glide_entity)
     if not IsValid(glide_entity) then return end
