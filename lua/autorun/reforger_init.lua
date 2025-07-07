@@ -1,13 +1,12 @@
 AddCSLuaFile()
 
-RecursiveLoad = include("reforger/core/shared/reforger_loader.lua")
 
 Reforger = Reforger or {}
 
 Reforger.VERSION = "0.2.3"
 Reforger.CreatedConvars = Reforger.CreatedConvars or {}
 
-RecursiveLoad("reforger")
+include("reforger/core/shared/reforger_loader.lua")("reforger")
 
 if CLIENT then return end
 
