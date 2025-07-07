@@ -38,7 +38,7 @@ Reforger.CollisionDamageConfig = {
     }
 }
 
-function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor)
+function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, pos)
     if not IsValid(ent) then return false end
 
     local preResult = hook.Run("Reforger.PreEntityDamage", ent)
@@ -53,6 +53,7 @@ function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor)
     ent_dmginfo:SetAttacker( attacker )
     ent_dmginfo:SetInflictor( inflictor )
     ent_dmginfo:SetDamageType( DMG_DIRECT ) -- funny hell
+    ent_dmginfo:SetDamagePosition( pos and pos or ent:GetPos() )
 
     -- Just a gmod moment
     local success = false
@@ -94,11 +95,11 @@ end
 function Reforger.HandleCollisionDamage(veh, dmginfo)
     if not IsValid(veh) then return end
 
-    local isCollision = dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_VEHICLE)
-    if veh.IsSimfphysVehicle then
-        isCollision = dmginfo:IsDamageType(DMG_GENERIC)
-    end
+    local isCollision = dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_VEHICLE) or dmginfo:IsDamageType(DMG_GENERIC)
+
     if not isCollision then return end
+
+    Reforger.DevLog("Performing collision")
 
     local velocity = veh:GetVelocity():Length()
     local vtype = veh.reforgerType or "undefined"
@@ -115,6 +116,7 @@ function Reforger.HandleCollisionDamage(veh, dmginfo)
 
     if veh.SetIsEngineOnFire then
         veh:SetIsEngineOnFire(true)
+        print("Engine in fire while collision")
     end
 
     local delay = math.Rand(1, 2)
@@ -141,7 +143,6 @@ function Reforger.HandleRayDamage(veh, dmginfo)
     local dmgStart = dmgPos - dmgDir * (Len * 0.1)
 
 	debugoverlay.Line( dmgPos - dmgDir * 2, dmgPos + dmgPenetration, 0.2, Color( 255, 0, 0) )
-    debugoverlay.Sphere(dmgStart, 2, 0.2, Color(255, 0, 0), true)
     debugoverlay.Sphere(dmgPos + dmgPenetration, 2, 0.2, Color(255, 0, 0), true)
 
     local tr = util.TraceLine({
@@ -152,9 +153,7 @@ function Reforger.HandleRayDamage(veh, dmginfo)
         end
     })
 
-    if tr.HitPos then
-        debugoverlay.Sphere(tr.HitPos, 2, 0.2, Color(255, 0, 0), true)
-    end
+    if tr.HitPos then debugoverlay.Sphere(tr.HitPos, 2, 0.2, Color(255, 0, 0), true) end
 
     local ent = tr.Entity
     
@@ -164,15 +163,14 @@ function Reforger.HandleRayDamage(veh, dmginfo)
         local finalDmg = originalDmg
         local isSmall = dmgType == DMG_BULLET or dmgType == DMG_BUCKSHOT or dmgType == DMG_CLUB
 
-        if isSmall and veh.reforgerType == "armored" then
-            finalDmg = 0.25 * originalDmg
-        end
+        if isSmall and veh.reforgerType == "armored" then finalDmg = 0.25 * originalDmg end
 
         Reforger.ApplyDamageToEnt(
             ent,
             finalDmg,
             dmginfo:GetAttacker(),
-            dmginfo:GetInflictor()
+            dmginfo:GetInflictor(),
+            tr.HitPos
         )
     end
 end

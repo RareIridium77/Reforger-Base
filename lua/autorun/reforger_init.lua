@@ -54,3 +54,21 @@ end)
 concommand.Add("reforger.table", function(ply)
     PrintTable(Reforger)
 end)
+
+concommand.Add("reforger.reload", function(ply)
+    AdminDevToolValidation(ply)
+
+    Reforger = Reforger or {}
+    Reforger.CreatedConvars = {}
+
+    include("reforger/core/shared/reforger_loader.lua")("reforger")
+    Reforger.DevLog("Reforger reloaded via concommand.")
+    
+    hook.Run("Reforger.Init")
+
+    if IsValid(ply) then
+        ply:ChatPrint("Reforger scripts reloaded.")
+    else
+        print("[Reforger] Scripts reloaded manually.")
+    end
+end)

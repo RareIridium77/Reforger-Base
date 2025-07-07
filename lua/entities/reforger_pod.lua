@@ -18,6 +18,7 @@ if CLIENT then return end
 function ENT:InitReforgerEntity()
     if CLIENT then return end
 
+    self.headZone = 0
     self.min = Vector(0, 0, 0)
     self.max = Vector(0, 0, 0)
 
@@ -55,15 +56,16 @@ function ENT:Think()
     local mins, maxs = ply:OBBMins(), ply:OBBMaxs()
     local vmins, vmaxs = self.Vehicle:OBBMins(), self.Vehicle:OBBMaxs()
 
-    local newMin = Vector(mins.x * 0.5, mins.y * 0.5, mins.z * 5)
+    local newMin = Vector(mins.x * 0.5, mins.y * 0.5, mins.z)
     local newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z)
+    local offsetMultiplier = 2
 
     local seqID = ply:GetSequence()
 
     if seqID == 387 then -- sit_rollercoaster
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 1.7 or vmaxs.z)
+        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 1.9 or vmaxs.z)
     elseif seqID == 9 then -- sit
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 1.7 or vmaxs.z)
+        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 1.9 or vmaxs.z)
     elseif seqID == 386 then -- drive_pd
         newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z > 50 and vmaxs.z * 0.9 or vmaxs.z * 1.35)
     elseif seqID == 388 then -- drive_airboat
@@ -73,16 +75,19 @@ function ENT:Think()
             vmaxs.z < 110 and vmaxs.z * 1.8 or vmaxs.z * 0.65
         )
     elseif seqID == 389 then -- drive_jeep
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 1.9 or vmaxs.z * 0.5)
+        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 2.2 or vmaxs.z * 0.5)
+        offsetMultiplier = 12.5
     elseif seqID == 90 then -- cwalk_revolver
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z > 27 and vmaxs.z * 2.4 or vmaxs.z * (0.1 * vmaxs.z))
+        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z > 27 and vmaxs.z * 2.4 or vmaxs.z * (0.115 * vmaxs.z))
     else
         newMax = Vector(maxs.x * 0.1, maxs.y * 0.1, vmaxs.z * 0.1)
     end
 
-    local offset = self.Vehicle:GetForward() * 4
+    local offset = self.Vehicle:GetForward() * offsetMultiplier
     self:SetPos(self.Vehicle:GetPos() + offset)
     self:SetAngles(self.Vehicle:GetAngles())
+    self.headZone = self.Vehicle:GetPos().z + (newMax.z * 0.85 * 0.85)
+
 
     if not self.boundSet then
         self.boundSet = true
@@ -97,17 +102,23 @@ function ENT:Think()
     end
 
     local textPos = self.Vehicle:GetPos() + Vector(0, 0, vmaxs.z + 10)
-
-    debugoverlay.BoxAngles(self:GetPos(), self.min, self.max, self:GetAngles(), 0.045, Color(225, 155, 155, 121))
+    local textPos2 = self.Vehicle:GetPos() + Vector(0, 0, vmins.z)
 
     debugoverlay.Text(textPos, "vmax.z: " .. math.Round(vmaxs.z, 2) .. " seq: " .. ply:GetSequenceName(seqID) .. " id: " .. seqID, 0.02)
-
+    debugoverlay.Text(textPos2, "vmin.z: " .. math.Round(vmins.z, 2) .. " seq: " .. ply:GetSequenceName(seqID) .. " id: " .. seqID, 0.02)
     self:NextThink(CurTime() + 0.0015)
     return true
 end
 
-function ENT:DoImpactEffect()
-    return true
+function ENT:DoImpactEffect( tr, nDamageType )
+
+	if ( tr.HitSky ) then return end
+	
+	local effectdata = EffectData()
+	effectdata:SetOrigin( tr.HitPos + tr.HitNormal )
+	effectdata:SetNormal( tr.HitNormal )
+	util.Effect( "AR2Impact", effectdata )
+
 end
 
 function ENT:OnTakeDamage(dmginfo)
@@ -116,11 +127,29 @@ function ENT:OnTakeDamage(dmginfo)
     local damage = dmginfo:GetDamage()
     local attacker = dmginfo:GetAttacker()
     local inflictor = dmginfo:GetInflictor()
-
     if damage <= 0 then return end
     if attacker == self.Player then return end
     if inflictor == NULL then inflictor = game.GetWorld() end
 
-    Reforger.ApplyPlayerDamage(self.Player, damage, attacker, inflictor)
-    debugoverlay.BoxAngles(self:GetPos(), self.min, self.max, self:GetAngles(), 0.045, Color(206, 41, 41, 121))
+    local dmgPos = dmginfo:GetDamagePosition()
+    local plyPos = self.Player:GetPos()
+    local obbMinsZ = plyPos.z + self.Player:OBBMins().z
+
+    if dmgPos.z < obbMinsZ then
+        debugoverlay.Sphere(dmgPos, 3, 0.5, Color(0, 0, 255), true)
+        return
+    end
+
+    local isHeadshot = math.abs(dmgPos.z - self.headZone) <= 6 
+    local finalDamage = isHeadshot and damage or (damage * 0.4)
+
+    if isHeadshot then
+        self.Player:SetLastHitGroup(0) -- Head
+    else
+        self.Player:SetLastHitGroup(2) -- Chest
+    end
+    
+    Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor)
+
+    debugoverlay.Sphere(dmgPos, 2, 0.2, isHeadshot and Color(255, 0, 0) or Color(255, 100, 100), true)
 end
