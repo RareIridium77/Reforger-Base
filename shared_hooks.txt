@@ -1,6 +1,6 @@
-Reforger.Init -- called when Reforger Inits
-Reforger.PreEntityDamage(ent) (return boolean value. false to block, true to provide damage)
-Reforger.PlayerBurningInVehicle(ply, vehicle) -- called every burn damage to car for player
-Reforger.GlobalThink -- Just called by Think. Like general update tick
+Reforger.Init -- called when Reforger Inits.
+Reforger.PreEntityDamage(ent) (return boolean value. false to block, true to provide damage).
+Reforger.PlayerBurningInVehicle(ply, vehicle) -- called every burn damage to car for player.
+Reforger.GlobalThink -- Just called by Think. Like general update tick.
 -- LVS
-Reforger.LVS_BulletFired -- Called every LVS bullet fire
+- Reforger.LVS_BulletFired(bullet) -- Called every LVS bullet fire.

@@ -7,11 +7,15 @@ Its main purpose is to provide a unified damage and logic framework for differen
 - **[Simfphys](https://github.com/SpaxscE/simfphys_base)** 
 - **[Gmod Glide](https://github.com/StyledStrike/gmod-glide)**
 
-## Features
+# Shared Hooks
 
-- Cross-framework damage handling
-- Player damage simulation inside vehicles
-- Easy hook integration for extending or overriding behavior
+- Reforger.Init -- called when Reforger Inits.
+- Reforger.PreEntityDamage(ent) (return boolean value. false to block, true to provide damage).
+- Reforger.PlayerBurningInVehicle(ply, vehicle) -- called every burn damage to car for player.
+- Reforger.GlobalThink -- Just called by Think. Like general update tick.
+
+**LVS**
+- Reforger.LVS_BulletFired(bullet) -- Called every LVS bullet fire.
 
 # Possibly Conflicting Addons
 
