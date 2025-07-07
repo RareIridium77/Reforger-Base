@@ -23,6 +23,7 @@ function Reforger.CallEntityFunctions(ent)
         ent.reforgerType = Reforger.GetVehicleType(ent)
 
         Reforger.CacheRotors(ent)
+        Reforger.CacheEngine(ent) -- NOT FOR LVS (AGAIN)
         Reforger.CacheAmmorack(ent)
         Reforger.LVSInitializeReforgerDT(ent)
     end)

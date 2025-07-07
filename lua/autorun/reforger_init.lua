@@ -27,6 +27,7 @@ include("reforger/modules/server/lvs/reforger_lvs_data.lua")
 include("reforger/modules/server/glide/reforger_glide_fix_pod.lua") -- Pod Aim controlling fixer
 
 -- Special scenario
+include("reforger/modules/server/reforger_engines.lua")
 include("reforger/modules/server/reforger_rotors.lua")
 include("reforger/modules/server/reforger_tanks.lua")
 include("reforger/modules/server/reforger_pods.lua")
