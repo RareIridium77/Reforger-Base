@@ -1,5 +1,5 @@
 local blacklist = {
-	["reforger/core/shared/reforger_loader.lua"] = true
+	["reforger/core/shared/reforger_loader.lua"] = true,
 	["autorun/reforger_init.lua"] = true -- impossible but okay
 }
 

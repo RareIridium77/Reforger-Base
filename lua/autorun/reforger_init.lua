@@ -8,7 +8,17 @@ Reforger.CreatedConvars = Reforger.CreatedConvars or {}
 
 include("reforger/core/shared/reforger_loader.lua")("reforger")
 
+if CLIENT then
+    net.Receive("Reforger.NotifyDisabled", function()
+        Reforger.Disabled = true
+        chat.AddText(Color(255, 100, 100), "[Reforger] Framework disabled on server.")
+        print("[Reforger] Framework disabled on server.")
+    end)
+end
+
 if CLIENT then return end
+
+util.AddNetworkString("Reforger.NotifyDisabled")
 
 local function DisableReforger()
     if not istable(Reforger) then return end
@@ -37,6 +47,12 @@ local function InitPostEntity()
         hook.Remove("OnEntityCreated", "Reforger.EntityHook")
         hook.Remove("Think", "Reforger.GlobalThinkHook")
         ErrorNoHalt("You have no installed LVS/Glide/Simfphys BASE. Addon disabled.")
+
+        timer.Simple(1, function()
+            net.Start("Reforger.NotifyDisabled")
+            net.Broadcast()
+        end)
+
         return
     end
 
