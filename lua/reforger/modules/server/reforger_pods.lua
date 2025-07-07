@@ -12,12 +12,9 @@ function Reforger.AddPlayerCollision(ply, veh)
     local base = Reforger.GetVehicleBase(veh:GetParent())
 
     if base == nil then return end
-
-    pod.Player = ply
-    pod.Vehicle = veh
-    pod.VehicleBase = veh:GetParent()
-
-    pod:SetOwner(pod.VehicleBase)
+    
+    pod:SetVehicleBase(veh)
+    pod:SetOwner(ply)
     pod:Spawn()
 
     ply.reforgerPod = pod

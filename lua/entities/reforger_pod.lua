@@ -1,9 +1,9 @@
 AddCSLuaFile()
 
-DEFINE_BASECLASS("base_entity")
+DEFINE_BASECLASS("reforger_base_entity")
 
 ENT.Type = "anim"
-ENT.Base = "base_entity"
+ENT.Base = "reforger_base_entity"
 ENT.PrintName = "Reforger Fake Player Collision"
 ENT.Spawnable = false
 
@@ -28,22 +28,8 @@ function ENT:Initialize()
     self.max = Vector(0, 0, 0)
 
     self.boundSet = false
-
-    Reforger.Log("Fake Collision Created", self)
-
-    
-    if IsValid(self.VehicleBase) and self.VehicleBase.IsGlideVehicle then
-        local veh = self.VehicleBase
-
-        if not istable(veh.traceFilter) then
-            veh.traceFilter = {}
-        end
-
-        if not table.HasValue(veh.traceFilter, self) then
-            veh.traceFilter[#veh.traceFilter + 1] = self
-            Reforger.DevLog("Added reforger_pod to glide.traceFilter", self, self.Vehicle)
-        end
-    end
+    self.Player = self:GetOwner()
+    self.Vehicle = self.Player:GetVehicle()
 end
 
 function ENT:Think()
@@ -117,67 +103,13 @@ end
 function ENT:OnTakeDamage(dmginfo)
     if not IsValid(self.Player) then return end
 
+    local damage = dmginfo:GetDamage()
     local attacker = dmginfo:GetAttacker()
+    local inflictor = dmginfo:GetInflictor()
 
+    if damage <= 0 then return end
     if attacker == self.Player then return end
+    if inflictor == NULL then inflictor = game.GetWorld() end
 
-    Reforger.ApplyPlayerDamage(self.Player, dmginfo:GetDamage(), dmginfo:GetAttacker(), dmginfo:GetInflictor())
-    debugoverlay.Sphere( self:GetPos(), 2, 0.5, Color(255, 155, 255), true )
-end
-
-function ENT:OnRemove()
-    if CLIENT then return end
-    
-    Reforger.Log("Fake Collision Removed")
-
-    local veh = self.VehicleBase
-    if not IsValid(veh) then return end
-
-    if istable(veh.traceFilter) and table.HasValue(veh.traceFilter, self) then
-        for k, v in ipairs(veh.traceFilter) do
-            if v == self then
-                table.remove(veh.traceFilter, k)
-                break
-            end
-        end
-
-        Reforger.DevLog("Removed reforger_pod from glide.traceFilter", self, veh)
-    end
-end
-
-if CLIENT then
-    function ENT:Draw()
-        if not IsValid(self) then return end
-        render.SetColorMaterial()
-        render.DrawBox(self:GetPos(), self:GetAngles(), self.min, self.max, Color(255, 0, 0, 100), true)
-    end
-end
-
-if SERVER then
-    concommand.Add("cross_player_sequence", function(ply, cmd)
-        if not IsValid(ply) then return end
-        
-        local tr = ply:GetEyeTrace()
-        local target = tr.Entity
-
-        if not IsValid(target) then return end
-
-        if target:IsVehicle() then
-            target = target:GetDriver()
-
-            if not IsValid(target) then
-                ply:ChatPrint("[Cross] No entity found")
-                return 
-            end
-        end
-
-        local seqID = target:GetSequence()
-        local seqName = target:GetSequenceName(seqID)
-
-        ply:ChatPrint("[Cross] Sequence ID: " .. seqID .. " | Name: " .. seqName)
-    end)
-
-    concommand.Add("player_current_sequence", function(ply, cmd)
-        print(ply:GetSequenceName(ply:GetSequence()))
-    end)
+    Reforger.ApplyPlayerDamage(self.Player, damage, attacker, inflictor)
 end
