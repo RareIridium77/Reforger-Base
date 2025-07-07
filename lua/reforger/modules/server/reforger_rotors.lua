@@ -26,9 +26,16 @@ function Reforger.FindRotorsAlongRay(veh, dmginfo)
 
     local rotors = Reforger.GetRotors(veh)
     if not istable(rotors) or #rotors == 0 then return nil end
+    
+    local classname = nil
 
-    local classname = rotors[1]:GetClass()
+    if veh.IsGlideVehicle then
+        classname = "glide_rotor"
+    elseif veh.LVS then 
+        classname = "lvs_helicopter_rotor"
+    end
 
+    if not IsValid(classname) then return nil end
     return Reforger.FindClosestByClass(veh, dmginfo, classname)
 end
 

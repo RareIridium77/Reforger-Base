@@ -63,7 +63,7 @@ function Reforger.ApplyPlayerFireDamage(veh, dmginfo)
     end
 end
 
-function Reforger.DamagePlayer(veh, dmginfo)
+function Reforger.HandleRayDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
 
     local Len = veh:BoundingRadius()
@@ -91,7 +91,7 @@ function Reforger.DamagePlayer(veh, dmginfo)
 
     local ent = tr.Entity
 
-    if IsValid(ent) and ent.IsReforgerEntity and ent.Player ~= dmginfo:GetAttacker() then
+    if IsValid(ent) and ent.ReforgerDamageable and ent.Player ~= dmginfo:GetAttacker() then
         Reforger.ApplyDamageToEnt(
             ent,
             dmginfo:GetDamage(),

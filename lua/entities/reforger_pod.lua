@@ -8,6 +8,7 @@ ENT.PrintName = "Reforger Fake Player Collision"
 ENT.Spawnable = false
 
 ENT.IsReforgerEntity = true
+ENT.ReforgerDamageable = true
 ENT.PhysgunDisabled = true
 ENT.DoNotDuplicate = true
 ENT.DisableDuplicator = true
