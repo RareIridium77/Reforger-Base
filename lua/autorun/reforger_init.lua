@@ -27,9 +27,7 @@ local function EntityCreated(ent)
     end)
 end
 
-local function GlobalThink()
-    hook.Run("Reforger.GlobalThink", Reforger)
-end
+local function GlobalThink() hook.Run("Reforger.GlobalThink", Reforger) end
 
 hook.Add("InitPostEntity", "Reforger.InitPostEntity", InitPostEntity)
 hook.Add("OnEntityCreated", "Reforger.EntityHook", EntityCreated)
