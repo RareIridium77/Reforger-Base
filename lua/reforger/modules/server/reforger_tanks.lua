@@ -1,7 +1,5 @@
 if not Reforger then return end -- overthinker moment
 
-Reforger.Log("Reforger Tanks special loaded")
-
 function Reforger.CacheAmmorack(veh)
     local vehicle_type = veh.reforgerType
 

@@ -1,7 +1,5 @@
 if not Reforger then return end
 
-Reforger.Log("Reforger Pods loaded")
-
 function Reforger.AddPlayerCollision(ply, veh)
     if not IsValid(ply) or not IsValid(veh) then return end
 

@@ -1,29 +1,30 @@
 local blacklist = {
 	["reforger/core/shared/reforger_loader.lua"] = true
+	["autorun/reforger_init.lua"] = true -- impossible but okay
 }
 
 local function AddLuaFile(path, realm)
 	if realm == "server" then
 		if SERVER then
 			include(path)
-			print("[Server] Included: " .. path)
+			print("Reforger [Server] Included: " .. path)
 		end
 	elseif realm == "client" then
 		if SERVER then
 			AddCSLuaFile(path)
-			print("[Client] AddCS: " .. path)
+			print("Reforger [Client] AddCS: " .. path)
 		elseif CLIENT then
 			include(path)
-			print("[Client] Included: " .. path)
+			print("Reforger [Client] Included: " .. path)
 		end
 	elseif realm == "shared" then
 		if SERVER then
 			AddCSLuaFile(path)
 			include(path)
-			print("[Shared] AddCS + Include: " .. path)
+			print("Reforger [Shared] AddCS + Include: " .. path)
 		elseif CLIENT then
 			include(path)
-			print("[Shared] Included: " .. path)
+			print("Reforger [Shared] Included: " .. path)
 		end
 	end
 end
@@ -60,7 +61,7 @@ local function RecursiveLoad(basePath, root)
 			if realm then
 				AddLuaFile(fullPath, realm)
 			else
-				print("[WARN] Не удалось определить realm для: " .. fullPath)
+				print("Reforger [WARN] Cannot find realm for: " .. fullPath)
 			end
 		end
 	end

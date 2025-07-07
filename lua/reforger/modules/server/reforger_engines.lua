@@ -2,8 +2,6 @@ if not Reforger then return end
 
 -- Engines for simfphys and glide (damage and etc)
 
-Reforger.Log("Reforger Engines loaded")
-
 local function SpawnEngine(veh, offset)
     if not IsValid(veh) then return end
 
@@ -217,7 +215,7 @@ end
 
 concommand.Add("reforger_search_data", function(ply, cmd, args)
     if not Reforger.AdminDevToolValidation(ply) then return end
-    
+
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity
 

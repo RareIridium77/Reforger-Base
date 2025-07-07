@@ -1,7 +1,5 @@
 if not Reforger then return end -- overthinker moment
 
-Reforger.Log("Reforger_Damage Initialized")
-
 Reforger.PlayerBypassTypes = {
     [DMG_GENERIC] = false,
     [DMG_BLAST] = true,

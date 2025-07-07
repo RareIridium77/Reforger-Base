@@ -1,7 +1,5 @@
 if not Reforger then return end -- overthinker moment
 
-Reforger.Log("Reforger_Scanners Initialized")
-
 function Reforger.PairEntity(parent, className)
     if not IsValid(parent) or not isstring(className) then return nil end
 
