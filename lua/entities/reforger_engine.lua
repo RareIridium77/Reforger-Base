@@ -33,5 +33,27 @@ function ENT:InitReforgerEntity()
 end
 
 function ENT:SetEngineData(data)
+    if not istable(data) then return end
 
+    self.EngineOffset = data.offset or Vector(0, 0, 0)
+    self.WorldOffset = data.world_coords == true
+end
+
+function ENT:Think()
+    if CLIENT then return end
+    if not IsValid(self.VehicleBase) then
+        self:Remove()
+        return
+    end
+
+    local basePos = self.VehicleBase:GetPos()
+    local pos = self.WorldOffset and self.EngineOffset or self.VehicleBase:LocalToWorld(self.EngineOffset)
+
+    self:SetPos(pos)
+    self:SetAngles(self.VehicleBase:GetAngles())
+
+    debugoverlay.BoxAngles(self:GetPos(), self.min, self.max, self:GetAngles(), 0.05, Color(255, 50, 50, 120))
+
+    self:NextThink(CurTime() + 0.03)
+    return true
 end

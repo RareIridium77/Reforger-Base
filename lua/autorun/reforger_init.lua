@@ -1,5 +1,5 @@
 AddCSLuaFile()
-
+AddCSLuaFile("reforger/core/shared/reforger_loader.lua")
 
 Reforger = Reforger or {}
 
@@ -13,11 +13,14 @@ if CLIENT then return end
 local function InitPostEntity()
     timer.Simple(5, function()
         hook.Run("Reforger.Init")
+        Reforger.Init = true
         Reforger.DevLog("Reforger version: "..Reforger.VERSION)
     end)
 end
 
 local function EntityCreated(ent)
+    if not Reforger.Init then return end
+    
     timer.Simple(0, function()
         if not IsValid(ent) then return end
         if Reforger.IsValidReforger(ent) then

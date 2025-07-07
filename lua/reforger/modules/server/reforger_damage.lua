@@ -10,6 +10,35 @@ Reforger.PlayerBypassTypes = {
     [DMG_CLUB] = false
 }
 
+Reforger.CollisionDamageConfig = {
+    light = {
+        minVelocity = 400,
+        fireChance = 0.3,
+        explodeChance = 0.35
+    },
+    armored = {
+        minVelocity = 800,
+        fireChance = 0.1,
+        explodeChance = 0.05
+    },
+    plane = {
+        minVelocity = 600,
+        fireChance = 0.4,
+        explodeChance = 0.5
+    },
+    helicopter = {
+        minVelocity = 500,
+        fireChance = 0.5,
+        explodeChance = 0.35
+    },
+    undefined = {
+        minVelocity = 500,
+        fireChance = 0.2,
+        explodeChance = 0.8
+    }
+}
+
+
 function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor)
     if not IsValid(ent) then return false end
 
@@ -66,19 +95,40 @@ end
 function Reforger.HandleCollisionDamage(veh, dmginfo)
     if not IsValid(veh) then return end
 
-    local isCollision = dmginfo:IsDamageType( DMG_CRUSH ) or dmginfo:IsDamageType( DMG_VEHICLE )
+    local isCollision = dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_VEHICLE)
+    if veh.IsSimfphysVehicle then
+        isCollision = dmginfo:IsDamageType(DMG_GENERIC)
+    end
+    if not isCollision then return end
+
     local velocity = veh:GetVelocity():Length()
+    local vtype = veh.reforgerType or "undefined"
 
-    if veh.IsSimfphysVehicle then isCollision = dmginfo:IsDamageType( DMG_GENERIC ) end
+    local cfg = Reforger.CollisionDamageConfig[vtype]
 
-    if velocity > 500 and isCollision then
-        local function explode()
+    if not cfg then
+        cfg = Reforger.CollisionDamageConfig["undefined"]
+        Reforger.DevLog("[WARN] Unknown reforgerType: " .. tostring(vtype))
+    end
+
+    if velocity < cfg.minVelocity then return end
+    if math.random() > cfg.fireChance then return end
+
+    if veh.SetIsEngineOnFire then
+        veh:SetIsEngineOnFire(true)
+    end
+
+    local delay = math.Rand(1, 2)
+    timer.Simple(delay, function()
+        if not IsValid(veh) then return end
+        if math.random() < cfg.explodeChance then
             if veh.Destroy then veh:Destroy() end
             if veh.Explode then veh:Explode() end
             if veh.ExplodeVehicle then veh:ExplodeVehicle() end
+
+            Reforger.DevLog("[" .. vtype .. "] Explosion triggered by collision | Velocity: " .. math.Round(velocity) .. " | Delay: " .. string.format("%.2f", delay))
         end
-        timer.Simple(1, explode)
-    end
+    end)
 end
 
 function Reforger.HandleRayDamage(veh, dmginfo)

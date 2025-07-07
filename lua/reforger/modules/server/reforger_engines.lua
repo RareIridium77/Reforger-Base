@@ -21,8 +21,12 @@ function Reforger.CacheEngine(veh)
     if not Reforger.IsValidReforger(veh) then return end
 
     local base = Reforger.GetVehicleBase(veh)
+    if base == "lvs" or base == nil then return end
 
-    if base == "lvs" or base == nil then return end -- LVS not supported by this module
+    if veh.reforgerEngine and IsValid(veh.reforgerEngine.entity) then
+        veh.reforgerEngine.entity:Remove()
+        veh.reforgerEngine.entity = nil
+    end
 
     local engine_offset = Vector(0, 0, 0)
     local isWorld = false
@@ -39,12 +43,12 @@ function Reforger.CacheEngine(veh)
 
     veh.reforgerEngine = {
         offset = engine_offset,
-        world_coords = world_coords
+        world_coords = isWorld
     }
 
-    debugoverlay.Sphere(veh:GetPos(), 10, 2, Color(25, 25, 255), true )
+    debugoverlay.Sphere(veh:GetPos(), 10, 2, Color(25, 25, 255), true)
     debugoverlay.Line(veh:GetPos(), engine_offset, 2, Color(255, 0, 0), true)
-    debugoverlay.Sphere(engine_offset, 10, 2, Color(25, 255, 25), true )
+    debugoverlay.Sphere(engine_offset, 10, 2, Color(25, 255, 25), true)
 
     SpawnEngine(veh, engine_offset)
 end
@@ -76,10 +80,6 @@ concommand.Add("reforger_debug_enginepos", function(ply, cmd, args)
         end
 
     elseif base == "glide" then
-        if ent.EngineFireOffset == nil then
-            ply:ChatPrint("[Reforger] [glide] EngineFireOffsets является nil.")
-            return
-        end
         if not istable(ent.EngineFireOffsets) then
             ply:ChatPrint("[Reforger] [glide] EngineFireOffsets не является таблицей.")
             return
@@ -105,7 +105,7 @@ concommand.Add("reforger_debug_enginepos", function(ply, cmd, args)
     end
 
 
-    local isWorld = (base == "glide") -- Glide даёт world coords
+    local isWorld = (base == "simfphys") -- Glide даёт world coords
     local enginePos = isWorld and offset or ent:LocalToWorld(offset)
 
     debugoverlay.Sphere(enginePos, 8, 3, Color(255, 0, 0), true)
@@ -192,12 +192,10 @@ local function SearchTable(tbl, searchTerm, path, visited)
         if type(v) ~= "function" then
             local match = false
 
-            -- Ищем по ключу
             if string.find(string.lower(keyStr), searchTerm, 1, true) then
                 match = true
             end
 
-            -- Ищем по значению (преобразуем в строку)
             local valStr = FormatValue(v)
             if string.find(string.lower(valStr), searchTerm, 1, true) then
                 match = true
