@@ -8,8 +8,9 @@ function Reforger.AddPlayerCollision(ply, veh)
     local pod = ents.Create("reforger_pod")
 
     if not IsValid(pod) then return end
-
-    local base = Reforger.GetVehicleBase(veh:GetParent())
+    
+    local baseVehicle = veh:GetParent()
+    local base = baseVehicle and baseVehicle.reforgerBase or nil
 
     if base == nil then return end
     

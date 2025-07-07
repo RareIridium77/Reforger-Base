@@ -6,11 +6,10 @@ function Reforger.RotorsGetDamage(veh, dmginfo)
     if not IsValid(veh) then return end
 
     local rotor = Reforger.FindRotorsAlongRay(veh, dmginfo)
-    local vehicle_base = Reforger.GetVehicleBase(veh)
 
     if not IsValid(rotor) then return end
 
-    if rotor.rotorHealth == nil and vehicle_base == "lvs" then
+    if rotor.rotorHealth == nil and veh.reforgerBase == "lvs" then
         rotor.rotorHealth = rotor.GetHP and rotor:GetHP() or Reforger.GetHealth(veh) * 0.15
     end
 
@@ -45,7 +44,7 @@ function Reforger.FindRotors(veh)
     if veh._ReforgerRotors ~= nil and istable(veh._ReforgerRotors) then return veh._ReforgerRotors end
 
     local rotors = {}
-    local vehicle_type = Reforger.GetVehicleType(veh)
+    local vehicle_type = veh.reforgerType
 
     if veh.IsGlideVehicle then
         if IsValid(veh.mainRotor) then table.insert(rotors, veh.mainRotor) end
@@ -69,10 +68,8 @@ end
 function Reforger.CacheRotors(veh)
     if not IsValid(veh) then return end
 
-    local vehicle_type = Reforger.GetVehicleType(veh)
-    local vehicle_base = Reforger.GetVehicleBase(veh)
-    if vehicle_base == "simfphys" then return end
-    if vehicle_type ~= "helicopter" and vehicle_type ~= "plane" then return end
+    if veh.reforgerBase == "simfphys" then return end
+    if veh.reforgerBase ~= "helicopter" and veh.reforgerBase ~= "plane" then return end
 
     timer.Simple(0, function()
         veh._ReforgerRotors = Reforger.FindRotors(veh)

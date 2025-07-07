@@ -20,7 +20,7 @@ end
 
 local function EntityCreated(ent)
     if not Reforger.Init then return end
-    
+
     timer.Simple(0, function()
         if not IsValid(ent) then return end
         if Reforger.IsValidReforger(ent) then
@@ -43,10 +43,14 @@ local function AdminDevToolValidation(ply)
     if GetConVar("developer"):GetInt() <= 0 then Reforger.Log("Developer mode disabled.") end
 end
 
-concommand.Add("reforger_init", function(ply)
+concommand.Add("reforger.init", function(ply)
     AdminDevToolValidation(ply)
     
     hook.Run("Reforger.Init")
     
     ply:ChatPrint("Manual reforge_init called")
+end)
+
+concommand.Add("reforger.table", function(ply)
+    PrintTable(Reforger)
 end)

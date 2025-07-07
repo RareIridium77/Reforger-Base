@@ -38,7 +38,6 @@ Reforger.CollisionDamageConfig = {
     }
 }
 
-
 function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor)
     if not IsValid(ent) then return false end
 
@@ -158,11 +157,20 @@ function Reforger.HandleRayDamage(veh, dmginfo)
     end
 
     local ent = tr.Entity
-
+    
     if IsValid(ent) and ent.ReforgerDamageable and ent.Player ~= dmginfo:GetAttacker() then
+        local dmgType = dmginfo:GetDamageType()
+        local originalDmg = dmginfo:GetDamage()
+        local finalDmg = originalDmg
+        local isSmall = dmgType == DMG_BULLET or dmgType == DMG_BUCKSHOT or dmgType == DMG_CLUB
+
+        if isSmall and veh.reforgerType == "armored" then
+            finalDmg = 0.25 * originalDmg
+        end
+
         Reforger.ApplyDamageToEnt(
             ent,
-            dmginfo:GetDamage(),
+            finalDmg,
             dmginfo:GetAttacker(),
             dmginfo:GetInflictor()
         )

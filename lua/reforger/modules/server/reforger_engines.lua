@@ -20,7 +20,7 @@ end
 function Reforger.CacheEngine(veh)
     if not Reforger.IsValidReforger(veh) then return end
 
-    local base = Reforger.GetVehicleBase(veh)
+    local base = veh.reforgerBase
     if base == "lvs" or base == nil then return end
 
     if veh.reforgerEngine and IsValid(veh.reforgerEngine.entity) then
@@ -65,7 +65,7 @@ concommand.Add("reforger_debug_enginepos", function(ply, cmd, args)
     end
 
     local class = ent:GetClass()
-    local base = Reforger.GetVehicleBase and Reforger.GetVehicleBase(ent) or "unknown"
+    local base = ent.reforgerBase and ent.reforgerBase or "unknown"
     local pos = ent:GetPos()
     local offset = Vector(0, 0, 0)
     local label = "[Reforger]"

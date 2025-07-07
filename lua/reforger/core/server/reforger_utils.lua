@@ -73,6 +73,10 @@ end
 function Reforger.GetVehicleBase(ent)
     if not Reforger.IsValidReforger(ent) then return end
 
+    if ent.reforgerBase ~= nil then
+        return ent.reforgerBase
+    end
+
     local base = nil
 
     if ent.LVS then base = "lvs" end

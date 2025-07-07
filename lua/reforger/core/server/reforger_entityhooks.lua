@@ -19,6 +19,7 @@ function Reforger.CallEntityFunctions(ent)
 
     timer.Simple(0, function()
         ent.reforgerType = Reforger.GetVehicleType(ent)
+        ent.reforgerBase = Reforger.GetVehicleBase(ent)
 
         Reforger.CacheRotors(ent)
         Reforger.CacheEngine(ent) -- NOT FOR LVS (AGAIN)
