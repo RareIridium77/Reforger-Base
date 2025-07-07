@@ -25,7 +25,7 @@ local function AddLuaFile(path, realm)
 	end
 end
 
-return function(basePath)
+local function RecursiveLoad(basePath)
 	local files, dirs = file.Find(basePath .. "/*", "LUA")
 
 	for _, fileName in ipairs(files) do
@@ -38,4 +38,8 @@ return function(basePath)
 	for _, dir in ipairs(dirs) do
 		RecursiveLoad(basePath .. "/" .. dir)
 	end
+end
+
+return function(basePath)
+    RecursiveLoad(basePath)
 end
