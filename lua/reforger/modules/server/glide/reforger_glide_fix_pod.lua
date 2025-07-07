@@ -32,5 +32,11 @@ local function Glide_ActivateFixator()
 end
 
 hook.Add("Reforger.Init", "Glide.InitPodFixer", function()
-    Glide_ActivateFixator()
+    timer.Simple(5, function()
+        Glide_ActivateFixator()
+    end)
 end)
+
+do
+    Glide_ActivateFixator()
+end

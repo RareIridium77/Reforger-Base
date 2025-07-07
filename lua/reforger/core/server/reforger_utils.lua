@@ -77,13 +77,13 @@ function Reforger.GetVehicleBase(ent)
 
     if ent.LVS then base = "lvs" end
     if ent.IsGlideVehicle then base = "glide" end
-    if ent:GetClass() == "gmod_sent_vehicle_fphysics_base" then base = "simfphys" end
+    if ent.IsSimfphysVehicle or ent:GetClass() == "gmod_sent_vehicle_fphysics_base" then base = "simfphys" end
 
     return base
 end
 
 function Reforger.IsValidReforger(ent)
-    if not IsValid(ent) or not ent:IsVehicle() then return false end
+    if not IsValid(ent) then return false end
 
     local class = ent:GetClass()
 

@@ -13,8 +13,15 @@ ENT.PhysgunDisabled = true
 ENT.DoNotDuplicate = true
 ENT.DisableDuplicator = true
 
-function ENT:Initialize()
+if CLIENT then return end
+
+function ENT:InitReforgerEntity()
     if CLIENT then return end
+
+    self.min = Vector(0, 0, 0)
+    self.max = Vector(0, 0, 0)
+
+    self.boundSet = false
 
     self:SetNoDraw(true)
     self:SetTrigger(true)
@@ -23,13 +30,16 @@ function ENT:Initialize()
     self:PhysicsInit( SOLID_BBOX )
     self:SetMoveType( MOVETYPE_NONE )
     self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
+end
 
-    self.min = Vector(0, 0, 0)
-    self.max = Vector(0, 0, 0)
+function ENT:SetPlayer(ply)
+    self.Player = ply
+    Reforger.DevLog(ply)
+end
 
-    self.boundSet = false
-    self.Player = self:GetOwner()
-    self.Vehicle = self.Player:GetVehicle()
+function ENT:SetVehicle(veh)
+    self.Vehicle = veh
+    Reforger.DevLog(self.Vehicle)
 end
 
 function ENT:Think()
@@ -74,7 +84,7 @@ function ENT:Think()
     self:SetPos(self.Vehicle:GetPos() + offset)
     self:SetAngles(self.Vehicle:GetAngles())
 
-    if not self.boundSet and (self.min:DistToSqr(newMin) > 1 or self.max:DistToSqr(newMax) > 1) then
+    if not self.boundSet then
         self.boundSet = true
 
         self.min = newMin * 0.85
@@ -112,4 +122,5 @@ function ENT:OnTakeDamage(dmginfo)
     if inflictor == NULL then inflictor = game.GetWorld() end
 
     Reforger.ApplyPlayerDamage(self.Player, damage, attacker, inflictor)
+    debugoverlay.BoxAngles(self:GetPos(), self.min, self.max, self:GetAngles(), 0.045, Color(206, 41, 41, 121))
 end

@@ -10,8 +10,8 @@ local function SpawnEngine(veh, offset)
     local classname = "reforger_engine"
     local reforger_engine = ents.Create(classname)
     reforger_engine:SetMoveParent(veh)
-    reforger_engine:SetVehicleBase(veh, offset)
-    reforger_engine:SetEnginePos(veh.reforgerEngine)
+    reforger_engine:SetVehicleBase(veh)
+    reforger_engine:SetEngineData(veh.reforgerEngine)
     reforger_engine:Spawn()
     
     veh.reforgerEngine.entity = reforger_engine

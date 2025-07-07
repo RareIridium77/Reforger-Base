@@ -63,6 +63,24 @@ function Reforger.ApplyPlayerFireDamage(veh, dmginfo)
     end
 end
 
+function Reforger.HandleCollisionDamage(veh, dmginfo)
+    if not IsValid(veh) then return end
+
+    local isCollision = dmginfo:IsDamageType( DMG_CRUSH ) or dmginfo:IsDamageType( DMG_VEHICLE )
+    local velocity = veh:GetVelocity():Length()
+
+    if veh.IsSimfphysVehicle then isCollision = dmginfo:IsDamageType( DMG_GENERIC ) end
+
+    if velocity > 500 and isCollision then
+        local function explode()
+            if veh.Destroy then veh:Destroy() end
+            if veh.Explode then veh:Explode() end
+            if veh.ExplodeVehicle then veh:ExplodeVehicle() end
+        end
+        timer.Simple(1, explode)
+    end
+end
+
 function Reforger.HandleRayDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
 
@@ -73,9 +91,9 @@ function Reforger.HandleRayDamage(veh, dmginfo)
 	local dmgPenetration = dmgDir * Len
     local dmgStart = dmgPos - dmgDir * (Len * 0.1)
 
-	debugoverlay.Line( dmgPos - dmgDir * 2, dmgPos + dmgPenetration, 4, Color( 255, 0, 0) )
-    debugoverlay.Sphere(dmgStart, 2, 1, Color(255, 0, 0), true)
-    debugoverlay.Sphere(dmgPos + dmgPenetration, 2, 1, Color(255, 0, 0), true)
+	debugoverlay.Line( dmgPos - dmgDir * 2, dmgPos + dmgPenetration, 0.2, Color( 255, 0, 0) )
+    debugoverlay.Sphere(dmgStart, 2, 0.2, Color(255, 0, 0), true)
+    debugoverlay.Sphere(dmgPos + dmgPenetration, 2, 0.2, Color(255, 0, 0), true)
 
     local tr = util.TraceLine({
         start = dmgStart,
@@ -86,7 +104,7 @@ function Reforger.HandleRayDamage(veh, dmginfo)
     })
 
     if tr.HitPos then
-        debugoverlay.Sphere(tr.HitPos, 2, 1, Color(255, 0, 0), true)
+        debugoverlay.Sphere(tr.HitPos, 2, 0.2, Color(255, 0, 0), true)
     end
 
     local ent = tr.Entity

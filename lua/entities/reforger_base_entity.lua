@@ -1,3 +1,5 @@
+AddCSLuaFile()
+
 DEFINE_BASECLASS("base_entity")
 
 ENT.Type = "anim"
@@ -11,7 +13,14 @@ ENT.PhysgunDisabled = true
 ENT.DoNotDuplicate = true
 ENT.DisableDuplicator = true
 
+if CLIENT then return end
+
+function ENT:InitReforgerEntity()
+end
+
 function ENT:Initialize()
+    self.VehicleBase = nil 
+    self:InitReforgerEntity()
 end
 
 function ENT:Think()

@@ -13,8 +13,13 @@ ENT.PhysgunDisabled = true
 ENT.DoNotDuplicate = true
 ENT.DisableDuplicator = true
 
-function ENT:Initialize()
+if CLIENT then return end
+
+function ENT:InitReforgerEntity()
     if CLIENT then return end
+
+    self.min = Vector(-4, -4, -4)
+    self.max = Vector(4, 4, 4)
 
     self:SetNoDraw(true)
     self:SetTrigger(true)
@@ -22,9 +27,11 @@ function ENT:Initialize()
 
     self:PhysicsInit( SOLID_BBOX )
     self:SetMoveType( MOVETYPE_NONE )
-    self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
 
-    self.min = Vector(-4, -4, -4)
-    self.max = Vector(4, 4, 4)
+    self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
     self:SetCollisionBounds( self.min, self.max )
+end
+
+function ENT:SetEngineData(data)
+
 end

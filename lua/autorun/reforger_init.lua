@@ -1,39 +1,15 @@
+AddCSLuaFile()
+
+RecursiveLoad = include("reforger/core/shared/reforger_loader.lua")
+
 Reforger = Reforger or {}
 
 Reforger.VERSION = "0.2.3"
-
 Reforger.CreatedConvars = Reforger.CreatedConvars or {}
 
+RecursiveLoad("reforger")
+
 if CLIENT then return end
-
--- Shared files
-AddCSLuaFile("reforger/core/shared/reforger_convars.lua") -- send to client
-include("reforger/core/shared/reforger_convars.lua")
-
--- Including core files
-include("reforger/core/server/reforger_network.lua")
-include("reforger/core/server/reforger_logger.lua")
-include("reforger/core/server/reforger_utils.lua")
-include("reforger/core/server/reforger_entityhooks.lua")
-
--- Including files
-include("reforger/modules/server/reforger_scanners.lua")
-include("reforger/modules/server/reforger_damage.lua")
-
--- LVS
-include("reforger/modules/server/lvs/reforger_lvs_bulletsystem.lua")
-include("reforger/modules/server/lvs/reforger_lvs_data.lua")
-
--- Glide
-include("reforger/modules/server/glide/reforger_glide_fix_pod.lua") -- Pod Aim controlling fixer
-
--- Special scenario
-include("reforger/modules/server/reforger_engines.lua")
-include("reforger/modules/server/reforger_rotors.lua")
-include("reforger/modules/server/reforger_tanks.lua")
-include("reforger/modules/server/reforger_pods.lua")
-
--- Hooks
 
 local function InitPostEntity()
     timer.Simple(5, function()
