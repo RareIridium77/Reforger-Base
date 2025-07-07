@@ -11,6 +11,7 @@ AddCSLuaFile("reforger/core/shared/reforger_convars.lua") -- send to client
 include("reforger/core/shared/reforger_convars.lua")
 
 -- Including core files
+include("reforger/core/server/reforger_network.lua")
 include("reforger/core/server/reforger_logger.lua")
 include("reforger/core/server/reforger_utils.lua")
 include("reforger/core/server/reforger_entityhooks.lua")

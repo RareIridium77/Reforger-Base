@@ -13,7 +13,6 @@ function Reforger.CreateConvar(name, value, helptext, min, max)
     local prefix = "reforger_"
     local fullname = prefix .. name
 
-    -- Защита от повторного создания
     if ConVarExists(fullname) or Reforger.CreatedConvars[fullname] then return end
 
     local cvar

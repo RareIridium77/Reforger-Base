@@ -83,18 +83,13 @@ function Reforger.GetVehicleBase(ent)
 end
 
 function Reforger.IsValidReforger(ent)
-    if not IsValid(ent) then return false end
-
-    if ent.LVS or ent.IsGlideVehicle then
-        return true
-    end
+    if not IsValid(ent) or not ent:IsVehicle() then return false end
 
     local class = ent:GetClass()
-    if Reforger.ValidClasslist and Reforger.ValidClasslist[class] then
-        return true
-    end
 
-    Reforger.DevLog(ent, "[Reforger] Entity is not a valid Reforger target (" .. class .. ")")
+    if ent.IsReforgerEntity then return true end
+    if ent.LVS or ent.IsGlideVehicle then return true end
+    if Reforger.ValidClasslist and Reforger.ValidClasslist[class] then return true end
     return false
 end
 
