@@ -1,3 +1,30 @@
+--[[-------------------------------------------------------------------------
+    Reforger Base Framework
+    Created by: RareIridium77
+    Version: 0.2.3
+
+    GitHub: https://github.com/RareIridium77/
+    Steam: https://steamcommunity.com/profiles/76561199078206115/
+
+    Description:
+    This is the core "framework" used by addons under the [Reforger] tag.
+    It provides a unified damage, logic and compatibility layer between vehicle bases:
+      - LVS
+      - Simfphys
+      - GMod Glide
+
+    License:
+    This "framework" is open-source. You are free to use, modify and redistribute it
+    in your GMod projects. Attribution is appreciated but not required.
+
+    Recommended tag: [Reforger]
+
+    Notes:
+    This script is core infrastructure. Any modification should be done with understanding
+    of system-wide effects.
+
+-------------------------------------------------------------------------]]
+
 Reforger.VehicleTypes = {
     LIGHT = "light",
     ARMORED = "armored",
