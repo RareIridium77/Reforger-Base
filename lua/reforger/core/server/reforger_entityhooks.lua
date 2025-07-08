@@ -22,8 +22,11 @@ function Reforger.CallEntityFunctions(ent)
         ent.reforgerBase = Reforger.GetVehicleBase(ent)
 
         Reforger.CacheRotors(ent)
-        Reforger.CacheEngine(ent) -- NOT FOR LVS (AGAIN)
         Reforger.CacheAmmorack(ent)
+
+        timer.Simple(0.5, function() -- because of net for glide
+            Reforger.CacheEngine(ent) -- NOT FOR LVS (AGAIN)
+        end)
     end)
 
     for idf, func in pairs(Reforger.EntityHooks) do

@@ -17,7 +17,7 @@ if CLIENT then return end
 
 local seqAdjustments = {
     sit_rollercoaster = { maxZ = 1.9, minZ = 0.1, offset = -5 },
-    sit               = { maxZ = 1.9, minZ = 0.1, offset = -2},
+    sit               = { maxZ = 1.9, minZ = 0.1, offset = -5 },
     sit_zen           = { maxZ = 1.9, minZ = 0.1 },
     drive_pd          = { maxZ = 1.9, minZ = 0.1 },
     drive_airboat     = { maxZ = 1.9, minZ = 0.1, offset = 7 },
@@ -45,7 +45,6 @@ end
 
 function ENT:SetPlayer(ply)
     self.Player = ply
-    Reforger.DevLog(ply)
 end
 
 function ENT:SetVehicle(veh)
@@ -53,7 +52,6 @@ function ENT:SetVehicle(veh)
 
     self.Vehicle = veh
     self:SetMoveParent(self.Vehicle)
-    Reforger.DevLog(self.Vehicle)
 end
 
 function ENT:Think()

@@ -2,22 +2,21 @@ if not Reforger then return end
 
 -- Engines for simfphys and glide (damage and etc)
 
+Reforger.Log("Reforger Engines Loaded (Simfphys, Glide)")
+
 local function SpawnEngine(veh, offset)
     if not IsValid(veh) then return end
 
-    local classname = "reforger_engine"
-    local reforger_engine = ents.Create(classname)
-    reforger_engine:SetMoveParent(veh)
-    reforger_engine:SetVehicleBase(veh)
-    reforger_engine:SetEngineData(veh.reforgerEngine)
-    reforger_engine:Spawn()
-    
-    veh.reforgerEngine.entity = reforger_engine
+    local ent = ents.Create("reforger_engine")
+    ent:SetVehicleBase(veh)
+    ent:SetEngineData(veh.reforgerEngine)
+    ent:Spawn()
+
+    veh.reforgerEngine.entity = ent
 end
 
 function Reforger.CacheEngine(veh)
     if not Reforger.IsValidReforger(veh) then return end
-
     local base = veh.reforgerBase
     if base == "lvs" or base == nil then return end
 
@@ -27,21 +26,16 @@ function Reforger.CacheEngine(veh)
     end
 
     local engine_offset = Vector(0, 0, 0)
-    local isWorld = false
 
-    if base == "simfphys" and veh.EnginePos ~= nil then
+    if base == "simfphys" and veh.EnginePos then
         engine_offset = veh.EnginePos
-        isWorld = true
-    end
-
-    if base == "glide" and istable(veh.EngineFireOffsets) and istable(veh.EngineFireOffsets[1]) then
-        local worldOffset = veh.EngineFireOffsets[1].offset
-        engine_offset = veh:LocalToWorld(worldOffset)
+    elseif base == "glide" and istable(veh.EngineFireOffsets) and istable(veh.EngineFireOffsets[1]) then
+        engine_offset = veh:LocalToWorld(veh.EngineFireOffsets[1].offset)
     end
 
     veh.reforgerEngine = {
         offset = engine_offset,
-        world_coords = isWorld
+        world_coords = false
     }
 
     debugoverlay.Sphere(veh:GetPos(), 10, 2, Color(25, 25, 255), true)
@@ -51,66 +45,43 @@ function Reforger.CacheEngine(veh)
     SpawnEngine(veh, engine_offset)
 end
 
-concommand.Add("reforger_debug_enginepos", function(ply, cmd, args)
+-- shit is lower
+
+concommand.Add("reforger.check.enginepos", function(ply)
     if not Reforger.AdminDevToolValidation(ply) then return end
 
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity
+    if not IsValid(ent) then return ply:ChatPrint("[Reforger] Наведись на транспорт.") end
 
-    if not IsValid(ent) then
-        ply:ChatPrint("[Reforger] Наведись на транспорт.")
-        return
-    end
-
-    local class = ent:GetClass()
-    local base = ent.reforgerBase and ent.reforgerBase or "unknown"
-    local pos = ent:GetPos()
+    local base = ent.reforgerBase or "unknown"
     local offset = Vector(0, 0, 0)
     local label = "[Reforger]"
 
     if base == "simfphys" then
-        if ent.EnginePos then
-            offset = ent.EnginePos
-            label = "[simfphys]"
-        else
-            ply:ChatPrint("[Reforger] [simfphys] Поле EnginePos отсутствует у сущности.")
-            return
+        if not ent.EnginePos then
+            return ply:ChatPrint("[Reforger] [simfphys] Поле EnginePos отсутствует.")
         end
+        offset = ent:GetPos() + ent.EnginePos
+        label = "[simfphys]"
 
     elseif base == "glide" then
-        if not istable(ent.EngineFireOffsets) then
-            ply:ChatPrint("[Reforger] [glide] EngineFireOffsets не является таблицей.")
-            return
+        local data = ent.EngineFireOffsets and ent.EngineFireOffsets[1]
+        if not (istable(data) and isvector(data.offset)) then
+            return ply:ChatPrint("[Reforger] [glide] Некорректный EngineFireOffsets.")
         end
-
-        if not istable(ent.EngineFireOffsets[1]) then
-            ply:ChatPrint("[Reforger] [glide] EngineFireOffsets[1] не является таблицей.")
-            return
-        end
-
-        local worldOffset = ent.EngineFireOffsets[1].offset
-        if not isvector(worldOffset) then
-            ply:ChatPrint("[Reforger] [glide] Offset в EngineFireOffsets[1] не является Vector.")
-            return
-        end
-
-        offset = worldOffset
+        offset = ent:LocalToWorld(data.offset)
         label = "[glide]"
 
     else
-        ply:ChatPrint("[Reforger] Неизвестная система транспорта: " .. base)
-        return
+        return ply:ChatPrint("[Reforger] Неизвестная система транспорта: " .. base)
     end
 
+    debugoverlay.Sphere(offset, 8, 3, Color(255, 0, 0), true)
+    debugoverlay.Line(ent:GetPos(), offset, 3, Color(0, 255, 0), true)
 
-    local isWorld = (base == "simfphys") -- Glide даёт world coords
-    local enginePos = isWorld and offset or ent:LocalToWorld(offset)
-
-    debugoverlay.Sphere(enginePos, 8, 3, Color(255, 0, 0), true)
-    debugoverlay.Line(pos, enginePos, 3, Color(0, 255, 0), true)
-
-    ply:ChatPrint(label .. " Позиция двигателя: " .. tostring(enginePos))
-    print(label, ent, "Engine Pos:", enginePos, "| Local Offset:", offset)
+    ply:ChatPrint(label .. " Позиция двигателя: " .. tostring(offset))
+    print(label, ent, "Engine Pos:", offset)
 end)
 
 local function FormatValue(v)
@@ -132,14 +103,11 @@ end
 local function PrintTableRecursive(tbl, indent, visited)
     visited = visited or {}
     indent = indent or 0
-
     local prefix = string.rep("  ", indent)
 
     for k, v in pairs(tbl) do
-        local keyStr = tostring(k)
-        local valueType = type(v)
-
-        if valueType ~= "function" then
+        if type(v) ~= "function" then
+            local keyStr = tostring(k)
             if istable(v) then
                 print(prefix .. keyStr .. " = {")
                 if not visited[v] then
@@ -156,27 +124,18 @@ local function PrintTableRecursive(tbl, indent, visited)
     end
 end
 
-concommand.Add("reforger_vehicle_table", function(ply, cmd, args)
+concommand.Add("reforger.dump.vehicle", function(ply)
     if not Reforger.AdminDevToolValidation(ply) then return end
 
-    local tr = ply:GetEyeTrace()
-    local ent = tr.Entity
-
-    if not IsValid(ent) then
-        ply:ChatPrint("[Reforger] Наведись на машину.")
-        return
-    end
-
+    local ent = ply:GetEyeTrace().Entity
+    if not IsValid(ent) then return ply:ChatPrint("[Reforger] Наведись на машину.") end
     if not ent:IsVehicle() and not Reforger.IsValidReforger(ent) then
-        ply:ChatPrint("[Reforger] Это не транспортная сущность.")
-        return
+        return ply:ChatPrint("[Reforger] Это не транспорт.")
     end
 
     ply:ChatPrint("[Reforger] Вывод содержимого таблицы сущности...")
     print("[Reforger] --- ENTITY TABLE --- [" .. tostring(ent) .. "] ---")
-
-    PrintTableRecursive(ent:GetTable(), 0)
-
+    PrintTableRecursive(ent:GetTable())
     print("[Reforger] --- END ---")
     ply:ChatPrint("[Reforger] Готово.")
 end)
@@ -213,7 +172,7 @@ local function SearchTable(tbl, searchTerm, path, visited)
     end
 end
 
-concommand.Add("reforger_search_data", function(ply, cmd, args)
+concommand.Add("reforger.search.data", function(ply, cmd, args)
     if not Reforger.AdminDevToolValidation(ply) then return end
 
     local tr = ply:GetEyeTrace()

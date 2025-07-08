@@ -1,6 +1,6 @@
 if not Reforger then return end -- overthinker moment
 
-Reforger.DevLog("Reforger Rotors Loaded")
+Reforger.Log("Reforger Rotors Loaded")
 
 function Reforger.RotorsGetDamage(veh, dmginfo)
     if not IsValid(veh) then return end
@@ -8,9 +8,16 @@ function Reforger.RotorsGetDamage(veh, dmginfo)
     local rotor = Reforger.FindRotorsAlongRay(veh, dmginfo)
 
     if not IsValid(rotor) then return end
+    if not Reforger.IsRotorSpinning(veh, rotor) then return end
 
     if rotor.rotorHealth == nil and veh.reforgerBase == "lvs" then
-        rotor.rotorHealth = rotor.GetHP and rotor:GetHP() or Reforger.GetHealth(veh) * 0.15
+        if rotor.GetHP then
+            Reforger.DevLog("[Rotor Init] Использован метод rotor:GetHP()")
+            rotor.rotorHealth = rotor:GetHP()
+        else
+            Reforger.DevLog("[Rotor Init] Использовано Reforger.GetHealth(veh) * 0.15")
+            rotor.rotorHealth = Reforger.GetHealth(veh) * 0.15
+        end
     end
 
     rotor.rotorHealth = rotor.rotorHealth - dmginfo:GetDamage()
@@ -18,6 +25,25 @@ function Reforger.RotorsGetDamage(veh, dmginfo)
     if rotor.rotorHealth <= 0 and isfunction(rotor.Destroy) then
         rotor:Destroy()
     end
+end
+
+function Reforger.IsRotorSpinning(veh, rotor)
+    if not IsValid(veh) or not IsValid(rotor) then
+        Reforger.DevLog("Vehicle or rotors are not valid: false")
+        return false
+    end
+
+    local vehBase = veh.reforgerBase
+    local isSpinning = false
+    
+    if vehBase == "glide" then
+        isSpinning = rotor.spinMultiplier > 0.2
+    elseif vehBase == "lvs" then
+        local base = rotor:GetBase()
+        isSpinning = base:GetThrottle() > 0.5
+    end
+
+    return isSpinning
 end
 
 function Reforger.FindRotorsAlongRay(veh, dmginfo)

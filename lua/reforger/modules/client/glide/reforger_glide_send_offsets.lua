@@ -1,4 +1,4 @@
-if not Reforger or not Glide then return end
+if not Reforger then return end
 
 local function OnGlideEntityCreate(glide_entity)
     if not IsValid(glide_entity) then return end
@@ -20,7 +20,7 @@ end
 
 hook.Add("OnEntityCreated", "Reforger.Client_GlideSendOffsets", function(entity)
     if not IsValid(entity) then return end
-    timer.Simple(0, function()
+    timer.Simple(0.25, function()
         if IsValid(entity) and entity.IsGlideVehicle and istable(entity.EngineFireOffsets) then
             OnGlideEntityCreate(entity)
         end

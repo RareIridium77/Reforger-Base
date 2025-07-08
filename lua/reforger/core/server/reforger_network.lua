@@ -35,13 +35,13 @@ function Reforger.SetNetworkValue(ent, nType, nName, nValue)
         return 
     end
 
-    Reforger.DevLog(nType.." was not handled by network. Is not supported")
+    Reforger.Log(nType.." was not handled by network. Is not supported")
 end
 
 function Reforger.GetNetworkValue(ent, nType, nName)
     if not IsValid(ent) then return nil end
     if not Reforger.NetworkTypes[nType] then
-        Reforger.DevLog("Network Type <"..nType.."> Is not supported")
+        Reforger.Log("Network Type <"..nType.."> Is not supported")
         return nil
     end
 
@@ -58,7 +58,7 @@ function Reforger.GetNetworkValue(ent, nType, nName)
     return nil
 end
 
-concommand.Add("reforger_dump_net", function(ply, cmd, args)
+concommand.Add("reforger.dump.net", function(ply, cmd, args)
     if not Reforger.AdminDevToolValidation(ply) then return end
 
     local tr = ply:GetEyeTrace()

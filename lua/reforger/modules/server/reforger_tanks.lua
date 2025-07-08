@@ -1,5 +1,7 @@
 if not Reforger then return end -- overthinker moment
 
+Reforger.Log("Reforger Tanks Loaded")
+
 function Reforger.CacheAmmorack(veh)
     local vehicle_type = veh.reforgerType
 
@@ -79,7 +81,7 @@ function Reforger.DamageDamagableParts(veh, damage)
     end
 end
 
-concommand.Add("reforger_check_ammorack", function(ply, cmd, args)
+concommand.Add("reforger.check.ammorack", function(ply, cmd, args)
     if not Reforger.AdminDevToolValidation(ply) then return end
 
     local tr = ply:GetEyeTrace()

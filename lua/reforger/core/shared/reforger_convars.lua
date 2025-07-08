@@ -51,10 +51,6 @@ function Reforger.SafeInt(name, fallback)
 
     local cvar = Reforger.Convar(name)
 
-    if SERVER then
-        Reforger.DevLog(name, fallback)
-    end
-
     if cvar and (IsValid(cvar) or isfunction(cvar.GetInt)) then
         return cvar:GetInt()
     end

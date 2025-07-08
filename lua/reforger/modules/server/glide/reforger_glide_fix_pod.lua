@@ -1,5 +1,4 @@
-if not Glide then return end
-
+if not Reforger then return end
 -- Fixes Aim steering
 local function Glide_ActivateFixator()
     local EntityMeta = FindMetaTable( "Entity" )
@@ -35,6 +34,7 @@ end
 hook.Add("Reforger.Init", "Glide.InitPodFixer", function()
     timer.Simple(5, function()
         Glide_ActivateFixator()
+        Reforger.Log("Glide AIM Positioning fixed")
     end)
 end)
 

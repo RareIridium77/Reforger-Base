@@ -1,6 +1,6 @@
 if not Reforger then return end -- overthinker moment
 
-Reforger.DevLog("Damage Module Loaded")
+Reforger.Log("Damage Module Loaded")
 
 Reforger.DamageType = {
     DIRECT = 0,
@@ -107,7 +107,7 @@ function Reforger.HandleCollisionDamage(veh, dmginfo)
             if veh.Explode then veh:Explode() end
             if veh.ExplodeVehicle then veh:ExplodeVehicle() end
 
-            Reforger.DevLog(string.format("[%s] Explosion by collision | V=%.0f | Delay=%.2fs", vtype, velocity, delay))
+            Reforger.Log(string.format("[%s] Explosion by collision | V=%.0f | Delay=%.2fs", vtype, velocity, delay))
         end
     end)
 end

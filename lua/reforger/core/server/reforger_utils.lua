@@ -115,7 +115,7 @@ function Reforger.GetHealth(ent)
     return ent.Health and ent:Health() or -1
 end
 
-concommand.Add("reforger_destroy", function(ply)
+concommand.Add("reforger.destroy", function(ply)
     if not Reforger.AdminDevToolValidation(ply) then return end
 
     local tr = ply:GetEyeTrace()
