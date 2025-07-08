@@ -13,8 +13,8 @@ Its main purpose is to provide a unified damage and logic framework for differen
 - Reforger.GlobalThink -- Just called by Think. Like general update tick.
 - Reforger.EntityFunctionsCalled(ent) -- called every Reforger.CallEntityFunctions
 
-- Reforger.PreEntityDamage(ent) (return boolean value. false to block, true to provide damage).
-- Reforger.PlayerBurningInVehicle(ply, vehicle)  -- called every Reforger.ApplyPlayerFireDamage
+- Reforger.PreEntityDamage(ent, damage, attacker, inflictor, reforgerDamageType, damagePos) -- called every Reforger.ApplyDamageToEnt valid calls
+- Reforger.PlayerDirectDamage(player, vehicle, damageInfo) -- called every Reforger.ApplyPlayersDamage valid calls
 
 **LVS**
 - Reforger.LVS_BulletFired(bullet) -- Called every LVS bullet fire.

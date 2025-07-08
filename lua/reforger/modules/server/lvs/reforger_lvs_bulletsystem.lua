@@ -8,12 +8,18 @@ local function MainThink_Bullet()
     end
 
     if not LVS._ActiveBullets then return end
-    
+
     for idx, bullet in pairs(LVS._ActiveBullets) do
         if bullet.ReforgerChanged then continue end
 
         if not istable(bullet.Filter) then
             bullet.Filter = {}
+        end
+
+        for i = #bullet.Filter, 1, -1 do
+            if not IsValid(bullet.Filter[i]) then
+                table.remove(bullet.Filter, i)
+            end
         end
 
         local attacker = bullet.Attacker

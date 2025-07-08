@@ -48,7 +48,7 @@ function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos
     if not IsValid(ent) then return false end
     if not isnumber(damage) or damage <= 0 then return false end
 
-    local pre = hook.Run("Reforger.PreEntityDamage", ent)
+    local pre = hook.Run("Reforger.PreEntityDamage", ent, damage, attacker, inflictor, custom, pos)
     if pre == false then return false end
 
     attacker = IsValid(attacker) and attacker or game.GetWorld()

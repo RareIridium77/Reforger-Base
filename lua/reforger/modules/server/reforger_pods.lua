@@ -5,16 +5,19 @@ Reforger.Log("Reforger Pods Loaded")
 function Reforger.AddPlayerCollision(ply, veh)
     if not IsValid(ply) or not IsValid(veh) then return end
 
-    local pod = ents.Create("reforger_pod")
+    if IsValid(ply.reforgerPod) then
+        Reforger.DevLog("[Pod] Collision already exists for: " .. tostring(ply))
+        return
+    end
 
+    local pod = ents.Create("reforger_pod")
     if not IsValid(pod) then return end
-    
+
     local baseVehicle = veh:GetParent()
     local base = baseVehicle and baseVehicle.reforgerBase or nil
-
     if base == nil then return end
-    
-    pod:SetVehicleBase(veh:GetParent())
+
+    pod:SetVehicleBase(baseVehicle)
     pod:SetVehicle(veh)
     pod:SetPlayer(ply)
     pod:Spawn()
@@ -24,6 +27,7 @@ function Reforger.AddPlayerCollision(ply, veh)
     veh.reforgerPods = veh.reforgerPods or {}
     veh.reforgerPods[ply] = pod
 end
+
 
 function Reforger.RemovePlayerCollision(ply, veh)
     if not IsValid(veh) or not veh.reforgerPods then return end

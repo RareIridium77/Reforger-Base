@@ -74,9 +74,16 @@ local function EntityCreated(ent)
     end)
 end
 
+local nextThink = 0
+local thinkInterval = 0.001
+
+
 local function GlobalThink()
+    if CurTime() < nextThink then return end
+    nextThink = CurTime() + thinkInterval
+
     if not Reforger.Init then return end
-    hook.Run("Reforger.GlobalThink", Reforger)
+    hook.Run("Reforger.GlobalThink")
 end
 
 hook.Add("InitPostEntity", "Reforger.InitPostEntity", InitPostEntity)

@@ -16,7 +16,7 @@ ENT.DisableDuplicator = true
 if CLIENT then return end
 
 local seqAdjustments = {
-    sit_rollercoaster = { maxZ = 1.9, minZ = 0.1, offset = -10 },
+    sit_rollercoaster = { maxZ = 1.9, minZ = 0.1, offset = -2 },
     sit               = { maxZ = 1.9, minZ = 0.1, offset = -5 },
     sit_zen           = { maxZ = 1.9, minZ = 0.1 },
     drive_pd          = { maxZ = 1.9, minZ = 0.1 },

@@ -37,11 +37,7 @@ function Reforger.CacheEngine(veh)
         offset = engine_offset,
         world_coords = false
     }
-
-    debugoverlay.Sphere(veh:GetPos(), 10, 2, Color(25, 25, 255), true)
-    debugoverlay.Line(veh:GetPos(), engine_offset, 2, Color(255, 0, 0), true)
-    debugoverlay.Sphere(engine_offset, 10, 2, Color(25, 255, 25), true)
-
+    
     SpawnEngine(veh, engine_offset)
 end
 

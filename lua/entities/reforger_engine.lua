@@ -58,6 +58,10 @@ function ENT:SetEngineData(data)
     self.simMaxHealth = 350
     self.simHealth = self.simMaxHealth
 
+    debugoverlay.Sphere(pos, 10, 2, Color(25, 25, 255), true)
+    debugoverlay.Line(self.VehicleBase:GetPos(), pos, 2, Color(255, 0, 0), true)
+    debugoverlay.Sphere(self.VehicleBase:GetPos(), 10, 2, Color(25, 255, 25), true)
+
     Reforger.DevLog(("[EngineCollision] Engine initialized: MaxHealth = %.2f"):format(self.simMaxHealth))
 end
 
@@ -78,7 +82,7 @@ function ENT:Think()
         Color(255, 50, 50, 120)
     )
 
-    self:NextThink(CurTime() + 0.2)
+    self:NextThink(CurTime())
     return true
 end
 
