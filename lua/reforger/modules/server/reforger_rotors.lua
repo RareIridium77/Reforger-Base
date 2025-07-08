@@ -1,5 +1,7 @@
 if not Reforger then return end -- overthinker moment
 
+Reforger.DevLog("Reforger Rotors Loaded")
+
 function Reforger.RotorsGetDamage(veh, dmginfo)
     if not IsValid(veh) then return end
 
@@ -32,19 +34,19 @@ function Reforger.FindRotorsAlongRay(veh, dmginfo)
         classname = "lvs_helicopter_rotor"
     end
 
-    if not IsValid(classname) then return nil end
+    if not isstring(classname) then return nil end
     return Reforger.FindClosestByClass(veh, dmginfo, classname)
 end
 
 function Reforger.FindRotors(veh)
     if not IsValid(veh) then return {} end
 
-    if veh._ReforgerRotors ~= nil and istable(veh._ReforgerRotors) then return veh._ReforgerRotors end
+    if istable(veh.reforgerRotors) then return veh.reforgerRotors end
 
     local rotors = {}
     local vehicle_type = veh.reforgerType
 
-    if veh.IsGlideVehicle then
+    if veh.reforgerBase == "glide" then
         if IsValid(veh.mainRotor) then table.insert(rotors, veh.mainRotor) end
         if IsValid(veh.tailRotor) then table.insert(rotors, veh.tailRotor) end
 
@@ -53,35 +55,56 @@ function Reforger.FindRotors(veh)
         end
     end
 
-    if veh.LVS then
-        local lvs_rotors = Reforger.PairEntityAll(veh, "lvs_helicopter_rotor")
-        if istable(lvs_rotors) then
-            rotors = lvs_rotors
+    if veh.reforgerBase == "lvs" then
+        local lvs_rotors = {}
+
+        if veh.TailRotor then table.insert(lvs_rotors, veh.TailRotor) end
+        if veh.Rotor then
+            veh.Rotor.reforgerMainRotor = true
+            table.insert(lvs_rotors, veh.Rotor)
+        end
+
+        if istable(lvs_rotors) then rotors = lvs_rotors end
+
+        if #rotors == 0 then
+            rotors = Reforger.PairEntityAll(veh, "lvs_helicopter_rotor")
         end
     end
 
     return rotors
 end
 
+function Reforger.RepairRotors(veh)
+    if veh.reforgerType ~= "plane" then return end
+
+    for _, rotor in ipairs(Reforger.GetRotors(veh)) do
+        if rotor.Repair then rotor:Repair() end
+    end
+end
+
 function Reforger.CacheRotors(veh)
     if not IsValid(veh) then return end
 
+    Reforger.DevLog("Tring to cache rotors for ", veh)
+
     if veh.reforgerBase == "simfphys" then return end
-    if veh.reforgerBase ~= "helicopter" and veh.reforgerBase ~= "plane" then return end
+    if veh.reforgerType ~= "helicopter" and veh.reforgerType ~= "plane" then return end
 
     timer.Simple(0, function()
-        veh._ReforgerRotors = Reforger.FindRotors(veh)
+        veh.reforgerRotors = Reforger.FindRotors(veh)
 
-        Reforger.DevLog("Cached " .. #veh._ReforgerRotors .. " rotors for " .. tostring(veh))
+        Reforger.DevLog("Cached " .. #veh.reforgerRotors .. " rotors for " .. tostring(veh))
+
+        hook.Run("Reforger.RotorsCached", veh, veh.reforgerRotors)
     end)
 end
 
 function Reforger.GetRotors(veh)
     if not IsValid(veh) then return {} end
-    return veh._ReforgerRotors or {}
+    return veh.reforgerRotors or {}
 end
 
-concommand.Add("reforger_check_rotors", function(ply, cmd)
+concommand.Add("reforger.check.rotors", function(ply, cmd)
     if not Reforger.AdminDevToolValidation(ply) then return end
 
     if not IsValid(ply) then return end
@@ -92,4 +115,26 @@ concommand.Add("reforger_check_rotors", function(ply, cmd)
     local rotors = Reforger.FindRotors(tr.Entity)
 
     if istable(rotors) then PrintTable(rotors) end
+end)
+
+concommand.Add("reforger.check.rotors.table", function(ply, cmd)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+
+    if not IsValid(ply) then return end
+
+    local tr = ply:GetEyeTraceNoCursor()
+    if not IsValid(tr.Entity) then return end
+
+    local rotors = Reforger.FindRotors(tr.Entity)
+
+    if istable(rotors) then
+        for _, rotor in ipairs(rotors) do
+            if IsValid(rotor) then
+                print("----------------------------------------------------------")
+                print("----------------------------------------------------------")
+                print("----------------------------------------------------------")
+                PrintTable(rotor:GetTable())
+            end
+        end
+    end
 end)

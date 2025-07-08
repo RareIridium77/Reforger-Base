@@ -18,8 +18,7 @@ if CLIENT then return end
 function ENT:InitReforgerEntity()
 end
 
-function ENT:Initialize()
-    self.VehicleBase = nil 
+function ENT:Initialize() 
     self:InitReforgerEntity()
 end
 

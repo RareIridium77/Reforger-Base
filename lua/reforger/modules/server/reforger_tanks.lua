@@ -25,10 +25,13 @@ end
 function Reforger.AmmoracksTakeTransmittedDamage(veh, dmginfo)
     if not IsValid(veh) then return end
 
+    if dmginfo:GetDamage() <= 0 then return end
+
     if istable(veh.reforgerAmmoracks) then
         for _, ammorack in ipairs(veh.reforgerAmmoracks) do
-            if IsValid(ammorack) and ammorack.TakeTransmittedDamage then
+            if IsValid(ammorack) and ammorack.TakeTransmittedDamage and not ammorack:GetDestroyed() then
                 ammorack:TakeTransmittedDamage(dmginfo)
+                Reforger.Log(ammorack, " got damage ", dmginfo:GetDamage())
             end
         end
     end
@@ -57,6 +60,8 @@ end
 function Reforger.DamageDamagableParts(veh, damage)
     if not IsValid(veh) then return end
 
+    if isnumber(damage) and damage <= 0 then return end
+
     local newDamage = isnumber(damage) and damage or 10
 
     if istable(veh._dmgParts) and #veh._dmgParts > 0 then
@@ -68,8 +73,8 @@ function Reforger.DamageDamagableParts(veh, damage)
             local newHP = math.Clamp(curHP - damage, -maxHP, maxHP)
 
             if part.SetHP then
-                part:SetHP(newHP)
-            end
+                Reforger.DevLog("Parts getting damage: ", damage)
+                part:SetHP(newHP) end
         end
     end
 end

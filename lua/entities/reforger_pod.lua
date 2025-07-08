@@ -15,6 +15,16 @@ ENT.DisableDuplicator = true
 
 if CLIENT then return end
 
+local seqAdjustments = {
+    sit_rollercoaster = { maxZ = 1.9, minZ = 0.1, offset = -5 },
+    sit               = { maxZ = 1.9, minZ = 0.1, offset = -2},
+    sit_zen           = { maxZ = 1.9, minZ = 0.1 },
+    drive_pd          = { maxZ = 1.9, minZ = 0.1 },
+    drive_airboat     = { maxZ = 1.9, minZ = 0.1, offset = 7 },
+    drive_jeep        = { maxZ = 2.2, minZ = 0.1, offset = 7 },
+    cwalk_revolver    = { maxZ = 2.75, minZ = 0.23 },
+}
+
 function ENT:InitReforgerEntity()
     if CLIENT then return end
 
@@ -23,14 +33,14 @@ function ENT:InitReforgerEntity()
     self.max = Vector(0, 0, 0)
 
     self.boundSet = false
+    self.lastSeqID = -1
 
-    self:SetNoDraw(true)
-    self:SetTrigger(true)
-    self:SetNotSolid(false )
+    self:SetNoDraw( true )
+    self:SetTrigger( true )
+    self:SetNotSolid( false )
 
-    self:PhysicsInit( SOLID_BBOX )
-    self:SetMoveType( MOVETYPE_NONE )
     self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
+    self.seqAdjustments = seqAdjustments
 end
 
 function ENT:SetPlayer(ply)
@@ -39,117 +49,150 @@ function ENT:SetPlayer(ply)
 end
 
 function ENT:SetVehicle(veh)
+    if not IsValid(veh) then return end
+
     self.Vehicle = veh
+    self:SetMoveParent(self.Vehicle)
     Reforger.DevLog(self.Vehicle)
 end
 
 function ENT:Think()
     if CLIENT then return end
 
-    if not IsValid(self.Vehicle) or not IsValid(self.Player) or not self.Player:InVehicle() then
+    local veh = self.Vehicle
+    local ply = self.Player
+
+    if not IsValid(veh) or not IsValid(ply) or not ply:InVehicle() then
         self:Remove()
         return
     end
 
-    local ply = self.Player
+    local seqID = ply:GetSequence()
+    local seqName = ply:GetSequenceName(seqID)
+    local vehPos = veh:GetPos()
 
     local mins, maxs = ply:OBBMins(), ply:OBBMaxs()
-    local vmins, vmaxs = self.Vehicle:OBBMins(), self.Vehicle:OBBMaxs()
+    local vmins, vmaxs = veh:OBBMins(), veh:OBBMaxs()
 
-    local newMin = Vector(mins.x * 0.5, mins.y * 0.5, mins.z)
-    local newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z)
+    local newMin = Vector(vmins.x * 0.5, vmins.y * 0.5, vmins.z)
+    local newMax = Vector(vmaxs.x * 0.5, vmaxs.y * 0.5, vmaxs.z)
+
     local offsetMultiplier = 2
 
-    local seqID = ply:GetSequence()
-
-    if seqID == 387 then -- sit_rollercoaster
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 1.9 or vmaxs.z)
-    elseif seqID == 9 then -- sit
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 1.9 or vmaxs.z)
-    elseif seqID == 386 then -- drive_pd
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z > 50 and vmaxs.z * 0.9 or vmaxs.z * 1.35)
-    elseif seqID == 388 then -- drive_airboat
-        newMax = Vector(
-            maxs.x * 0.5,
-            maxs.y * 0.5,
-            vmaxs.z < 110 and vmaxs.z * 1.8 or vmaxs.z * 0.65
-        )
-    elseif seqID == 389 then -- drive_jeep
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z < 40 and vmaxs.z * 2.2 or vmaxs.z * 0.5)
-        offsetMultiplier = 12.5
-    elseif seqID == 90 then -- cwalk_revolver
-        newMax = Vector(maxs.x * 0.5, maxs.y * 0.5, vmaxs.z > 27 and vmaxs.z * 2.4 or vmaxs.z * (0.115 * vmaxs.z))
-    else
-        newMax = Vector(maxs.x * 0.1, maxs.y * 0.1, vmaxs.z * 0.1)
+    local adjust = self.seqAdjustments[seqName]
+    if adjust then
+        newMax.z = newMax.z * adjust.maxZ
+        newMin.z = newMax.z * adjust.minZ
+        offsetMultiplier = adjust.offset or offsetMultiplier
     end
 
-    local offset = self.Vehicle:GetForward() * offsetMultiplier
-    self:SetPos(self.Vehicle:GetPos() + offset)
-    self:SetAngles(self.Vehicle:GetAngles())
-    self.headZone = self.Vehicle:GetPos().z + (newMax.z * 0.85 * 0.85)
+    local offset = veh:GetForward() * offsetMultiplier
+    local newPos = vehPos + offset
 
+    self:SetPos(newPos)
+    self:SetAngles(veh:GetAngles())
 
-    if not self.boundSet then
+   self.headZone = vehPos.z + (newMax.z * 0.7225)
+
+    local scaledMin = newMin * 0.85
+    local scaledMax = newMax * 0.85
+
+    if not self.boundSet or self.lastSeqID ~= seqID then
         self.boundSet = true
+        self.lastSeqID = seqID
 
-        self.min = newMin * 0.85
-        self.max = newMax * 0.85
+        self.min = scaledMin
+        self.max = scaledMax
 
         self:PhysicsInit(SOLID_BBOX)
-        self:SetMoveType(MOVETYPE_NONE)
-        self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
-        self:SetCollisionBounds(self.min, self.max)
+        self:SetCollisionBounds(scaledMin, scaledMax)
+
+        Reforger.DevLog(("[FakeCollision] Updated bounds for %s (%d)"):format(seqName, seqID))
     end
 
-    local textPos = self.Vehicle:GetPos() + Vector(0, 0, vmaxs.z + 10)
-    local textPos2 = self.Vehicle:GetPos() + Vector(0, 0, vmins.z)
+    debugoverlay.Text(vehPos + Vector(0, 0, newMax.z),
+        ("max.z: %.2f seq: %s id: %d"):format(newMax.z, seqName, seqID), 0.02)
 
-    debugoverlay.Text(textPos, "vmax.z: " .. math.Round(vmaxs.z, 2) .. " seq: " .. ply:GetSequenceName(seqID) .. " id: " .. seqID, 0.02)
-    debugoverlay.Text(textPos2, "vmin.z: " .. math.Round(vmins.z, 2) .. " seq: " .. ply:GetSequenceName(seqID) .. " id: " .. seqID, 0.02)
+    debugoverlay.Text(vehPos + Vector(0, 0, newMin.z),
+        ("min.z: %.2f"):format(newMin.z), 0.02)
+
+    debugoverlay.Box(newPos, scaledMin, scaledMax, 0.045, Color(255, 255, 255, 20))
+
     self:NextThink(CurTime() + 0.0015)
     return true
 end
 
 function ENT:DoImpactEffect( tr, nDamageType )
-
-	if ( tr.HitSky ) then return end
-	
-	local effectdata = EffectData()
-	effectdata:SetOrigin( tr.HitPos + tr.HitNormal )
-	effectdata:SetNormal( tr.HitNormal )
-	util.Effect( "AR2Impact", effectdata )
-
+    return true 
 end
 
 function ENT:OnTakeDamage(dmginfo)
-    if not IsValid(self.Player) then return end
+    Reforger.DevLog("[FakeCollision] OnTakeDamage called | Damage: " .. tostring(dmginfo:GetDamage()))
 
-    local damage = dmginfo:GetDamage()
-    local attacker = dmginfo:GetAttacker()
-    local inflictor = dmginfo:GetInflictor()
-    if damage <= 0 then return end
-    if attacker == self.Player then return end
-    if inflictor == NULL then inflictor = game.GetWorld() end
-
-    local dmgPos = dmginfo:GetDamagePosition()
-    local plyPos = self.Player:GetPos()
-    local obbMinsZ = plyPos.z + self.Player:OBBMins().z
-
-    if dmgPos.z < obbMinsZ then
-        debugoverlay.Sphere(dmgPos, 3, 0.5, Color(0, 0, 255), true)
+    if not IsValid(self.Player) then
+        Reforger.DevLog("[FakeCollision] Invalid Player entity")
         return
     end
 
-    local isHeadshot = math.abs(dmgPos.z - self.headZone) <= 6 
-    local finalDamage = isHeadshot and damage or (damage * 0.4)
-
-    if isHeadshot then
-        self.Player:SetLastHitGroup(0) -- Head
-    else
-        self.Player:SetLastHitGroup(2) -- Chest
+    if not IsValid(self.VehicleBase) then
+        Reforger.DevLog("[FakeCollision] Invalid VehicleBase")
+        return
     end
-    
-    Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor)
 
-    debugoverlay.Sphere(dmgPos, 2, 0.2, isHeadshot and Color(255, 0, 0) or Color(255, 100, 100), true)
+    if attacker == self.Player then
+        Reforger.DevLog("[FakeCollision] Ignored self-damage")
+        return
+    end
+
+    local damage        = dmginfo:GetDamage()
+    local damageType    = dmginfo:GetDamageType()
+    local damagePos     = dmginfo:GetDamagePosition()
+    local damageCType   = dmginfo:GetDamageCustom()
+    local attacker      = dmginfo:GetAttacker()
+    local inflictor     = dmginfo:GetInflictor()
+    local isSmallDamage = bit.band(damageType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
+    local isTraced      = damageCType == 1
+
+    print(damageCType)
+
+    debugoverlay.Sphere(damagePos, 4, 0.5, Color(170, 255, 100, 140), true)
+
+    if not isTraced then
+        local headCheckPos = self:GetPos()
+        headCheckPos.z = self.headZone
+
+        local trace = util.TraceLine({
+            start = headCheckPos,
+            endpos = damagePos,
+            filter = {self, self.Player}
+        })
+
+        debugoverlay.Line(headCheckPos, damagePos, 1, Color(255, 0, 0), true)
+        if trace.Hit and trace.Entity ~= self.Vehicle then
+            Reforger.DevLog("[FakeCollision] Blocked damage: no visibility to hit pos")
+            return
+        end
+    end
+
+    if damage <= 0 or attacker == self.Player then return end
+    if inflictor == NULL then inflictor = game.GetWorld() end
+
+    local plyPos = self.Player:GetPos()
+    local obbMinsZ = plyPos.z + self.Player:OBBMins().z
+
+    if damagePos.z < obbMinsZ then
+        debugoverlay.Sphere(damagePos, 3, 0.5, Color(0, 0, 255), true)
+        return
+    end
+
+    local isHeadshot = damagePos.z >= self.headZone - 4 and damagePos.z <= self.headZone + 6
+    local finalDamage = isHeadshot and damage or damage * 0.4
+
+    self.Player:SetLastHitGroup(isHeadshot and 0 or 2) -- 0 Head, 2 Chest
+    Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
+    Reforger.DevLog(("[FakeCollision] Final Damage: %.2f | Headshot: %s | PosZ: %.2f | HeadZone: %.2f")
+    :format(finalDamage, tostring(isHeadshot), damagePos.z, self.headZone))
+
+    debugoverlay.Line(damagePos, Vector(damagePos.x, damagePos.y, self.headZone), 0.5, isHeadshot and Color(255, 0, 0) or Color(100, 141, 255))
+    debugoverlay.Sphere(damagePos, 2, 0.2, isHeadshot and Color(255, 0, 0) or Color(255, 100, 100), true)
 end

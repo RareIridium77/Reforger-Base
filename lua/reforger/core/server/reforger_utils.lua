@@ -10,7 +10,8 @@ Reforger.ValidClasslist = {
     ["gmod_sent_vehicle_fphysics_gib"] = true,
     ["gmod_sent_vehicle_fphysics_base"] = true,
     ["simfphys_tankprojectile"] = true,
-    ["glide_gib"] = true
+    ["glide_gib"] = true,
+    ["prop_vehicle_prisoner_pod"] = true
 }
 
 function Reforger.GetVehicleType(ent)

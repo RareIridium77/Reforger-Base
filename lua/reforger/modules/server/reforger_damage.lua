@@ -1,5 +1,13 @@
 if not Reforger then return end -- overthinker moment
 
+Reforger.DevLog("Damage Module Loaded")
+
+Reforger.DamageType = {
+    DIRECT = 0,
+    TRACED = 1,
+    BURN   = 2
+}
+
 Reforger.PlayerBypassTypes = {
     [DMG_GENERIC] = false,
     [DMG_BLAST] = true,
@@ -36,96 +44,70 @@ Reforger.CollisionDamageConfig = {
     }
 }
 
-function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, pos)
+function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
     if not IsValid(ent) then return false end
+    if not isnumber(damage) or damage <= 0 then return false end
 
-    local preResult = hook.Run("Reforger.PreEntityDamage", ent)
-    if isbool(preResult) and not preResult then return false end
+    local pre = hook.Run("Reforger.PreEntityDamage", ent)
+    if pre == false then return false end
 
-    if not IsValid( attacker ) then attacker = game.GetWorld() end
-    if not IsValid( inflictor ) then inflictor = game.GetWorld() end
-    if not isnumber( damage ) then damage = 10 end
+    attacker = IsValid(attacker) and attacker or game.GetWorld()
+    inflictor = IsValid(inflictor) and inflictor or game.GetWorld()
 
-    local ent_dmginfo = DamageInfo()
-    ent_dmginfo:SetDamage( 2 * damage )
-    ent_dmginfo:SetAttacker( attacker )
-    ent_dmginfo:SetInflictor( inflictor )
-    ent_dmginfo:SetDamageType( DMG_DIRECT ) -- funny hell
-    ent_dmginfo:SetDamagePosition( pos and pos or ent:GetPos() )
+    local dmg = DamageInfo()
+    dmg:SetDamage(damage * 2)
+    dmg:SetAttacker(attacker)
+    dmg:SetInflictor(inflictor)
+    dmg:SetDamageType(DMG_DIRECT)
+    dmg:SetDamagePosition(pos or ent:GetPos())
 
-    -- Just a gmod moment
-    local success = false
-
-    if ent:Alive() then
-        ent:TakeDamageInfo(ent_dmginfo)
-        success = true
+    if isnumber(custom) and custom > 0 and custom < 4096 then
+        dmg:SetDamageCustom(custom)
     end
 
-    return success 
+    ent:TakeDamageInfo(dmg)
+    return true
 end
 
-function Reforger.ApplyPlayerDamage(ply, damage, attacker, inflictor)
+function Reforger.ApplyPlayerDamage(ply, damage, attacker, inflictor, custom)
     if not IsValid(ply) or not ply:IsPlayer() or ply:HasGodMode() then return false end
-
-    return Reforger.ApplyDamageToEnt(ply, damage, attacker, inflictor)
+    return Reforger.ApplyDamageToEnt(ply, damage, attacker, inflictor, custom)
 end
 
-function Reforger.ApplyPlayerFireDamage(veh, dmginfo)
+function Reforger.ApplyPlayersDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
-
-    local IsFireDamage = veh:IsOnFire()
-
-    if IsFireDamage then
-        local veh_players = Reforger.GetEveryone(veh)
-        
-        for _, ply in ipairs(veh_players) do
-            Reforger.ApplyPlayerDamage(
-                ply,
-                dmginfo:GetDamage(),
-                dmginfo:GetAttacker(),
-                dmginfo:GetInflictor()
-            )
-            hook.Run("Reforger.PlayerBurningInVehicle", ply, veh)
-        end
+    for _, ply in ipairs(Reforger.GetEveryone(veh)) do
+        Reforger.ApplyPlayerDamage(ply, dmginfo:GetDamage(), dmginfo:GetAttacker(), dmginfo:GetInflictor(), Reforger.DamageType.DIRECT)
+        hook.Run("Reforger.PlayerDirectDamage", ply, veh, dmginfo)
     end
 end
 
 function Reforger.HandleCollisionDamage(veh, dmginfo)
     if not IsValid(veh) then return end
+    if not (dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_VEHICLE) or dmginfo:IsDamageType(DMG_GENERIC)) then return end
 
-    local isCollision = dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_VEHICLE) or dmginfo:IsDamageType(DMG_GENERIC)
-
-    if not isCollision then return end
-
-    Reforger.DevLog("Performing collision")
+    local vtype = veh.reforgerType or "undefined"
+    local cfg = Reforger.CollisionDamageConfig[vtype] or Reforger.CollisionDamageConfig["undefined"]
 
     local velocity = veh:GetVelocity():Length()
-    local vtype = veh.reforgerType or "undefined"
-
-    local cfg = Reforger.CollisionDamageConfig[vtype]
-
-    if not cfg then
-        cfg = Reforger.CollisionDamageConfig["undefined"]
-        Reforger.DevLog("[WARN] Unknown reforgerType: " .. tostring(vtype))
-    end
-
     if velocity < cfg.minVelocity then return end
-    if math.random() > cfg.fireChance then return end
-
-    if veh.SetIsEngineOnFire then
-        veh:SetIsEngineOnFire(true)
-        print("Engine in fire while collision")
-    end
 
     local delay = math.Rand(1, 2)
+    local canExplode = math.random() < cfg.explodeChance
+    local canIgnite = math.random() < cfg.fireChance
+
+    if canIgnite and veh.SetIsEngineOnFire then
+        veh:SetIsEngineOnFire(true)
+    end
+
     timer.Simple(delay, function()
         if not IsValid(veh) then return end
-        if math.random() < cfg.explodeChance then
+        if canExplode then
             if veh.Destroy then veh:Destroy() end
             if veh.Explode then veh:Explode() end
             if veh.ExplodeVehicle then veh:ExplodeVehicle() end
 
-            Reforger.DevLog("[" .. vtype .. "] Explosion triggered by collision | Velocity: " .. math.Round(velocity) .. " | Delay: " .. string.format("%.2f", delay))
+            Reforger.DevLog(string.format("[%s] Explosion by collision | V=%.0f | Delay=%.2fs", vtype, velocity, delay))
         end
     end)
 end
@@ -137,76 +119,66 @@ function Reforger.HandleRayDamage(veh, dmginfo)
 	local dmgPos = dmginfo:GetDamagePosition()
 	local dmgDir = dmginfo:GetDamageForce():GetNormalized()
 
-	local dmgPenetration = dmgDir * Len
-    local dmgStart = dmgPos - dmgDir * (Len * 0.1)
+	local start = dmgPos - dmgDir * (Len * 0.1)
+	local finish = start + dmgDir * Len * 2
 
-	debugoverlay.Line( dmgPos - dmgDir * 2, dmgPos + dmgPenetration, 0.2, Color( 255, 0, 0) )
-    debugoverlay.Sphere(dmgPos + dmgPenetration, 2, 0.2, Color(255, 0, 0), true)
+	debugoverlay.Line(dmgPos - dmgDir * 2, finish, 0.8, Color(255, 0, 0))
 
     local tr = util.TraceLine({
-        start = dmgStart,
-        endpos = dmgStart + dmgDir * Len * 2,
-        filter = function(ent)
-            return ent ~= veh
-        end
+        start = start,
+        endpos = finish,
+        filter = function(ent) return ent ~= veh end
     })
 
-    if tr.HitPos then debugoverlay.Sphere(tr.HitPos, 2, 0.2, Color(255, 0, 0), true) end
+    if tr.HitPos then debugoverlay.Sphere(tr.HitPos, 2, 0.8, Color(255, 0, 212), true) end
 
-    local ent = tr.Entity
-    
-    if IsValid(ent) and ent.ReforgerDamageable and ent.Player ~= dmginfo:GetAttacker() then
-        local dmgType = dmginfo:GetDamageType()
-        local originalDmg = dmginfo:GetDamage()
-        local finalDmg = originalDmg
-        local isSmall = dmgType == DMG_BULLET or dmgType == DMG_BUCKSHOT or dmgType == DMG_CLUB
+    local hitEnt = tr.Entity
+    if not IsValid(hitEnt) or not hitEnt.ReforgerDamageable then return end
 
-        if isSmall and veh.reforgerType == "armored" then finalDmg = 0.25 * originalDmg end
+    local dmgType = dmginfo:GetDamageType()
+    local originalDmg = dmginfo:GetDamage()
+    local isSmall = bit.band(dmgType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
+    print(isSmall)
 
-        Reforger.ApplyDamageToEnt(
-            ent,
-            finalDmg,
-            dmginfo:GetAttacker(),
-            dmginfo:GetInflictor(),
-            tr.HitPos
-        )
+    local finalDmg = originalDmg
+    if isSmall and veh.reforgerType == "armored" then
+        finalDmg = originalDmg * 0.25
     end
+
+    Reforger.ApplyDamageToEnt(hitEnt, finalDmg, dmginfo:GetAttacker(), dmginfo:GetInflictor(), Reforger.DamageType.TRACED, tr.HitPos)
 end
 
-function Reforger.IgniteForever(ent, size)
+function Reforger.IgniteLimited(ent, size, repeatCount)
     if not IsValid(ent) then return end
-
-    size = size or ent:BoundingRadius()
-
     if ent._ignitingForever then return end
+
+    local radius = size or ent:BoundingRadius()
+    local maxRepeats = repeatCount or 5
+    local repeats = 0
+    local timerID = "reforger_limited_fire_" .. ent:EntIndex()
+
     ent._ignitingForever = true
+    ent:Ignite(5, radius)
 
-    ent:Ignite(5, size)
-
-    local timerID = "reforger_infinite_fire_" .. ent:EntIndex()
-
-    if timer.Exists(timerID) then return end
+    if timer.Exists(timerID) then timer.Remove(timerID) return end
 
     timer.Create(timerID, 4.75, 0, function()
-        if not IsValid(ent) then
-            timer.Remove(timerID)
-            return
-        end
+        if not IsValid(ent) then return timer.Remove(timerID) end
+        if not ent:IsOnFire() then ent._ignitingForever = nil return timer.Remove(timerID) end
 
-        if not ent:IsOnFire() then
+        repeats = repeats + 1
+        if repeats >= maxRepeats then
             ent._ignitingForever = nil
-            timer.Remove(timerID)
-            return
+            return timer.Remove(timerID)
         end
 
-        ent:Ignite(5, size)
+        ent:Ignite(5, radius)
     end)
+
 end
 
-function Reforger.StopInfiniteFire(ent)
+function Reforger.StopLimitedFire(ent)
     if not IsValid(ent) then return end
-
-    local timerID = "reforger_infinite_fire_" .. ent:EntIndex()
-    timer.Remove(timerID)
+    timer.Remove("reforger_limited_fire_" .. ent:EntIndex())
     ent._ignitingForever = nil
 end
