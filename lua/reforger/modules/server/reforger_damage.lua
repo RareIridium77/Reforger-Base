@@ -138,7 +138,6 @@ function Reforger.HandleRayDamage(veh, dmginfo)
     local dmgType = dmginfo:GetDamageType()
     local originalDmg = dmginfo:GetDamage()
     local isSmall = bit.band(dmgType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
-    print(isSmall)
 
     local finalDmg = originalDmg
     if isSmall and veh.reforgerType == "armored" then

@@ -16,7 +16,7 @@ ENT.DisableDuplicator = true
 if CLIENT then return end
 
 local seqAdjustments = {
-    sit_rollercoaster = { maxZ = 1.9, minZ = 0.1, offset = -5 },
+    sit_rollercoaster = { maxZ = 1.9, minZ = 0.1, offset = -10 },
     sit               = { maxZ = 1.9, minZ = 0.1, offset = -5 },
     sit_zen           = { maxZ = 1.9, minZ = 0.1 },
     drive_pd          = { maxZ = 1.9, minZ = 0.1 },
@@ -82,6 +82,9 @@ function ENT:Think()
         newMax.z = newMax.z * adjust.maxZ
         newMin.z = newMax.z * adjust.minZ
         offsetMultiplier = adjust.offset or offsetMultiplier
+    else
+        newMax.z = newMax.z * 1.9
+        newMin.z = newMax.z * 0.1
     end
 
     local offset = veh:GetForward() * offsetMultiplier
@@ -151,8 +154,6 @@ function ENT:OnTakeDamage(dmginfo)
     local isSmallDamage = bit.band(damageType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
     local isTraced      = damageCType == 1
 
-    print(damageCType)
-
     debugoverlay.Sphere(damagePos, 4, 0.5, Color(170, 255, 100, 140), true)
 
     if not isTraced then
@@ -188,6 +189,15 @@ function ENT:OnTakeDamage(dmginfo)
 
     self.Player:SetLastHitGroup(isHeadshot and 0 or 2) -- 0 Head, 2 Chest
     Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
+
+    local ed = EffectData()
+    ed:SetOrigin(damagePos)
+    ed:SetNormal((attacker:GetPos() - damagePos):GetNormalized()) -- направление
+    ed:SetScale(1.5) -- сила
+    ed:SetColor(BLOOD_COLOR_RED) -- 0 = красная
+    util.Effect("BloodImpact", ed, true, true)
+
+
     Reforger.DevLog(("[FakeCollision] Final Damage: %.2f | Headshot: %s | PosZ: %.2f | HeadZone: %.2f")
     :format(finalDamage, tostring(isHeadshot), damagePos.z, self.headZone))
 
