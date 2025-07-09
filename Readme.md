@@ -12,31 +12,40 @@ Its main purpose is to provide a unified damage and logic framework for differen
 ```lua
 -- Shared Hooks
 
--- Reforger.Init -- called when Reforger Inits.
+-- Reforger.Init
+-- Called when Reforger Inits.
 hook.Add("Reforger.Init", "Reforger_MyAddon.Init", function()
     print("[MyAddon] Reforger initialized!")
 end)
 
--- Reforger.GlobalThink -- Just called by Think. Like general update tick.
+-- Reforger.GlobalThink
+-- Called by Think hook
+-- Example make every reforger_pod to take damage
 hook.Add("Reforger.GlobalThink", "Reforger_MyAddon.Think", function()
     for _, ent in ipairs(ents.FindByClass("reforger_pod")) do
         ent:TakeDamage(10)
     end
 end)
 
--- Reforger.EntityFunctionsCalled(ent) -- called every Reforger.CallEntityFunctions
+-- Reforger.EntityFunctionsCalled(ent: Entity)
+-- Called every Reforger.CallEntityFunctions
+-- Example if ent (vehicle) reforgerBase is lvs (LVS based vehicle) then ignite it for 1 second
 hook.Add("Reforger.EntityFunctionsCalled", "Reforger_MyAddon.IgniteLVS", function(ent)
     if ent.reforgerBase == "lvs" then -- if entity based on LVS ignite it
         ent:Ignite(1, 1)
     end
 end)
 
--- Reforger.PreEntityDamage(ent, damage, attacker, inflictor, reforgerDamageType, damagePos) -- called every Reforger.ApplyDamageToEnt
+-- Reforger.PreEntityDamage(ent: Entity, damage: number, attacker: Entity, inflictor: Entity, reforgerDamageType: number Reforger.DamageType, damagePos: Vector)
+-- Called every Reforger.ApplyDamageToEnt
+-- Example if damage more than 10 then don't take damage (false)
 hook.Add("Reforger.PreEntityDamage", "Reforger_MyAddon.DamageBlock", function(ent, damage)
     if damage > 10 then return false end -- prevent damage if amount of damage more than 10
 end)
 
--- Reforger.PostEntityDamage(ent, damage, attacker, inflictor, reforgerDamageType, pos) -- called after damages applied in Reforger.ApplyDamageToEnt
+-- Reforger.PostEntityDamage(ent: Entity, damage: number, attacker: Entity, inflictor: Entity, reforgerDamageType: number Reforger.DamageType, damagePos: Vector)
+-- Called after damages applied in Reforger.ApplyDamageToEnt
+-- Example kill player if it's admin :D
 hook.Add("Reforger.PostEntityDamage", "Reforger_MyAddon.AdminInstantKill", function(ent)
     local ply = ent:IsPlayer() and ent or nil
 
@@ -50,7 +59,7 @@ end)
 --   effectName: string or nil — name of effect to use (e.g. "BloodImpact", "ManhackSparks")
 --   shouldDraw: boolean or nil — whether to actually draw the effect (false disables it)
 --
--- example disable blood for combine NPCs, show sparks instead if HP > 50
+-- Example disable blood for combine NPCs, show sparks instead if HP > 50
 hook.Add("Reforger.PodBloodEffect", "NoBloodForDroids", function(attacker, hitPos, damage)
     if IsValid(attacker) and attacker:IsNPC() and attacker:GetClass() == "npc_combine" then
         local shouldDraw = attacker:Health() > 50
@@ -62,7 +71,8 @@ end)
 -------- LVS ------------
 -------------------------
 
--- Reforger.LVS_BulletFired(table: bullet) -- Called once when LVS bullet fired. BULLET IS A TABLE
+-- Reforger.LVS_BulletFired(bullet: table)
+-- Called once when LVS bullet fired. BULLET IS A TABLE
 hook.Add("Reforger.LVS_BulletFired", "Reforger_MyAddon.LogBullet", function(bullet)
     PrintTable(bullet)
 
@@ -70,8 +80,10 @@ hook.Add("Reforger.LVS_BulletFired", "Reforger_MyAddon.LogBullet", function(bull
     -- for more about bullet data is here: https://github.com/SpaxscE/lvs_base/blob/main/lua/lvs_framework/autorun/lvs_bulletsystem.lua
 end)
 
+--------------------------------------------------------
+-- Example you can track LVS bullets in your local table.
+--------------------------------------------------------
 
--- Also for example you can track LVS bullets in your local table.
 local bullets = {}
 
 hook.Add("Reforger.GlobalThink", "Reforger_MyAddon.UpdateLVSBullets", function()
@@ -105,7 +117,13 @@ hook.Add("Reforger.LVS_BulletFired", "Reforger_MyAddon.AddLVSBulletToTracker", f
     table.insert(bullets, bullet)
 end)
 
--- Reforger.LVS_BulletOnCollide(bullet, trace) -- called when bullet collides
+--------------------------------------------------------
+-- End of Example
+--------------------------------------------------------
+
+
+-- Reforger.LVS_BulletOnCollide(bullet: table, trace: TraceResult)
+-- Called when bullet collides
 -- Here example when LVS bullet collides HelicopterMegaBomb effect appears
 hook.Add("Reforger.LVS_BulletOnCollide", "Reforger_MyAddon.LVS_BulletCollide", function(bullet, trace)
     if trace.Hit then
@@ -116,8 +134,9 @@ hook.Add("Reforger.LVS_BulletOnCollide", "Reforger_MyAddon.LVS_BulletCollide", f
     end
 end)
 
--- Reforger.LVS_BulletCallback(bullet, attacker, trace, dmginfo) -- called after bullet collides and bullet has Callback(attacker, trace, dmginfo) set
--- minimal example
+-- Reforger.LVS_BulletCallback(bullet: table, attacker: Entity, trace: TraceResult, dmginfo: CTakeDamageInfo)
+-- Called after bullet collides and bullet has Callback(attacker, trace, dmginfo) set
+-- Example
 hook.Add("Reforger.LVS_BulletCallback", "Reforger_MyAddon.BulletCallback", function(bullet, attacker, trace, dmginfo)
     if IsValid(trace.Entity) then
         print("[BulletCallback] Hit entity:", trace.Entity:GetClass())
