@@ -59,17 +59,18 @@ function Reforger.GetVehicleType(ent)
     elseif vehicle_base == "lvs" then
         local vt = ent:GetVehicleType()
 
-        local has_armor = ent._armorParts and #ent._armorParts > 0
+        local has_armor = ent._armorParts and #ent._armorParts > 2
 
-        if vt == "tank" or has_armor then
+        if has_armor then
+            Reforger.DevLog("This Vehicle has Armor")
+        end
+
+        Reforger.DevLog("LVS Vehicle Type ", vt)
+
+        if has_armor then -- tank or not. has_armor - means its armored
             vehicle_type = types.ARMORED
         else
             vehicle_type = types.LIGHT
-
-            local armor_parts = ent._armorParts
-            if istable(armor_parts) and next(armor_parts) ~= nil then
-                vehicle_type = types.ARMORED
-            end
         end
 
         if vt == "plane" then vehicle_type = types.PLANE end
@@ -82,8 +83,6 @@ function Reforger.GetVehicleType(ent)
             vehicle_type = types.LIGHT
         end
     end
-
-    Reforger.DevLog("Vehicle Type: "..vehicle_type)
 
     return vehicle_type
 end

@@ -15,10 +15,8 @@ function Reforger.RotorsGetDamage(veh, dmginfo)
 
     if rotor.rotorHealth == nil and veh.reforgerBase == VehBase.LVS then
         if rotor.GetHP then
-            Reforger.DevLog("[Rotor Init] Использован метод rotor:GetHP()")
             rotor.rotorHealth = rotor:GetHP()
         else
-            Reforger.DevLog("[Rotor Init] Использовано Reforger.GetHealth(veh) * 0.15")
             rotor.rotorHealth = Reforger.GetHealth(veh) * 0.15
         end
     end
@@ -114,15 +112,11 @@ end
 function Reforger.CacheRotors(veh)
     if not IsValid(veh) then return end
 
-    Reforger.DevLog("Tring to cache rotors for ", veh)
-
     if veh.reforgerBase == VehBase.Simfphys then return end
     if veh.reforgerType ~= VehType.HELICOPTER and veh.reforgerType ~=VehType.PLANE then return end
 
     timer.Simple(0, function()
         veh.reforgerRotors = Reforger.FindRotors(veh)
-
-        Reforger.DevLog("Cached " .. #veh.reforgerRotors .. " rotors for " .. tostring(veh))
 
         hook.Run("Reforger.RotorsCached", veh, veh.reforgerRotors)
     end)

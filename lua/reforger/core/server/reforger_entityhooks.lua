@@ -14,9 +14,6 @@ Reforger.EntityHooks = Reforger.EntityHooks or {}
 
 function Reforger.AddEntityFunction(idf, func)
     if not isstring(idf) or not isfunction(func) then return end
-    if Reforger.EntityHooks[idf] then
-        Reforger.DevLog("Overriding entity hook with ID: " .. idf)
-    end
     Reforger.EntityHooks[idf] = func
 end
 
@@ -27,6 +24,8 @@ function Reforger.CallEntityFunctions(ent)
     timer.Simple(0, function()
         ent.reforgerType = Reforger.GetVehicleType(ent)
         ent.reforgerBase = Reforger.GetVehicleBase(ent)
+
+        Reforger.DevLog("Vehicle Type: ", ent.reforgerType, " ", ent)
 
         Reforger.CacheRotors(ent)
         Reforger.CacheAmmorack(ent)

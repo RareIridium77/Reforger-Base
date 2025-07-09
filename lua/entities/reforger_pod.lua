@@ -28,19 +28,17 @@ local seqAdjustments = {
 function ENT:InitReforgerEntity()
     if CLIENT then return end
 
-    self.headZone = 0
-    self.min = Vector(0, 0, 0)
-    self.max = Vector(0, 0, 0)
+    self:SetNoDraw(true)
+    self:SetTrigger(true)
+    self:SetNotSolid(false)
+    self:SetCollisionGroup(COLLISION_GROUP_PLAYER)
+    self:SetCollisionBounds(Vector(-32, -32, 0), Vector(32, 32, 72))
+    self:PhysicsInit(SOLID_OBB)
+    self:SetPos(self:GetPos())
 
-    self.boundSet = false
-    self.lastSeqID = -1
-
-    self:SetNoDraw( true )
-    self:SetTrigger( true )
-    self:SetNotSolid( false )
-
-    self:SetCollisionGroup( COLLISION_GROUP_PLAYER )
     self.seqAdjustments = seqAdjustments
+    self.pseudoMin, self.pseudoMax = Vector(), Vector()
+    self.pseudoAng = Angle()
 end
 
 function ENT:SetPlayer(ply)
@@ -49,156 +47,156 @@ end
 
 function ENT:SetVehicle(veh)
     if not IsValid(veh) then return end
-
     self.Vehicle = veh
-    self:SetMoveParent(self.Vehicle)
+    self:SetMoveParent(veh)
 end
 
 function ENT:Think()
-    if CLIENT then return end
-
-    local veh = self.Vehicle
-    local ply = self.Player
-
-    if not IsValid(veh) or not IsValid(ply) or not ply:InVehicle() then
+    if CLIENT or not IsValid(self.Vehicle) or not IsValid(self.Player) or not self.Player:InVehicle() then
         self:Remove()
         return
     end
 
-    local seqID = ply:GetSequence()
-    local seqName = ply:GetSequenceName(seqID)
-    local vehPos = veh:GetPos()
-
-    local mins, maxs = ply:OBBMins(), ply:OBBMaxs()
-    local vmins, vmaxs = veh:OBBMins(), veh:OBBMaxs()
-
-    local newMin = Vector(vmins.x * 0.5, vmins.y * 0.5, vmins.z)
-    local newMax = Vector(vmaxs.x * 0.5, vmaxs.y * 0.5, vmaxs.z)
-
-    local offsetMultiplier = 2
-
+    local seqID = self.Player:GetSequence()
+    local seqName = self.Player:GetSequenceName(seqID)
     local adjust = self.seqAdjustments[seqName]
-    if adjust then
-        newMax.z = newMax.z * adjust.maxZ
-        newMin.z = newMax.z * adjust.minZ
-        offsetMultiplier = adjust.offset or offsetMultiplier
-    else
-        newMax.z = newMax.z * 1.9
-        newMin.z = newMax.z * 0.1
-    end
+    local vehPos, vehAng = self.Vehicle:GetPos(), self.Vehicle:GetAngles()
+    local offset = self.Vehicle:GetForward() * (adjust and adjust.offset or 2)
 
-    local offset = veh:GetForward() * offsetMultiplier
-    local newPos = vehPos + offset
+    self.pseudoPos, self.pseudoAng = vehPos + offset, vehAng
+    self.headZone = self.pseudoPos.z + (self.pseudoMax.z * 0.7225)
 
-    self.headZone = vehPos.z + (newMax.z * 0.7225)
+    local extraZ = 0
 
-    local scaledMin = newMin * 0.85
-    local scaledMax = newMax * 0.85
-
-    if not self.boundSet or self.lastSeqID ~= seqID then
-        self.boundSet = true
-        self.lastSeqID = seqID
-
-        self.min = scaledMin
-        self.max = scaledMax
-        self:SetPos(newPos)
-        self:PhysicsInit(SOLID_BBOX)
-        self:SetCollisionBounds(scaledMin, scaledMax)
-
-        Reforger.DevLog(("[FakeCollision] Updated bounds for %s (%d)"):format(seqName, seqID))
-    end
-
-    debugoverlay.Text(vehPos + Vector(0, 0, newMax.z),
-        ("max.z: %.2f seq: %s id: %d"):format(newMax.z, seqName, seqID), 0.02)
-
-    debugoverlay.Text(vehPos + Vector(0, 0, newMin.z),
-        ("min.z: %.2f"):format(newMin.z), 0.02)
-
-    debugoverlay.Box(newPos, scaledMin, scaledMax, 0.045, Color(202, 22, 22, 20))
-    debugoverlay.BoxAngles(newPos, scaledMin, scaledMax, self:GetAngles(), 0.045, Color(255, 255, 255, 20))
-
-    self:NextThink(CurTime() + 0.0015)
-    return true
-end
-
-function ENT:DoImpactEffect( tr, nDamageType )
-    return true 
-end
-
-function ENT:OnTakeDamage(dmginfo)
-    Reforger.DevLog("[FakeCollision] OnTakeDamage called | Damage: " .. tostring(dmginfo:GetDamage()))
-
-    local playerDamageConvar = GetConVar("sv_simfphys_playerdamage")
-
-    if not IsValid(self.Player) then
-        Reforger.DevLog("[FakeCollision] Invalid Player entity")
-        return
-    end
-
-    if not IsValid(self.VehicleBase) then
-        Reforger.DevLog("[FakeCollision] Invalid VehicleBase")
-        return
-    end
-
-    if attacker == self.Player then
-        Reforger.DevLog("[FakeCollision] Ignored self-damage")
-        return
-    end
-
-    if self.VehicleBase.reforgerBase == Reforger.VehicleBases.Simfphys and playerDamageConvar:GetInt() <= 0 then return end
-
-    local damage        = dmginfo:GetDamage()
-    local damageType    = dmginfo:GetDamageType()
-    local damagePos     = dmginfo:GetDamagePosition()
-    local damageCType   = dmginfo:GetDamageCustom()
-    local attacker      = dmginfo:GetAttacker()
-    local inflictor     = dmginfo:GetInflictor()
-    local isSmallDamage = bit.band(damageType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
-    local isTraced      = damageCType == 1
-
-    debugoverlay.Sphere(damagePos, 4, 0.5, Color(170, 255, 100, 140), true)
-
-    if not isTraced then
-        local headCheckPos = self:GetPos()
-        headCheckPos.z = self.headZone
-
-        local trace = util.TraceLine({
-            start = headCheckPos,
-            endpos = damagePos,
-            filter = {self, self.Player}
-        })
-
-        debugoverlay.Line(headCheckPos, damagePos, 1, Color(255, 0, 0), true)
-        if trace.Hit and trace.Entity ~= self.Vehicle then
-            Reforger.DevLog("[FakeCollision] Blocked damage: no visibility to hit pos")
-            return
+    local headBoneID = self.Player:LookupBone("ValveBiped.Bip01_Head1")
+    if headBoneID then
+        local headPos = self.Player:GetBonePosition(headBoneID)
+        if headPos and headPos.z > self.pseudoPos.z + self.pseudoMax.z then
+            local relativeHeadZ = headPos.z - self.pseudoPos.z
+            self.pseudoMax.z = relativeHeadZ * 1.05
+            self.headZone = self.pseudoPos.z + (self.pseudoMax.z * 0.7225)
+            extraZ = (self.pseudoMax.z - self.pseudoMin.z) * 0.2 -- запас на extent
+            Reforger.DevLog(("[FakeCollision] Adjusted pseudoMax.z to head bone height: %.2f"):format(self.pseudoMax.z))
         end
     end
 
-    if damage <= 0 or attacker == self.Player then return end
-    if inflictor == NULL then inflictor = game.GetWorld() end
+    if self.lastSeqID ~= seqID then
+        self.lastSeqID = seqID
+        local vmins, vmaxs = self.Vehicle:OBBMins(), self.Vehicle:OBBMaxs()
+        local newMin = Vector(vmins.x * 0.5, vmins.y * 0.5, vmins.z)
+        local newMax = Vector(vmaxs.x * 0.5, vmaxs.y * 0.5, vmaxs.z)
 
-    local plyPos = self.Player:GetPos()
-    local obbMinsZ = plyPos.z + self.Player:OBBMins().z
+        if adjust then
+            newMax.z = newMax.z * adjust.maxZ
+            newMin.z = newMax.z * adjust.minZ
+        else
+            newMax.z, newMin.z = newMax.z * 1.9, newMax.z * 0.1
+        end
 
-    if damagePos.z < obbMinsZ then
-        debugoverlay.Sphere(damagePos, 3, 0.5, Color(0, 0, 255), true)
+        self.pseudoMin, self.pseudoMax = newMin * 0.85, newMax * 0.85
+        self.headZone = self.pseudoPos.z + (self.pseudoMax.z * 0.7225)
+        Reforger.DevLog(('[FakeCollision] Updated pseudo-bounds for %s (%d)'):format(seqName, seqID))
+    end
+
+    local eyeDir = (self.Player:EyePos() - self.pseudoPos):GetNormalized()
+    local eyePos = self.pseudoPos + eyeDir * 35
+    local center = (eyePos + self.pseudoPos) * 0.5
+    local extent = Vector(
+        math.abs(eyePos.x - self.pseudoPos.x),
+        math.abs(eyePos.y - self.pseudoPos.y),
+        math.abs(eyePos.z - self.pseudoPos.z)
+    ) * 0.5
+    
+    if self:GetPos() ~= center then self:SetPos(center) end
+    
+    extent:Add(Vector(12, 10, 15 + extraZ))
+
+    if not self.lastExtent or self.lastExtent ~= extent then
+        self.lastExtent = extent
+        self:SetCollisionBounds(-extent, extent)
+    end
+    debugoverlay.BoxAngles(self.pseudoPos, self.pseudoMin, self.pseudoMax, self.pseudoAng, 0.06, Color(255, 255, 255, 10))
+    debugoverlay.Box(center, -extent, extent, 0.06, Color(231, 208, 2, 51))
+    self:NextThink(CurTime() + 0.025)
+    return true
+end
+
+function ENT:DoImpactEffect(tr, dmgType)
+    return true
+end
+
+function ENT:GetTraceFilter()
+    return function(ent)
+        return not (ent == self or ent == self.Player or ent.ReforgerDamageable)
+    end
+end
+
+function ENT:OnTakeDamage(dmginfo)
+    local attacker = dmginfo:GetAttacker()
+    if not IsValid(self.Player) or not IsValid(self.VehicleBase) or not IsValid(attacker) or attacker == self.Player then return end
+
+    local damage = dmginfo:GetDamage()
+    local inflictor = dmginfo:GetInflictor()
+    local damagePos = dmginfo:GetDamagePosition()
+    local dmgType = dmginfo:GetDamageType()
+    local isTraced = dmginfo:GetDamageCustom() == 1
+
+    if dmginfo:IsExplosionDamage() or dmgType == DMG_DIRECT or Reforger.IsFireDamageType(self.VehicleBase, dmgType) then
+        Reforger.ApplyPlayerDamage(self.Player, damage, attacker, inflictor, nil)
         return
     end
 
-    local isHeadshot = damagePos.z >= self.headZone - 4 and damagePos.z <= self.headZone + 6
+    Reforger.DevLog("[FakeCollision] OnTakeDamage | Damage: " .. tostring(damage))
+
+    if self.VehicleBase.reforgerBase == Reforger.VehicleBases.Simfphys and GetConVar("sv_simfphys_playerdamage"):GetInt() <= 0 then return end
+    
+    local margin = 3
+
+    local expandedMin = self.pseudoMin - Vector(margin, margin, margin)
+    local expandedMax = self.pseudoMax + Vector(margin, margin, margin)
+
+    local aimVector = attacker.GetAimVector and attacker:GetAimVector() or dmginfo:GetDamageForce():GetNormalized()
+
+    local hitPos, _, hit = util.IntersectRayWithOBB(
+        damagePos - (aimVector * 128),
+        aimVector * 256,
+        self.pseudoPos,
+        self.pseudoAng,
+        expandedMin,
+        expandedMax
+    )
+
+    if not hit then
+        Reforger.DevLog("[FakeCollision] Missed pseudo-hitbox")
+        return 0
+    end
+
+    if not isTraced and self.VehicleBase.reforgerType == "armored" then
+        local eyeDir = (self.Player:EyePos() - self.pseudoPos):GetNormalized()
+        local eyePos = self.pseudoPos + eyeDir * 35
+        local center = (eyePos + self.pseudoPos) * 0.5
+        local trace = util.TraceLine({ start = center, endpos = hitPos, filter = self:GetTraceFilter() })
+        if trace.Hit and trace.Entity ~= self.Vehicle then
+            Reforger.DevLog("[FakeCollision] Blocked damage: no visibility to hit pos")
+            return 0
+        end
+    end
+
+    if damage <= 0 then return end
+    if inflictor == NULL then inflictor = game.GetWorld() end
+
+    local plyZ = self.Player:GetPos().z + self.Player:OBBMins().z
+    if hitPos.z < plyZ then return end
+
+    local isHeadshot = hitPos.z >= self.headZone - 4 and hitPos.z <= self.headZone + 6
     local finalDamage = isHeadshot and damage or damage * 0.4
 
-    self.Player:SetLastHitGroup(isHeadshot and 0 or 2) -- 0 Head, 2 Chest
+    self.Player:SetLastHitGroup(isHeadshot and 0 or 2)
     Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
 
     local ed = EffectData()
-    ed:SetOrigin(damagePos)
-    ed:SetNormal((attacker:GetPos() - damagePos):GetNormalized())
+    ed:SetOrigin(hitPos)
+    ed:SetNormal((attacker:GetPos() - hitPos):GetNormalized())
     ed:SetScale(1.5)
-    ed:SetColor(BLOOD_COLOR_RED)
-    util.Effect("BloodImpact", ed, true, true)
-
-    debugoverlay.Line(damagePos, Vector(damagePos.x, damagePos.y, self.headZone), 0.5, isHeadshot and Color(255, 0, 0) or Color(100, 141, 255))
-    debugoverlay.Sphere(damagePos, 2, 0.2, isHeadshot and Color(255, 0, 0) or Color(255, 100, 100), true)
+    util.Effect("bloodspray", ed, true, true)
 end
