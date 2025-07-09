@@ -21,28 +21,38 @@ Reforger.PlayerBypassTypes = {
 Reforger.CollisionDamageConfig = {
     light = {
         minVelocity = 550,
-        fireChance = 0.9,
-        explodeChance = 0.09
+        fireChance = 0.5,
+        explodeChance = 0.1,
+        minDelay = 1,
+        maxDelay = 2.0
     },
     armored = {
         minVelocity = 800,
         fireChance = 0.1,
-        explodeChance = 0.05
+        explodeChance = 0.05,
+        minDelay = 2.0,
+        maxDelay = 4.0
     },
     plane = {
         minVelocity = 750,
-        fireChance = 0.4,
-        explodeChance = 0.1
+        fireChance = 0.1,
+        explodeChance = 0.75,
+        minDelay = 0.25,
+        maxDelay = 0.75
     },
     helicopter = {
         minVelocity = 450,
-        fireChance = 0.5,
-        explodeChance = 0.12
+        fireChance = 0.25,
+        explodeChance = 0.5,
+        minDelay = 0.75,
+        maxDelay = 2
     },
     undefined = {
         minVelocity = 500,
         fireChance = 0.5,
-        explodeChance = 0.5
+        explodeChance = 0.5,
+        minDelay = 1.5,
+        maxDelay = 3.0
     }
 }
 
@@ -140,11 +150,25 @@ function Reforger.HandleCollisionDamage(veh, dmginfo)
 			veh:SetOnSmoke( false )
         end
 
-        Reforger.IgniteLimited(veh, veh:BoundingRadius(), 2)
+        if canExplode then
+            Reforger.IgniteLimited(veh, veh:BoundingRadius(), 2)
+        else
+            timer.Simple(math.Rand(0.5, 2), function()
+                if not IsValid(veh) then return end
+
+                Reforger.IgniteLimited(veh, veh:BoundingRadius(), 2)
+            end)
+        end
     end
 
     if canExplode then
-        local delay = math.Rand(1.5, 2)
+        local delay = 0
+
+        if canIgnite then
+            local minDelay = cfg.minDelay or 1.5
+            local maxDelay = cfg.maxDelay or 2.0
+            delay = math.Rand(minDelay, maxDelay)
+        end
 
         timer.Simple(delay, function()
             if not IsValid(veh) then return end
