@@ -42,10 +42,10 @@ Reforger.CollisionDamageConfig = {
     },
     helicopter = {
         minVelocity = 450,
-        fireChance = 0.25,
-        explodeChance = 0.5,
-        minDelay = 0.75,
-        maxDelay = 2
+        fireChance = 0.75,
+        explodeChance = 0.25,
+        minDelay = 2,
+        maxDelay = 7
     },
     undefined = {
         minVelocity = 500,
