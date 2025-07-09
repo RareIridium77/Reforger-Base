@@ -10,12 +10,18 @@ Reforger.DamageType = {
     TRACED = 1,
 }
 
-Reforger.PlayerBypassTypes = {
-    [DMG_GENERIC] = false,
+Reforger.PodNoTraceDamage = { -- reforger_pod uses this
+    [DMG_GENERIC] = true,
     [DMG_BLAST] = true,
     [DMG_BLAST_SURFACE] = true,
-    [DMG_BUCKSHOT] = false,
-    [DMG_CLUB] = false
+    [DMG_BUCKSHOT] = true,
+    [DMG_CLUB] = true,
+    [DMG_SONIC] = true,
+    [DMG_ACID] = true,
+    [DMG_BURN] = true,
+    [DMG_SLOWBURN] = true,
+    [DMG_DROWN] = true,
+    [DMG_PARALYZE] = true
 }
 
 Reforger.CollisionDamageConfig = {

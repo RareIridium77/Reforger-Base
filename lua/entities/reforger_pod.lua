@@ -27,13 +27,16 @@ local seqAdjustments = {
 
 function ENT:InitReforgerEntity()
     if CLIENT then return end
-
+    
     self:SetNoDraw(true)
     self:SetTrigger(true)
+    
     self:SetNotSolid(false)
-    self:SetCollisionGroup(COLLISION_GROUP_PLAYER)
+    
+    self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- solid to bullets
     self:SetCollisionBounds(Vector(-32, -32, 0), Vector(32, 32, 72))
-    self:PhysicsInit(SOLID_OBB)
+    self:SetMoveType(MOVETYPE_NONE)
+    
     self:SetPos(self:GetPos())
 
     self.seqAdjustments = seqAdjustments
@@ -135,17 +138,20 @@ function ENT:OnTakeDamage(dmginfo)
     if not IsValid(self.Player) or not IsValid(self.VehicleBase) or not IsValid(attacker) or attacker == self.Player then return end
 
     local damage = dmginfo:GetDamage()
+
+    if damage < 1 then return end
+
     local inflictor = dmginfo:GetInflictor()
     local damagePos = dmginfo:GetDamagePosition()
     local dmgType = dmginfo:GetDamageType()
     local isTraced = dmginfo:GetDamageCustom() == 1
 
-    if dmginfo:IsExplosionDamage() or dmgType == DMG_DIRECT or Reforger.IsFireDamageType(self.VehicleBase, dmgType) then
+    if Reforger.PodNoTraceDamage[dmgType] or Reforger.IsFireDamageType(self.VehicleBase, dmgType) then
         Reforger.ApplyPlayerDamage(self.Player, damage, attacker, inflictor, nil)
         return
     end
 
-    Reforger.DevLog("[FakeCollision] OnTakeDamage | Damage: " .. tostring(damage))
+    Reforger.DevLog("[FakeCollision] OnTakeDamage | Damage: " .. tostring(damage), " Type: ", dmgType)
 
     if self.VehicleBase.reforgerBase == Reforger.VehicleBases.Simfphys and GetConVar("sv_simfphys_playerdamage"):GetInt() <= 0 then return end
 
@@ -193,8 +199,13 @@ function ENT:OnTakeDamage(dmginfo)
     self.Player:SetLastHitGroup(isHeadshot and 0 or 2)
     Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
 
-    local effectName, shouldDraw = hook.Run("Reforger.PodBloodEffect", attacker, hitPos, damage)
-    if shouldDraw ~= false then
-        util.Effect(effectName or "BloodImpact", EffectData():SetOrigin(hitPos):SetNormal(...):SetScale(1.5), true, true)
+    local effectName, shouldEffect = hook.Run("Reforger.PodBloodEffect", attacker, hitPos, damage)
+
+    if shouldEffect ~= false then 
+        local ed = EffectData()
+        ed:SetOrigin(hitPos)
+        ed:SetNormal(IsValid(attacker) and (attacker:GetPos() - hitPos):GetNormalized() or Vector(0, 0, -1))
+        ed:SetScale(1.5)
+        util.Effect(type(effectName) == "string" and effectName or "BloodImpact", ed, true, true)
     end
 end

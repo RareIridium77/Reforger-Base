@@ -15,10 +15,42 @@ ENT.DisableDuplicator = true
 
 if CLIENT then return end
 
+Reforger.BaseEntityIgnore = {
+    -- rpg_missile fix. https://github.com/ValveSoftware/source-sdk-2013/blob/master/src/game/server/hl2/weapon_rpg.cpp#L395
+    ["rpg_missile"] = {
+        i = true,
+        callback = function(missile, ent)
+            timer.Simple(0, function()
+                if not IsValid(missile) or not IsValid(ent) then return end
+
+                local original = {
+                    solid      = ent:GetSolid(),
+                    solidFlags = ent:GetSolidFlags(),
+                    colGroup   = ent:GetCollisionGroup(),
+                }
+
+                ent:SetSolid(SOLID_BBOX)
+                ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+                ent:RemoveSolidFlags(FSOLID_TRIGGER)
+
+                timer.Simple(0.05, function()
+                    if not IsValid(ent) then return end
+
+                    ent:SetSolid(original.solid)
+                    ent:SetCollisionGroup(original.colGroup)
+                    ent:SetSolidFlags(original.solidFlags)
+                end)
+            end)
+        end
+    }
+}
+
 function ENT:InitReforgerEntity()
 end
 
 function ENT:Initialize() 
+    self:SetKeyValue("m_takedamage", "1")
+
     self:InitReforgerEntity()
 end
 
@@ -59,4 +91,11 @@ function ENT:RemoveVehicleBase()
         table.RemoveByValue(veh.traceFilter, self)
         Reforger.DevLog("Removed reforger_engine from glide.traceFilter", self, veh)
     end
+end
+
+function ENT:StartTouch(e)
+    if not IsValid(e) then return end
+    local ignorance = Reforger.BaseEntityIgnore[e:GetClass()]
+
+    if istable(ignorance) and ignorance.i == true and ignorance.callback then ignorance.callback(e, self) end
 end

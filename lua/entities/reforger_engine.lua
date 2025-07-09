@@ -21,14 +21,16 @@ function ENT:InitReforgerEntity()
     self.min = Vector(-8, -8, -4)
     self.max = Vector(8, 8,  4)
 
+    
     self:SetNoDraw(true)
     self:SetTrigger(true)
+    
     self:SetNotSolid(false)
-
-    self:PhysicsInit(SOLID_BBOX)
-    self:SetMoveType(MOVETYPE_NONE)
-    self:SetCollisionGroup(COLLISION_GROUP_PLAYER)
+    
+    self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- solid to bullets
+    
     self:SetCollisionBounds(self.min, self.max)
+    self:SetMoveType(MOVETYPE_NONE)
 
     self.simHealth = -1
 
