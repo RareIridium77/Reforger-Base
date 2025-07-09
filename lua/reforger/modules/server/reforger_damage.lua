@@ -66,6 +66,8 @@ function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos
     end
 
     ent:TakeDamageInfo(dmg)
+
+    hook.Run("Reforger.PostEntityDamage", ent, damage, attacker, inflictor, custom, pos)
     return true
 end
 
@@ -77,8 +79,13 @@ end
 function Reforger.ApplyPlayersDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
     for _, ply in ipairs(Reforger.GetEveryone(veh)) do
-        Reforger.ApplyPlayerDamage(ply, dmginfo:GetDamage(), dmginfo:GetAttacker(), dmginfo:GetInflictor(), Reforger.DamageType.DIRECT)
-        hook.Run("Reforger.PlayerDirectDamage", ply, veh, dmginfo)
+        Reforger.ApplyPlayerDamage(
+            ply,
+            dmginfo:GetDamage(),
+            dmginfo:GetAttacker(),
+            dmginfo:GetInflictor(),
+            Reforger.DamageType.DIRECT
+        )
     end
 end
 

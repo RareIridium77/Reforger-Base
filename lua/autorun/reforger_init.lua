@@ -1,27 +1,11 @@
 --[[-------------------------------------------------------------------------
-    Reforger Base Framework
-    Created by: RareIridium77
-    Version: 0.2.3
+    [Reforger] Base v0.2.3 (Framework)
 
-    GitHub: https://github.com/RareIridium77/
-    Steam: https://steamcommunity.com/profiles/76561199078206115/
+    Unified system for advanced vehicle logic and damage simulation.
+    Supports LVS / Simfphys / Gmod Glide. Open-source.
 
-    Description:
-    This is the core "framework" used by addons under the [Reforger] tag.
-    It provides a unified damage, logic and compatibility layer between vehicle bases:
-      - LVS
-      - Simfphys
-      - GMod Glide
-
-    License:
-    This "framework" is open-source. You are free to use, modify and redistribute it
-    in your GMod projects. Attribution is appreciated but not required.
-
-    Recommended tag: [Reforger]
-
-    Notes:
-    This script is core infrastructure. Any modification should be done with understanding
-    of system-wide effects.
+    Created by RareIridium77
+    https://github.com/RareIridium77
 
 -------------------------------------------------------------------------]]
 
@@ -47,10 +31,19 @@ if CLIENT then return end
 
 util.AddNetworkString("Reforger.NotifyDisabled")
 
+local ignoreK = {
+    IsValidReforger = true,
+    SafeToString = true,
+    DevLog = true,
+    Log
+}
+
 local function DisableReforger()
     if not istable(Reforger) then return end
 
     for k, v in pairs(Reforger) do
+        if ignoreK[k] == true then continue end
+
         if isfunction(v) then
             Reforger[k] = function() end
         elseif istable(v) then
@@ -66,8 +59,9 @@ local function DisableReforger()
 end
 
 local function InitPostEntity()
-    if not LVS or not simfphys or not Glide then
-        Reforger.Log(Color(255, 155, 155), "You have no installed LVS/Glide/Simfphys BASE. Addon disabled.")
+    local noBases = not LVS and not simfphys and not Glide
+    if noBases then
+        Reforger.Log(Color(255, 155, 155), "[Reforger] No compatible vehicle base detected (LVS / Simfphys / Glide). Framework disabled.")
 
         DisableReforger() -- Disable whole Reforger нахуй
 
@@ -84,6 +78,8 @@ local function InitPostEntity()
     end
 
     timer.Simple(5, function()
+        if Reforger.Disabled or Reforger.Init then return end
+        
         hook.Run("Reforger.Init")
 
         Reforger.Init = true
