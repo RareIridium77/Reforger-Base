@@ -52,6 +52,7 @@ function ENT:Initialize()
     self:SetKeyValue("m_takedamage", "1")
 
     self:InitReforgerEntity()
+    hook.Run("Reforger.ReforgerEntityInit", self)
 end
 
 function ENT:Think()
