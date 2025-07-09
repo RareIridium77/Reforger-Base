@@ -5,7 +5,6 @@ Reforger.Log("Damage Module Loaded")
 Reforger.DamageType = {
     DIRECT = 0,
     TRACED = 1,
-    BURN   = 2
 }
 
 Reforger.PlayerBypassTypes = {
