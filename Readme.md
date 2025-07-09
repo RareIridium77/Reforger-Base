@@ -59,11 +59,22 @@ end)
 --   effectName: string or nil — name of effect to use (e.g. "BloodImpact", "ManhackSparks")
 --   shouldDraw: boolean or nil — whether to actually draw the effect (false disables it)
 --
--- Example disable blood for combine NPCs, show sparks instead if HP > 50
-hook.Add("Reforger.PodBloodEffect", "NoBloodForDroids", function(attacker, hitPos, damage)
+-- Example disable blood for combine NPCs, show sparks instead if HP > 50 (like they shooting with something sparks on player)
+hook.Add("Reforger.PodBloodEffect", "Reforger_MyAddon.NoBloodForDroids", function(attacker, hitPos, damage)
     if IsValid(attacker) and attacker:IsNPC() and attacker:GetClass() == "npc_combine" then
         local shouldDraw = attacker:Health() > 50
         return "ManhackSparks", shouldDraw
+    end
+end)
+
+-- Reforger.ReforgerEntityInit(ent: Entity reforger entity)
+-- Called when reforger_base_entity inits
+-- Example give damage after 5 seconds entity inits
+hook.Add("Reforger.ReforgerEntityInit", "Reforger_MyAddon.ReforgerEntityInited", function(ent)
+    if ent.ReforgerDamageable then
+        timer.Simple(5, function() -- take damage after 5 seconds entity inits
+            ent:TakeDamage(10) -- DMG_GENERIC with damage amount 10
+        end)
     end
 end)
 
