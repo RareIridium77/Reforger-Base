@@ -116,7 +116,6 @@ function ENT:Think()
         self:SetCollisionBounds(-extent, extent)
     end
     debugoverlay.BoxAngles(self.pseudoPos, self.pseudoMin, self.pseudoMax, self.pseudoAng, 0.06, Color(255, 255, 255, 10))
-    debugoverlay.Box(center, -extent, extent, 0.06, Color(231, 208, 2, 51))
     self:NextThink(CurTime() + 0.025)
     return true
 end
@@ -149,8 +148,8 @@ function ENT:OnTakeDamage(dmginfo)
     Reforger.DevLog("[FakeCollision] OnTakeDamage | Damage: " .. tostring(damage))
 
     if self.VehicleBase.reforgerBase == Reforger.VehicleBases.Simfphys and GetConVar("sv_simfphys_playerdamage"):GetInt() <= 0 then return end
-    
-    local margin = 3
+
+    local margin = 1.5
 
     local expandedMin = self.pseudoMin - Vector(margin, margin, margin)
     local expandedMax = self.pseudoMax + Vector(margin, margin, margin)

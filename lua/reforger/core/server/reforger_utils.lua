@@ -59,7 +59,7 @@ function Reforger.GetVehicleType(ent)
     elseif vehicle_base == "lvs" then
         local vt = ent:GetVehicleType()
 
-        local has_armor = ent._armorParts and #ent._armorParts > 2
+        local has_armor = ent._armorParts and #ent._armorParts >= 2
 
         if has_armor then
             Reforger.DevLog("This Vehicle has Armor")
