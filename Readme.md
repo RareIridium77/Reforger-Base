@@ -50,6 +50,7 @@ hook.Add("Reforger.LVS_BulletFired", "Reforger_MyAddon.LogBullet", function(bull
     PrintTable(bullet)
 
     -- to get current pos you can firstly check if bullet.curpos then -- dostuff end
+    -- for more about bullet data is here: https://github.com/SpaxscE/lvs_base/blob/main/lua/lvs_framework/autorun/lvs_bulletsystem.lua
 end)
 
 
