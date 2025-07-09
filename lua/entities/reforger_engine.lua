@@ -72,14 +72,20 @@ function ENT:Think()
         self:Remove()
         return
     end
-
+    debugoverlay.Box(
+        self:GetPos(),
+        self.min,
+        self.max,
+        0.2,
+        Color(255, 255, 255, 28)
+    )
     debugoverlay.BoxAngles(
         self:GetPos(),
         self.min,
         self.max,
         self:GetAngles(),
         0.2,
-        Color(255, 50, 50, 120)
+        Color(255, 50, 50, 49)
     )
 
     self:NextThink(CurTime())

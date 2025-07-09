@@ -4,6 +4,8 @@ if not Reforger then return end
 
 Reforger.Log("Reforger Engines Loaded (Simfphys, Glide)")
 
+local VehBase = Reforger.VehicleBases
+
 local function SpawnEngine(veh, offset)
     if not IsValid(veh) then return end
 
@@ -18,7 +20,7 @@ end
 function Reforger.CacheEngine(veh)
     if not Reforger.IsValidReforger(veh) then return end
     local base = veh.reforgerBase
-    if base == "lvs" or base == nil then return end
+    if base == VehBase.LVS or base == nil then return end
 
     if veh.reforgerEngine and IsValid(veh.reforgerEngine.entity) then
         veh.reforgerEngine.entity:Remove()
@@ -27,9 +29,9 @@ function Reforger.CacheEngine(veh)
 
     local engine_offset = Vector(0, 0, 0)
 
-    if base == "simfphys" and veh.EnginePos then
+    if base == VehBase.Simfphys and veh.EnginePos then
         engine_offset = veh.EnginePos
-    elseif base == "glide" and istable(veh.EngineFireOffsets) and istable(veh.EngineFireOffsets[1]) then
+    elseif base == VehBase.Glide and istable(veh.EngineFireOffsets) and istable(veh.EngineFireOffsets[1]) then
         engine_offset = veh:LocalToWorld(veh.EngineFireOffsets[1].offset)
     end
 
@@ -50,18 +52,18 @@ concommand.Add("reforger.check.enginepos", function(ply)
     local ent = tr.Entity
     if not IsValid(ent) then return ply:ChatPrint("[Reforger] Наведись на транспорт.") end
 
-    local base = ent.reforgerBase or "unknown"
+    local base = ent.reforgerBase or nil
     local offset = Vector(0, 0, 0)
     local label = "[Reforger]"
 
-    if base == "simfphys" then
+    if base == VehBase.Simfphys then
         if not ent.EnginePos then
             return ply:ChatPrint("[Reforger] [simfphys] Поле EnginePos отсутствует.")
         end
         offset = ent:GetPos() + ent.EnginePos
         label = "[simfphys]"
 
-    elseif base == "glide" then
+    elseif base == VehBase.Glide then
         local data = ent.EngineFireOffsets and ent.EngineFireOffsets[1]
         if not (istable(data) and isvector(data.offset)) then
             return ply:ChatPrint("[Reforger] [glide] Некорректный EngineFireOffsets.")

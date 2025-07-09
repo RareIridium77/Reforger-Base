@@ -90,10 +90,7 @@ function ENT:Think()
     local offset = veh:GetForward() * offsetMultiplier
     local newPos = vehPos + offset
 
-    self:SetPos(newPos)
-    self:SetAngles(veh:GetAngles())
-
-   self.headZone = vehPos.z + (newMax.z * 0.7225)
+    self.headZone = vehPos.z + (newMax.z * 0.7225)
 
     local scaledMin = newMin * 0.85
     local scaledMax = newMax * 0.85
@@ -104,7 +101,7 @@ function ENT:Think()
 
         self.min = scaledMin
         self.max = scaledMax
-
+        self:SetPos(newPos)
         self:PhysicsInit(SOLID_BBOX)
         self:SetCollisionBounds(scaledMin, scaledMax)
 
@@ -117,7 +114,8 @@ function ENT:Think()
     debugoverlay.Text(vehPos + Vector(0, 0, newMin.z),
         ("min.z: %.2f"):format(newMin.z), 0.02)
 
-    debugoverlay.Box(newPos, scaledMin, scaledMax, 0.045, Color(255, 255, 255, 20))
+    debugoverlay.Box(newPos, scaledMin, scaledMax, 0.045, Color(202, 22, 22, 20))
+    debugoverlay.BoxAngles(newPos, scaledMin, scaledMax, self:GetAngles(), 0.045, Color(255, 255, 255, 20))
 
     self:NextThink(CurTime() + 0.0015)
     return true
@@ -129,6 +127,8 @@ end
 
 function ENT:OnTakeDamage(dmginfo)
     Reforger.DevLog("[FakeCollision] OnTakeDamage called | Damage: " .. tostring(dmginfo:GetDamage()))
+
+    local playerDamageConvar = GetConVar("sv_simfphys_playerdamage")
 
     if not IsValid(self.Player) then
         Reforger.DevLog("[FakeCollision] Invalid Player entity")
@@ -144,6 +144,8 @@ function ENT:OnTakeDamage(dmginfo)
         Reforger.DevLog("[FakeCollision] Ignored self-damage")
         return
     end
+
+    if self.VehicleBase.reforgerBase == Reforger.VehicleBases.Simfphys and playerDamageConvar:GetInt() <= 0 then return end
 
     local damage        = dmginfo:GetDamage()
     local damageType    = dmginfo:GetDamageType()
@@ -192,14 +194,10 @@ function ENT:OnTakeDamage(dmginfo)
 
     local ed = EffectData()
     ed:SetOrigin(damagePos)
-    ed:SetNormal((attacker:GetPos() - damagePos):GetNormalized()) -- направление
-    ed:SetScale(1.5) -- сила
-    ed:SetColor(BLOOD_COLOR_RED) -- 0 = красная
+    ed:SetNormal((attacker:GetPos() - damagePos):GetNormalized())
+    ed:SetScale(1.5)
+    ed:SetColor(BLOOD_COLOR_RED)
     util.Effect("BloodImpact", ed, true, true)
-
-
-    Reforger.DevLog(("[FakeCollision] Final Damage: %.2f | Headshot: %s | PosZ: %.2f | HeadZone: %.2f")
-    :format(finalDamage, tostring(isHeadshot), damagePos.z, self.headZone))
 
     debugoverlay.Line(damagePos, Vector(damagePos.x, damagePos.y, self.headZone), 0.5, isHeadshot and Color(255, 0, 0) or Color(100, 141, 255))
     debugoverlay.Sphere(damagePos, 2, 0.2, isHeadshot and Color(255, 0, 0) or Color(255, 100, 100), true)

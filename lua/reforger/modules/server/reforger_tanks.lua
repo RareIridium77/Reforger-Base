@@ -2,11 +2,13 @@ if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Reforger Tanks Loaded")
 
-function Reforger.CacheAmmorack(veh)
-    local vehicle_type = veh.reforgerType
+local VehBase = Reforger.VehicleBases
+local VehType = Reforger.VehicleTypes
 
-    if veh.reforgerBase ~= "lvs" then return end
-    if vehicle_type ~= "armored" then
+function Reforger.CacheAmmorack(veh)
+
+    if veh.reforgerBase ~= VehBase.LVS then return end
+    if veh.reforgerType ~= VehType.ARMORED then
         veh.reforgerAmmoracks = {}
         return
     end

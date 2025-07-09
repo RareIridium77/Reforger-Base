@@ -2,6 +2,9 @@ if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Reforger Rotors Loaded")
 
+local VehBase = Reforger.VehicleBases
+local VehType = Reforger.VehicleTypes
+
 function Reforger.RotorsGetDamage(veh, dmginfo)
     if not IsValid(veh) then return end
 
@@ -10,7 +13,7 @@ function Reforger.RotorsGetDamage(veh, dmginfo)
     if not IsValid(rotor) then return end
     if not Reforger.IsRotorSpinning(veh, rotor) then return end
 
-    if rotor.rotorHealth == nil and veh.reforgerBase == "lvs" then
+    if rotor.rotorHealth == nil and veh.reforgerBase == VehBase.LVS then
         if rotor.GetHP then
             Reforger.DevLog("[Rotor Init] Использован метод rotor:GetHP()")
             rotor.rotorHealth = rotor:GetHP()
@@ -36,9 +39,9 @@ function Reforger.IsRotorSpinning(veh, rotor)
     local vehBase = veh.reforgerBase
     local isSpinning = false
     
-    if vehBase == "glide" then
+    if vehBase == VehBase.Glide then
         isSpinning = rotor.spinMultiplier > 0.2
-    elseif vehBase == "lvs" then
+    elseif vehBase == VehBase.LVS then
         local base = rotor:GetBase()
         isSpinning = base:GetThrottle() > 0.5
     end
@@ -72,16 +75,16 @@ function Reforger.FindRotors(veh)
     local rotors = {}
     local vehicle_type = veh.reforgerType
 
-    if veh.reforgerBase == "glide" then
+    if veh.reforgerBase == VehBase.Glide then
         if IsValid(veh.mainRotor) then table.insert(rotors, veh.mainRotor) end
         if IsValid(veh.tailRotor) then table.insert(rotors, veh.tailRotor) end
 
-        if #rotors == 0 and vehicle_type == "plane" then
+        if #rotors == 0 and vehicle_type == VehType.PLANE then
             rotors = Reforger.PairEntityAll(veh, "glide_rotor")
         end
     end
 
-    if veh.reforgerBase == "lvs" then
+    if veh.reforgerBase == VehBase.LVS then
         local lvs_rotors = {}
 
         if veh.TailRotor then table.insert(lvs_rotors, veh.TailRotor) end
@@ -101,7 +104,7 @@ function Reforger.FindRotors(veh)
 end
 
 function Reforger.RepairRotors(veh)
-    if veh.reforgerType ~= "plane" then return end
+    if veh.reforgerType ~= VehType.PLANE then return end
 
     for _, rotor in ipairs(Reforger.GetRotors(veh)) do
         if rotor.Repair then rotor:Repair() end
@@ -113,8 +116,8 @@ function Reforger.CacheRotors(veh)
 
     Reforger.DevLog("Tring to cache rotors for ", veh)
 
-    if veh.reforgerBase == "simfphys" then return end
-    if veh.reforgerType ~= "helicopter" and veh.reforgerType ~= "plane" then return end
+    if veh.reforgerBase == VehBase.Simfphys then return end
+    if veh.reforgerType ~= VehType.HELICOPTER and veh.reforgerType ~=VehType.PLANE then return end
 
     timer.Simple(0, function()
         veh.reforgerRotors = Reforger.FindRotors(veh)

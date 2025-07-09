@@ -2,6 +2,9 @@ if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Damage Module Loaded")
 
+local VehBase = Reforger.VehicleBases
+local VehType = Reforger.VehicleTypes
+
 Reforger.DamageType = {
     DIRECT = 0,
     TRACED = 1,
@@ -59,7 +62,7 @@ function Reforger.IsFireDamageType(veh, dmgType)
 
     local isFireDamage = dmgType == DMG_BURN
 
-    if veh.reforgerBase == "glide" then
+    if veh.reforgerBase == VehBase.Glide then
         isFireDamage = dmgType == DMG_DIRECT
     end
 
@@ -128,11 +131,11 @@ function Reforger.HandleCollisionDamage(veh, dmginfo)
     local canIgnite = math.random() < cfg.fireChance
 
     if canIgnite then
-        if veh.reforgerBase == "glide" then
+        if veh.reforgerBase == VehBase.Glide then
             veh:SetIsEngineOnFire(true)
         end
         
-        if veh.reforgerBase == "simfphys" then
+        if veh.reforgerBase == VehBase.Simfphys then
             veh:SetOnFire( true )
 			veh:SetOnSmoke( false )
         end
@@ -182,9 +185,7 @@ function Reforger.HandleRayDamage(veh, dmginfo)
     local isSmall = bit.band(dmgType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
 
     local finalDmg = originalDmg
-    if isSmall and veh.reforgerType == "armored" then
-        finalDmg = originalDmg * 0.25
-    end
+    if isSmall and veh.reforgerType == VehType.ARMORED then finalDmg = originalDmg * 0.25 end
 
     Reforger.ApplyDamageToEnt(hitEnt, finalDmg, dmginfo:GetAttacker(), dmginfo:GetInflictor(), Reforger.DamageType.TRACED, tr.HitPos)
 end

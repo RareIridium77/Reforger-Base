@@ -17,6 +17,12 @@ Reforger.VehicleTypes = {
     UNDEFINED = "undefined"
 }
 
+Reforger.VehicleBases = {
+    Glide = "glide",
+    LVS = "lvs",
+    Simfphys = "simfphys"
+}
+
 Reforger.ValidClasslist = {
     ["gmod_sent_vehicle_fphysics_gib"] = true,
     ["gmod_sent_vehicle_fphysics_base"] = true,

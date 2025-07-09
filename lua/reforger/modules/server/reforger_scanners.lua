@@ -2,6 +2,8 @@ if not Reforger then return end -- overthinker moment
 
 Reforger.Log("Reforger Scanners Loaded")
 
+local VehBase = Reforger.VehicleBases
+
 function Reforger.PairEntity(parent, className)
     if not IsValid(parent) or not isstring(className) then return nil end
 
@@ -76,7 +78,7 @@ function Reforger.GetEveryone(veh)
 
     local players = {}
 
-    if veh.IsSimfphyscar then
+    if veh.reforgerBase == VehBase.Simfphys then
         local driver = veh:GetDriver()
         if IsValid(driver) and driver:IsPlayer() and veh.RemoteDriver ~= driver then
             table.insert(players, driver)
@@ -94,7 +96,7 @@ function Reforger.GetEveryone(veh)
             end
         end
 
-    elseif veh.IsGlideVehicle and isfunction(veh.GetAllPlayers) then
+    elseif veh.reforgerBase == VehBase.Glide and isfunction(veh.GetAllPlayers) then
         local list = veh:GetAllPlayers()
         if istable(list) then
             for _, ply in ipairs(list) do
@@ -104,7 +106,7 @@ function Reforger.GetEveryone(veh)
             end
         end
 
-    elseif veh.LVS and isfunction(veh.GetEveryone) then
+    elseif veh.reforgerBase == VehBase.LVS and isfunction(veh.GetEveryone) then
         local list = veh:GetEveryone()
         if istable(list) then
             for _, ply in ipairs(list) do
