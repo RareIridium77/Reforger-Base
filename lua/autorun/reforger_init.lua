@@ -154,3 +154,35 @@ concommand.Add("reforger.reload", function(ply)
         print("[Reforger] Scripts reloaded manually.")
     end
 end)
+
+local bullets = {}
+
+hook.Add("Reforger.GlobalThink", "Reforger_MyAddon.UpdateLVSBullets", function()
+    for i = #bullets, 1, -1 do
+        local bullet = bullets[i]
+
+        if not istable(bullet) or bullet.bulletRemoved == true then
+            table.remove(bullets, i)
+            continue
+        end
+
+        if bullet.curpos then 
+            -- BE CAREFUL: DO NOT DRAW MANY debugoverlay RENDERS IN THINK! 
+            -- YOUR GAME WILL STALL OR FREEZE DUE TO OVERLAY ACCUMULATION!
+
+            debugoverlay.Sphere(bullet.curpos, 2, 0.025, Color(255, 255, 0), true)
+
+            -- BAD EXAMPLE (DON'T DO THIS IN THINK): 
+            -- Causes excessive overlapping overlays
+            ---------------------------------------->1<- big delay
+            -- debugoverlay.Sphere(bullet.curpos, 2, 1, Color(255, 255, 0), true)
+        end
+    end
+end)
+
+-- Adding LVS bullet to your table
+
+hook.Add("Reforger.LVS_BulletFired", "Reforger_MyAddon.AddLVSBulletToTracker", function(bullet)
+    if not istable(bullet) then return end
+    table.insert(bullets, bullet)
+end)

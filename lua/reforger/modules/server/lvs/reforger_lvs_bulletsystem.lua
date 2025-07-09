@@ -1,36 +1,74 @@
 if not LVS then return end
 
--- Shitty for shitty =D
-local function MainThink_Bullet()
-    if not LVS then
-        hook.Remove("Reforger.GlobalThink", "LVS_Reforger.BulletThink")
-        return
-    end
+hook.Add("Reforger.Init", "LVS_Reforger.ChangeBulletFire", function()
+    local origFireBullet = LVS.FireBullet
 
-    if not LVS._ActiveBullets then return end
+    function LVS:FireBullet(data)
+        origFireBullet(self, data)
 
-    for idx, bullet in pairs(LVS._ActiveBullets) do
-        if bullet.ReforgerChanged then continue end
+        local maxIndex = nil
+        local maxTime = 0
 
-        if not istable(bullet.Filter) then
-            bullet.Filter = {}
-        end
-
-        for i = #bullet.Filter, 1, -1 do
-            if not IsValid(bullet.Filter[i]) then
-                table.remove(bullet.Filter, i)
+        for idx, b in pairs(LVS._ActiveBullets) do
+            if istable(b) and b.StartTime and b.StartTime > maxTime then
+                maxTime = b.StartTime
+                maxIndex = idx
             end
         end
 
-        local attacker = bullet.Attacker
-        if IsValid(attacker) and IsValid(attacker.reforgerPod) then
-            table.insert(bullet.Filter, attacker.reforgerPod)
+        if maxIndex then
+            local bullet = LVS._ActiveBullets[maxIndex]
+            if not bullet then return end
+            
+            if bullet.ReforgerChanged then return end
+
+            if not istable(bullet.Filter) then
+                bullet.Filter = {}
+            end
+
+            for i = #bullet.Filter, 1, -1 do
+                if not IsValid(bullet.Filter[i]) then
+                    table.remove(bullet.Filter, i)
+                end
+            end
+
+            local attacker = bullet.Attacker
+
+            if IsValid(attacker) and IsValid(attacker.reforgerPod) then
+                table.insert(bullet.Filter, attacker.reforgerPod)
+            end
+
+            hook.Run("Reforger.LVS_BulletFired", bullet)
+
+            local bulletOnCollide = bullet.OnCollide
+            local bulletCallback = bullet.Callback
+            local bulletRemove = bullet.Remove
+
+            bullet.OnCollide = function( self, trace )
+                hook.Run("Reforger.LVS_BulletOnCollide", self, trace)
+
+                if bulletOnCollide then
+                    bulletOnCollide( self, trace )
+                end
+            end
+
+            bullet.Callback = function( self, attacker, trace, dmginfo )
+                hook.Run("Reforger.LVS_BulletCallback", self, attacker, trace, dmginfo)
+
+                if bulletCallback then
+                    bulletCallback( self, attacker, trace, dmginfo )
+                end
+            end
+
+            bullet.Remove = function( self )
+                if bulletRemove then
+                    bulletRemove( self )
+                end
+
+                self.bulletRemoved = true
+            end
+
+            bullet.ReforgerChanged = true
         end
-
-        hook.Run("Reforger.LVS_BulletFired", bullet)
-
-        bullet.ReforgerChanged = true
     end
-end
-
-hook.Add("Reforger.GlobalThink", "LVS_Reforger.BulletThink", MainThink_Bullet)
+end)

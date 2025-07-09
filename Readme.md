@@ -61,7 +61,8 @@ hook.Add("Reforger.GlobalThink", "Reforger_MyAddon.UpdateLVSBullets", function()
     for i = #bullets, 1, -1 do
         local bullet = bullets[i]
 
-        if not istable(bullet) then
+        -- if you want to properly remove bullet use bulletRemoved flag (Reforger set up)
+        if not istable(bullet) or bullet.bulletRemoved == true then
             table.remove(bullets, i)
             continue
         end
@@ -86,6 +87,27 @@ hook.Add("Reforger.LVS_BulletFired", "Reforger_MyAddon.AddLVSBulletToTracker", f
     if not istable(bullet) then return end
     table.insert(bullets, bullet)
 end)
+
+-- Reforger.LVS_BulletOnCollide(bullet, trace) -- called when bullet collides
+-- Here example when LVS bullet collides HelicopterMegaBomb effect appears
+hook.Add("Reforger.LVS_BulletOnCollide", "Reforger_MyAddon.LVS_BulletCollide", function(bullet, trace)
+    if trace.Hit then
+        debugoverlay.Sphere(trace.HitPos, 10, 1, Color(255, 255, 50), true)
+        local effectdata = EffectData()
+        effectdata:SetOrigin( trace.HitPos )
+        util.Effect( "HelicopterMegaBomb", effectdata )
+    end
+end)
+
+-- Reforger.LVS_BulletCallback(bullet, attacker, trace, dmginfo) -- called after bullet collides and bullet has Callback(attacker, trace, dmginfo) set
+-- minimal example
+hook.Add("Reforger.LVS_BulletCallback", "Reforger_MyAddon.BulletCallback", function(bullet, attacker, trace, dmginfo)
+    if IsValid(trace.Entity) then
+        print("[BulletCallback] Hit entity:", trace.Entity:GetClass())
+        print("[BulletCallback] Damage:", dmginfo:GetDamage())
+    end
+end)
+
 ```
 # Possibly Conflicting Addons
 
