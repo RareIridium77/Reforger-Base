@@ -193,9 +193,8 @@ function ENT:OnTakeDamage(dmginfo)
     self.Player:SetLastHitGroup(isHeadshot and 0 or 2)
     Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
 
-    local ed = EffectData()
-    ed:SetOrigin(hitPos)
-    ed:SetNormal((attacker:GetPos() - hitPos):GetNormalized())
-    ed:SetScale(1.5)
-    util.Effect("bloodspray", ed, true, true)
+    local effectName, shouldDraw = hook.Run("Reforger.PodBloodEffect", attacker, hitPos, damage)
+    if shouldDraw ~= false then
+        util.Effect(effectName or "BloodImpact", EffectData():SetOrigin(hitPos):SetNormal(...):SetScale(1.5), true, true)
+    end
 end

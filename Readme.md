@@ -43,7 +43,24 @@ hook.Add("Reforger.PostEntityDamage", "Reforger_MyAddon.AdminInstantKill", funct
     if IsValid(ply) and ply:IsAdmin() then ply:Kill() end
 end)
 
-LVS
+-- Reforger.PodBloodEffect(attacker: Entity, hitPos: Vector, damage: number)
+-- Called when a Reforger pod takes direct \ traced damage (e.g. bullet, trace damage, etc)
+-- 
+-- Return format:
+--   effectName: string or nil — name of effect to use (e.g. "BloodImpact", "ManhackSparks")
+--   shouldDraw: boolean or nil — whether to actually draw the effect (false disables it)
+--
+-- example disable blood for combine NPCs, show sparks instead if HP > 50
+hook.Add("Reforger.PodBloodEffect", "NoBloodForDroids", function(attacker, hitPos, damage)
+    if IsValid(attacker) and attacker:IsNPC() and attacker:GetClass() == "npc_combine" then
+        local shouldDraw = attacker:Health() > 50
+        return "ManhackSparks", shouldDraw
+    end
+end)
+
+-------------------------
+-------- LVS ------------
+-------------------------
 
 -- Reforger.LVS_BulletFired(table: bullet) -- Called once when LVS bullet fired. BULLET IS A TABLE
 hook.Add("Reforger.LVS_BulletFired", "Reforger_MyAddon.LogBullet", function(bullet)
