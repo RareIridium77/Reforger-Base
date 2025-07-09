@@ -109,6 +109,9 @@ function Reforger.IsValidReforger(ent)
     return false
 end
 
+function Reforger.SafeEntity(ent)
+    return IsValid(ent) and ent or game.GetWorld()
+end
 
 function Reforger.GetHealth(ent)
     if not Reforger.IsValidReforger() then return -1 end

@@ -18,9 +18,9 @@ Reforger.PlayerBypassTypes = {
 
 Reforger.CollisionDamageConfig = {
     light = {
-        minVelocity = 400,
-        fireChance = 0.3,
-        explodeChance = 0.35
+        minVelocity = 550,
+        fireChance = 0.9,
+        explodeChance = 0.09
     },
     armored = {
         minVelocity = 800,
@@ -28,21 +28,44 @@ Reforger.CollisionDamageConfig = {
         explodeChance = 0.05
     },
     plane = {
-        minVelocity = 600,
+        minVelocity = 750,
         fireChance = 0.4,
-        explodeChance = 0.5
+        explodeChance = 0.1
     },
     helicopter = {
-        minVelocity = 500,
+        minVelocity = 450,
         fireChance = 0.5,
-        explodeChance = 0.35
+        explodeChance = 0.12
     },
     undefined = {
         minVelocity = 500,
-        fireChance = 0.2,
-        explodeChance = 0.8
+        fireChance = 0.5,
+        explodeChance = 0.5
     }
 }
+
+function Reforger.IsSmallDamageType(dmgType)
+    assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
+    return bit.band(dmgType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
+end
+
+function Reforger.IsCollisionDamageType(dmgType)
+    assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
+    return bit.band(dmgType, DMG_CRUSH + DMG_VEHICLE) ~= 0
+end
+
+function Reforger.IsFireDamageType(veh, dmgType)
+    assert(IsValid(veh), "IS NOT VALID VEHICLE TO CHECK DAMAGE TYPE: " .. tostring(veh))
+    assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
+
+    local isFireDamage = dmgType == DMG_BURN
+
+    if veh.reforgerBase == "glide" then
+        isFireDamage = dmgType == DMG_DIRECT
+    end
+
+    return isFireDamage
+end
 
 function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
     if not IsValid(ent) then return false end
@@ -91,7 +114,10 @@ end
 
 function Reforger.HandleCollisionDamage(veh, dmginfo)
     if not IsValid(veh) then return end
-    if not (dmginfo:IsDamageType(DMG_CRUSH) or dmginfo:IsDamageType(DMG_VEHICLE) or dmginfo:IsDamageType(DMG_GENERIC)) then return end
+
+    local isCollisionDamage = Reforger.IsCollisionDamageType(dmginfo:GetDamageType())
+
+    if not isCollisionDamage then return end
 
     local vtype = veh.reforgerType or "undefined"
     local cfg = Reforger.CollisionDamageConfig[vtype] or Reforger.CollisionDamageConfig["undefined"]
@@ -99,24 +125,34 @@ function Reforger.HandleCollisionDamage(veh, dmginfo)
     local velocity = veh:GetVelocity():Length()
     if velocity < cfg.minVelocity then return end
 
-    local delay = math.Rand(1, 2)
     local canExplode = math.random() < cfg.explodeChance
     local canIgnite = math.random() < cfg.fireChance
 
-    if canIgnite and veh.SetIsEngineOnFire then
-        veh:SetIsEngineOnFire(true)
+    if canIgnite then
+        if veh.reforgerBase == "glide" then
+            veh:SetIsEngineOnFire(true)
+        end
+        
+        if veh.reforgerBase == "simfphys" then
+            veh:SetOnFire( true )
+			veh:SetOnSmoke( false )
+        end
+
+        Reforger.IgniteLimited(veh, veh:BoundingRadius(), 2)
     end
 
-    timer.Simple(delay, function()
-        if not IsValid(veh) then return end
-        if canExplode then
+    if canExplode then
+        local delay = math.Rand(1.5, 2)
+
+        timer.Simple(delay, function()
+            if not IsValid(veh) then return end
             if veh.Destroy then veh:Destroy() end
             if veh.Explode then veh:Explode() end
             if veh.ExplodeVehicle then veh:ExplodeVehicle() end
 
             Reforger.Log(string.format("[%s] Explosion by collision | V=%.0f | Delay=%.2fs", vtype, velocity, delay))
-        end
-    end)
+        end)
+    end
 end
 
 function Reforger.HandleRayDamage(veh, dmginfo)
