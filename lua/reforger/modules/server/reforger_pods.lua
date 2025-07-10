@@ -17,15 +17,19 @@ function Reforger.AddPlayerCollision(ply, veh)
     local base = baseVehicle and baseVehicle.reforgerBase or nil
     if base == nil then return end
 
-    pod:SetVehicleBase(baseVehicle)
-    pod:SetVehicle(veh)
-    pod:SetPlayer(ply)
-    pod:Spawn()
+    timer.Simple(0, function()
+        if not IsValid(baseVehicle) or not IsValid(veh) or not IsValid(ply) then return end
 
-    ply.reforgerPod = pod
+        pod:SetVehicleBase(baseVehicle)
+        pod:SetVehicle(veh)
+        pod:SetPlayer(ply)
+        pod:Spawn()
 
-    veh.reforgerPods = veh.reforgerPods or {}
-    veh.reforgerPods[ply] = pod
+        ply.reforgerPod = pod
+
+        veh.reforgerPods = veh.reforgerPods or {}
+        veh.reforgerPods[ply] = pod
+    end)
 end
 
 

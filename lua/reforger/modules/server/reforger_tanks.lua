@@ -47,18 +47,20 @@ function Reforger.GetAmmoracks(veh)
 end
 
 function Reforger.IsAmmorackDestroyed(veh)
-    if not IsValid(veh) or veh.reforgerAmmoracks == nil then return false end
-
-    local destroyed = false
+    if not IsValid(veh) or not istable(veh.reforgerAmmoracks) then return false end
 
     for _, ammorack in ipairs(veh.reforgerAmmoracks) do
-        if IsValid(ammorack) and ammorack:GetDestroyed() then
-            destroyed = true 
-            break 
+        if not IsValid(ammorack) then continue end
+
+        local hp = isfunction(ammorack.GetHP) and ammorack:GetHP() or 100
+        if hp <= 0 then return true end
+
+        if isfunction(ammorack.GetDestroyed) and ammorack:GetDestroyed() then
+            return true
         end
     end
 
-    return destroyed
+    return false
 end
 
 function Reforger.DamageDamagableParts(veh, damage)
@@ -90,13 +92,18 @@ concommand.Add("reforger.check.ammorack", function(ply, cmd, args)
     local ent = tr.Entity
 
     if not IsValid(ent) then
-        ply:ChatPrint("Вы не смотрите на технику.")
+        ply:ChatPrint("Look at vehicle.")
         return
     end
 
-    if not istable(ent.reforgerAmmoracks) then print("нету") return end
+    local ammoracks = Reforger.GetAmmoracks(ent)
+    if #ammoracks == 0 then
+        ply:ChatPrint("reforger.check.ammorack: Ammoracks not found.")
+        return
+    end
 
-    for _, ammorack in ipairs(ent.reforgerAmmoracks) do
-        print(ammorack)
+    for _, ammorack in ipairs(ammoracks) do
+        local info = string.format("[%s] HP: %s", tostring(ammorack), isfunction(ammorack.GetHP) and ammorack:GetHP() or "???")
+        ply:ChatPrint(info)
     end
 end)

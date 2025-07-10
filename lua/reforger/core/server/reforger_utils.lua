@@ -139,7 +139,7 @@ concommand.Add("reforger.destroy", function(ply)
 
     local tr = ply:GetEyeTrace()
     if not IsValid(tr.Entity) then
-        ply:ChatPrint("Смотрим не на сущность.")
+        ply:ChatPrint("Look at vehicle.")
         return
     end
 
@@ -151,4 +151,41 @@ concommand.Add("reforger.destroy", function(ply)
     if ent.Destroy then ent:Destroy() end
     if ent.Explode then ent:Explode() end
     if ent.ExplodeVehicle then ent:ExplodeVehicle() end
+end)
+
+concommand.Add("reforger.pair", function(ply, cmd, args)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+
+    local tr = ply:GetEyeTrace()
+    local ent = tr.Entity
+
+    if not IsValid(ent) then
+        ply:ChatPrint("Look to a vehicle.")
+        return
+    end
+
+    local classToFind = args[1]
+    if not classToFind or classToFind == "" then
+        ply:ChatPrint("Send argument of class. Example: reforger.pair lvs_wheeldrive_ammorack")
+        return
+    end
+
+    local found = Reforger.PairEntityAll(ent, classToFind)
+
+    if not istable(found) or #found == 0 then
+        ply:ChatPrint("Nothing found for: " .. classToFind)
+        return
+    end
+
+    ply:ChatPrint("Found " .. #found .. " objects of class: " .. classToFind)
+    for _, paired in ipairs(found) do
+        local desc = "[" .. tostring(paired) .. "]"
+        if isfunction(paired.GetHP) then
+            desc = desc .. " HP: " .. tostring(paired:GetHP())
+        end
+        if isfunction(paired.GetDestroyed) then
+            desc = desc .. " Destroyed: " .. tostring(paired:GetDestroyed())
+        end
+        ply:ChatPrint(desc)
+    end
 end)

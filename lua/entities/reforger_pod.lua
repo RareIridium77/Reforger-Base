@@ -18,7 +18,7 @@ if CLIENT then return end
 local seqAdjustments = {
     sit_rollercoaster = { maxZ = 1.9, minZ = 0.1, offset = -2 },
     sit               = { maxZ = 1.9, minZ = 0.1, offset = -5 },
-    sit_zen           = { maxZ = 1.9, minZ = 0.1 },
+    sit_zen           = { maxZ = 1.9, minZ = 0.1, offset = -5 },
     drive_pd          = { maxZ = 1.9, minZ = 0.1 },
     drive_airboat     = { maxZ = 1.9, minZ = 0.1, offset = 7 },
     drive_jeep        = { maxZ = 2.2, minZ = 0.1, offset = 7 },
@@ -64,7 +64,7 @@ function ENT:Think()
     local seqName = self.Player:GetSequenceName(seqID)
     local adjust = self.seqAdjustments[seqName]
     local vehPos, vehAng = self.Vehicle:GetPos(), self.Vehicle:GetAngles()
-    local offset = self.Vehicle:GetForward() * (adjust and adjust.offset or 2)
+    local offset = self.Vehicle:GetForward() * (adjust and adjust.offset or 0)
 
     self.pseudoPos, self.pseudoAng = vehPos + offset, vehAng
     self.headZone = self.pseudoPos.z + (self.pseudoMax.z * 0.7225)
@@ -118,7 +118,9 @@ function ENT:Think()
         self.lastExtent = extent
         self:SetCollisionBounds(-extent, extent)
     end
+
     debugoverlay.BoxAngles(self.pseudoPos, self.pseudoMin, self.pseudoMax, self.pseudoAng, 0.06, Color(255, 255, 255, 10))
+    debugoverlay.Text(self.pseudoPos, "Seq ID: "..tostring(seqID).." Seq Name: "..seqName, 0.06)
     self:NextThink(CurTime() + 0.025)
     return true
 end
@@ -151,8 +153,6 @@ function ENT:OnTakeDamage(dmginfo)
         return
     end
 
-    Reforger.DevLog("[FakeCollision] OnTakeDamage | Damage: " .. tostring(damage), " Type: ", dmgType)
-
     if self.VehicleBase.reforgerBase == Reforger.VehicleBases.Simfphys and GetConVar("sv_simfphys_playerdamage"):GetInt() <= 0 then return end
 
     local margin = 1.5
@@ -160,7 +160,20 @@ function ENT:OnTakeDamage(dmginfo)
     local expandedMin = self.pseudoMin - Vector(margin, margin, margin)
     local expandedMax = self.pseudoMax + Vector(margin, margin, margin)
 
-    local aimVector = attacker.GetAimVector and attacker:GetAimVector() or dmginfo:GetDamageForce():GetNormalized()
+    local aimVector = Vector(0, 0, 0)
+
+    if attacker.GetAimVector then
+        local vec = attacker:GetAimVector()
+        if isvector(vec) then
+            aimVector = vec
+        end
+    end
+
+    if aimVector:IsZero() then
+        local force = dmginfo:GetDamageForce()
+        if force:IsZero() then return end
+        aimVector = force:GetNormalized()
+    end
 
     local hitPos, _, hit = util.IntersectRayWithOBB(
         damagePos - (aimVector * 128),
@@ -187,17 +200,23 @@ function ENT:OnTakeDamage(dmginfo)
         end
     end
 
+    if isTraced and self.VehicleBase.reforgerType == "armored" then
+        damage = 0.35 * damage
+    end
+
     if damage <= 0 then return end
     if inflictor == NULL then inflictor = game.GetWorld() end
 
     local plyZ = self.Player:GetPos().z + self.Player:OBBMins().z
     if hitPos.z < plyZ then return end
 
-    local isHeadshot = hitPos.z >= self.headZone - 4 and hitPos.z <= self.headZone + 6
-    local finalDamage = isHeadshot and damage or damage * 0.4
+    local isHeadshot = hitPos.z >= self.headZone - 2 and hitPos.z <= self.headZone + 8
+    local finalDamage = isHeadshot and damage or isTraced and damage * 0.4 or damage * 0.85
 
     self.Player:SetLastHitGroup(isHeadshot and 0 or 2)
     Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
+
+    Reforger.DevLog("[FakeCollision] OnTakeDamage | Damage: " .. tostring(damage), " Type: ", dmgType, " Is Headshot? ", isHeadshot and "yes" or "no")
 
     local effectName, shouldEffect = hook.Run("Reforger.PodBloodEffect", attacker, hitPos, damage)
 
@@ -205,7 +224,7 @@ function ENT:OnTakeDamage(dmginfo)
         local ed = EffectData()
         ed:SetOrigin(hitPos)
         ed:SetNormal(IsValid(attacker) and (attacker:GetPos() - hitPos):GetNormalized() or Vector(0, 0, -1))
-        ed:SetScale(1.5)
+        ed:SetScale(damage * 0.05)
         util.Effect(type(effectName) == "string" and effectName or "BloodImpact", ed, true, true)
     end
 end
