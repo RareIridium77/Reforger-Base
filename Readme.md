@@ -10,8 +10,21 @@ Its main purpose is to provide a unified damage and logic framework for differen
 **For getting Reforger table write console command: `reforger.table`**
 
 **Also reforger can automaticly load your modules for reforger. From your addons folder.**
+
 **Example**:
 `my_addon/lua/reforger/m/server/reforger_my_module.lua`
+
+```lua
+-- /reforger/m/server/reforger_my_module.lua
+if Reforger then
+    for i = 0, 10 do
+        Reforger.Log("You loaded the test file")
+    end
+end
+```
+<img width="277" height="122" alt="изображение" src="https://github.com/user-attachments/assets/7d81278f-bc11-4919-944f-b199345c5f3e" />
+
+**The output**
 
 # Just a small examples
 
