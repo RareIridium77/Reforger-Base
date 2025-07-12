@@ -8,6 +8,9 @@ Its main purpose is to provide a unified damage and logic framework for differen
 - **[Gmod Glide](https://github.com/StyledStrike/gmod-glide)**
 
 **For getting Reforger table write console command: `reforger.table`**
+**Also reforger can automaticly load your modules for reforger. From your addons folder.**
+**Example**:
+`my_addon/lua/reforger/m/server/reforger_my_module.lua`
 
 # Just a small examples
 
