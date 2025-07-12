@@ -7,6 +7,8 @@ Its main purpose is to provide a unified damage and logic framework for differen
 - **[Simfphys](https://github.com/SpaxscE/simfphys_base)** 
 - **[Gmod Glide](https://github.com/StyledStrike/gmod-glide)**
 
+For getting Reforger table write console command: reforger.table
+
 # Just a small examples
 
 ```lua
