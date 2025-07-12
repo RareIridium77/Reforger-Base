@@ -37,7 +37,3 @@ hook.Add("Reforger.Init", "Glide.InitPodFixer", function()
         Reforger.Log("Glide AIM Positioning fixed")
     end)
 end)
-
-do
-    Glide_ActivateFixator()
-end

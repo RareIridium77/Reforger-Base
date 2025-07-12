@@ -45,43 +45,6 @@ end
 
 -- shit is lower
 
-concommand.Add("reforger.check.enginepos", function(ply)
-    if not Reforger.AdminDevToolValidation(ply) then return end
-
-    local tr = ply:GetEyeTrace()
-    local ent = tr.Entity
-    if not IsValid(ent) then return ply:ChatPrint("[Reforger] Наведись на транспорт.") end
-
-    local base = ent.reforgerBase or nil
-    local offset = Vector(0, 0, 0)
-    local label = "[Reforger]"
-
-    if base == VehBase.Simfphys then
-        if not ent.EnginePos then
-            return ply:ChatPrint("[Reforger] [simfphys] Поле EnginePos отсутствует.")
-        end
-        offset = ent:GetPos() + ent.EnginePos
-        label = "[simfphys]"
-
-    elseif base == VehBase.Glide then
-        local data = ent.EngineFireOffsets and ent.EngineFireOffsets[1]
-        if not (istable(data) and isvector(data.offset)) then
-            return ply:ChatPrint("[Reforger] [glide] Некорректный EngineFireOffsets.")
-        end
-        offset = ent:LocalToWorld(data.offset)
-        label = "[glide]"
-
-    else
-        return ply:ChatPrint("[Reforger] Неизвестная система транспорта: " .. base)
-    end
-
-    debugoverlay.Sphere(offset, 8, 3, Color(255, 0, 0), true)
-    debugoverlay.Line(ent:GetPos(), offset, 3, Color(0, 255, 0), true)
-
-    ply:ChatPrint(label .. " Позиция двигателя: " .. tostring(offset))
-    print(label, ent, "Engine Pos:", offset)
-end)
-
 local function FormatValue(v)
     if isvector(v) then
         return string.format("Vector(%.2f, %.2f, %.2f)", v.x, v.y, v.z)
@@ -112,7 +75,7 @@ local function PrintTableRecursive(tbl, indent, visited)
                     visited[v] = true
                     PrintTableRecursive(v, indent + 1, visited)
                 else
-                    print(prefix .. "  [Цикл обнаружен]")
+                    print(prefix .. "  ")
                 end
                 print(prefix .. "}")
             else
@@ -126,16 +89,13 @@ concommand.Add("reforger.dump.vehicle", function(ply)
     if not Reforger.AdminDevToolValidation(ply) then return end
 
     local ent = ply:GetEyeTrace().Entity
-    if not IsValid(ent) then return ply:ChatPrint("[Reforger] Наведись на машину.") end
-    if not ent:IsVehicle() and not Reforger.IsValidReforger(ent) then
-        return ply:ChatPrint("[Reforger] Это не транспорт.")
-    end
+    if not Reforger.IsValidReforger(ent) then return ply:ChatPrint("[Reforger] Aim at Vehicle.") end
 
-    ply:ChatPrint("[Reforger] Вывод содержимого таблицы сущности...")
+    ply:ChatPrint("[Reforger] Printing Table...")
     print("[Reforger] --- ENTITY TABLE --- [" .. tostring(ent) .. "] ---")
     PrintTableRecursive(ent:GetTable())
     print("[Reforger] --- END ---")
-    ply:ChatPrint("[Reforger] Готово.")
+    ply:ChatPrint("[Reforger] Ready.")
 end)
 
 local function SearchTable(tbl, searchTerm, path, visited)
@@ -176,26 +136,21 @@ concommand.Add("reforger.search.data", function(ply, cmd, args)
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity
 
-    if not IsValid(ent) then
-        ply:ChatPrint("[Reforger] Наведись на машину.")
-        return
-    end
-
-    if not ent:IsVehicle() and not Reforger.IsValidReforger(ent) then
-        ply:ChatPrint("[Reforger] Это не транспортная сущность.")
+    if not Reforger.IsValidReforger(ent) then
+        ply:ChatPrint("[Reforger] Aim at vehicle.")
         return
     end
 
     local search = args[1]
     if not search or search == "" then
-        ply:ChatPrint("[Reforger] Укажи ключевое слово для поиска.")
+        ply:ChatPrint("[Reforger] Send key word in arguments (only one argument)")
         return
     end
 
-    ply:ChatPrint("[Reforger] Поиск по слову \"" .. search .. "\"...")
+    ply:ChatPrint("[Reforger] Searching for \"" .. search .. "\"...")
 
     local tbl = ent:GetTable()
     SearchTable(tbl, search, ent:GetClass())
 
-    ply:ChatPrint("[Reforger] Поиск завершён.")
+    ply:ChatPrint("[Reforger] Searching end.")
 end)

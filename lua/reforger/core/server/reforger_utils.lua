@@ -144,7 +144,8 @@ concommand.Add("reforger.destroy", function(ply)
     end
 
     local ent = tr.Entity
-    if not IsValid(ent) then
+    if not Reforger.IsValidReforger(ent) then
+        ply:ChatPrint("Look at vehicle.")
         return 
     end
 
@@ -188,4 +189,32 @@ concommand.Add("reforger.pair", function(ply, cmd, args)
         end
         ply:ChatPrint(desc)
     end
+end)
+
+concommand.Add("reforger.get.type", function(ply, cmd)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+
+    local tr = ply:GetEyeTrace()
+    local ent = tr.Entity
+
+    if not Reforger.IsValidReforger(ent) then
+        ply:ChatPrint("Look to a vehicle.")
+        return
+    end
+
+    ply:ChatPrint("Vehicle Type Is "..ent.reforgerType)
+end)
+
+concommand.Add("reforger.get.base", function(ply, cmd)
+    if not Reforger.AdminDevToolValidation(ply) then return end
+
+    local tr = ply:GetEyeTrace()
+    local ent = tr.Entity
+
+    if not Reforger.IsValidReforger(ent) then
+        ply:ChatPrint("Look to a vehicle.")
+        return
+    end
+
+    ply:ChatPrint("Vehicle Base Is "..ent.reforgerBase)
 end)

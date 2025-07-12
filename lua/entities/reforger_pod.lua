@@ -78,7 +78,7 @@ function ENT:Think()
             local relativeHeadZ = headPos.z - self.pseudoPos.z
             self.pseudoMax.z = relativeHeadZ * 1.05
             self.headZone = self.pseudoPos.z + (self.pseudoMax.z * 0.7225)
-            extraZ = (self.pseudoMax.z - self.pseudoMin.z) * 0.2 -- запас на extent
+            extraZ = (self.pseudoMax.z - self.pseudoMin.z) * 0.2 --margin for extent
             Reforger.DevLog(("[FakeCollision] Adjusted pseudoMax.z to head bone height: %.2f"):format(self.pseudoMax.z))
         end
     end

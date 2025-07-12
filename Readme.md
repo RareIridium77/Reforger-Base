@@ -7,6 +7,25 @@ Its main purpose is to provide a unified damage and logic framework for differen
 - **[Simfphys](https://github.com/SpaxscE/simfphys_base)** 
 - **[Gmod Glide](https://github.com/StyledStrike/gmod-glide)**
 
+**For getting Reforger table write console command: `reforger.table`**
+
+**Also reforger can automaticly load your modules for reforger. From your addons folder.**
+
+**Example**:
+`my_addon/lua/reforger/m/server/reforger_my_module.lua`
+
+```lua
+-- /reforger/m/server/reforger_my_module.lua
+if Reforger then
+    for i = 0, 10 do
+        Reforger.Log("You loaded the test file")
+    end
+end
+```
+<img width="277" height="122" alt="изображение" src="https://github.com/user-attachments/assets/7d81278f-bc11-4919-944f-b199345c5f3e" />
+
+**The output**
+
 # Just a small examples
 
 ```lua
@@ -50,6 +69,51 @@ hook.Add("Reforger.PostEntityDamage", "Reforger_MyAddon.AdminInstantKill", funct
     local ply = ent:IsPlayer() and ent or nil
 
     if IsValid(ply) and ply:IsAdmin() then ply:Kill() end
+end)
+
+-- Reforger.PreRotorDamage(rotor: Entity, dmginfo: CTakeDamageInfo)
+-- Called when rotor gets damage.
+-- You can change amount of damage with dmginfo:SetDamage or dmginfo: ScaleDamage
+--
+-- Return format:
+--   allowDamage: bool
+-- return false to block damage
+-- Example destroy on any damage. Doesn't matter how many damage
+hook.Add("Reforger.PreRotorDamage", "Reforger_MyAddon.RotorDamageHandle", function(rotor)
+    Reforger.DestroyRotor(rotor) -- it's safe
+end)
+
+-- Reforger.PostRotorDamage(rotor: Entity, dmginfo: CTakeDamageInfo)
+-- Called after rotor gets damaged
+-- You can't change amount of damage. Hook just gives you damage information and you can handle it
+--
+-- Example if rotors vehicle base is glide then destroy it
+hook.Add("Reforger.PostRotorDamage", "Reforger_MyAddon.RotorADamagedHandle", function(rotor, vehicle)
+    if not IsValid(rotor) then return end
+    local veh = rotor.reforgerVehicle
+
+    if not IsValid(veh) then print("vehicle is not valid") return end
+    
+    local base = veh.reforgerBase
+
+    if base == "glide" then
+        Reforger.DestroyRotor(rotor)
+    end
+end)
+
+-- Reforger.RotorDestroyed(rotor: Entity)
+-- Called when rotor gets destroyed
+-- Example play effect when rotor destroyed
+hook.Add("Reforger.RotorDestroyed", "Reforger_MyAddon.RotorDestroyHandle", function(rotor)
+    if not IsValid(rotor) then return end
+
+    -- code from wiki
+    -- https://wiki.facepunch.com/gmod/util.Effect
+
+    local vPoint = rotor:GetPos() -- get position of rotor
+    local effectdata = EffectData()
+    effectdata:SetOrigin( vPoint )
+    util.Effect( "HelicopterMegaBomb", effectdata )
 end)
 
 -- Reforger.PodBloodEffect(attacker: Entity, hitPos: Vector, damage: number)
@@ -163,4 +227,3 @@ end)
 ## License
 
 You can freely use and modify this base within your GMod projects, but attribution is appreciated.
-

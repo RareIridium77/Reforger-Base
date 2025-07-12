@@ -74,7 +74,7 @@ concommand.Add("reforger.dump.net", function(ply, cmd, args)
     local ent = tr.Entity
 
     if not Reforger.IsValidReforger(ent) then
-        Reforger.Log("Наведись на сущность")
+        Reforger.Log("Look at entity.")
         return
     end
 

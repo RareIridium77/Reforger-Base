@@ -91,7 +91,7 @@ concommand.Add("reforger.check.ammorack", function(ply, cmd, args)
     local tr = ply:GetEyeTrace()
     local ent = tr.Entity
 
-    if not IsValid(ent) then
+    if not Reforger.IsValidReforger(ent) then
         ply:ChatPrint("Look at vehicle.")
         return
     end
