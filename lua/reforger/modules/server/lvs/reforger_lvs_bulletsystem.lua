@@ -52,11 +52,11 @@ hook.Add("Reforger.Init", "LVS_Reforger.ChangeBulletFire", function()
                 end
             end
 
-            bullet.Callback = function( attacker, trace, dmginfo )
-                hook.Run("Reforger.LVS_BulletCallback", bullet, attacker, trace, dmginfo)
+            bullet.Callback = function(attacker, trace, dmginfo)
+                hook.Run("Reforger.LVS_BulletCallback", bullet, trace, attacker, dmginfo)
 
                 if bulletCallback then
-                    bulletCallback( attacker, trace, dmginfo )
+                    bulletCallback(attacker, trace, dmginfo)
                 end
             end
 

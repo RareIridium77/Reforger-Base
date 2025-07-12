@@ -209,10 +209,10 @@ hook.Add("Reforger.LVS_BulletOnCollide", "Reforger_MyAddon.LVS_BulletCollide", f
     end
 end)
 
--- Reforger.LVS_BulletCallback(bullet: table, attacker: Entity, trace: TraceResult, dmginfo: CTakeDamageInfo)
+-- Reforger.LVS_BulletCallback(bullet: table, trace: TraceResult, attacker: Entity, dmginfo: CTakeDamageInfo)
 -- Called after bullet collides and bullet has Callback(attacker, trace, dmginfo) set
 -- Example
-hook.Add("Reforger.LVS_BulletCallback", "Reforger_MyAddon.BulletCallback", function(bullet, attacker, trace, dmginfo)
+hook.Add("Reforger.LVS_BulletCallback", "Reforger_MyAddon.BulletCallback", function(bullet, trace, attacker, dmginfo)
     if IsValid(trace.Entity) then
         print("[BulletCallback] Hit entity:", trace.Entity:GetClass())
         print("[BulletCallback] Damage:", dmginfo:GetDamage())
