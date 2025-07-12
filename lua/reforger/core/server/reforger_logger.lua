@@ -9,8 +9,6 @@
 
 -------------------------------------------------------------------------]]
 
-Reforger = Reforger or {}
-
 local dev_cvar = GetConVar("developer")
 
 function Reforger.Log(...)
