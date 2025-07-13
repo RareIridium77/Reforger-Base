@@ -69,17 +69,19 @@ end
 
 function Reforger.IsCollisionDamageType(dmgType)
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
-    return bit.band(dmgType, DMG_CRUSH + DMG_VEHICLE) ~= 0
+    return (dmgType == (DMG_VEHICLE + DMG_CRUSH) or dmgType == DMG_VEHICLE or dmgType == DMG_CRUSH)
 end
 
 function Reforger.IsFireDamageType(veh, dmgType)
     assert(IsValid(veh), "IS NOT VALID VEHICLE TO CHECK DAMAGE TYPE: " .. tostring(veh))
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
 
-    local isFireDamage = dmgType == DMG_BURN
+    ------------------------------------------- Idk why but damage provides like that when vehicle is on fire
+
+    local isFireDamage = dmgType == DMG_BURN or (dmgType == DMG_CRUSH and veh:IsOnFire())
 
     if veh.reforgerBase == VehBase.Glide then
-        isFireDamage = dmgType == DMG_DIRECT
+        isFireDamage = dmgType == DMG_DIRECT or (dmgType == DMG_CRUSH and veh:IsOnFire())
     end
 
     return isFireDamage
@@ -246,7 +248,6 @@ function Reforger.IgniteLimited(ent, size, repeatCount)
 
         ent:Ignite(5, radius)
     end)
-
 end
 
 function Reforger.StopLimitedFire(ent)
