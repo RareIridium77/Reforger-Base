@@ -76,16 +76,13 @@ function Reforger.IsFireDamageType(veh, dmgType)
     assert(IsValid(veh), "IS NOT VALID VEHICLE TO CHECK DAMAGE TYPE: " .. tostring(veh))
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
 
-    ------------------------------------------- Idk why but damage provides like that when vehicle is on fire
-
-    local isFireDamage = dmgType == DMG_BURN or (dmgType == DMG_CRUSH and veh:IsOnFire())
-
     if veh.reforgerBase == VehBase.Glide then
-        isFireDamage = dmgType == DMG_DIRECT or (dmgType == DMG_CRUSH and veh:IsOnFire())
+        return dmgType == DMG_DIRECT or (dmgType == DMG_CRUSH and veh:IsOnFire())
     end
 
-    return isFireDamage
+    return dmgType == DMG_BURN or (dmgType == DMG_DIRECT and veh:IsOnFire())
 end
+
 
 function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
     if not IsValid(ent) then return false end
