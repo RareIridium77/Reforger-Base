@@ -48,10 +48,31 @@ function Reforger.Convar(name)
     return nil
 end
 
-function Reforger.SafeInt(name, fallback)
+function Reforger.SafeCvar(name, mode, fallback)
     local cvar = Reforger.Convar(name)
-    if cvar and isfunction(cvar.GetInt) then
+    if not cvar then return fallback or -1 end
+
+    assert(isstring(mode), "mode is not STRING value")
+
+    mode = string.lower(mode)
+
+    if mode == "int" and isfunction(cvar.GetInt) then
         return cvar:GetInt()
+    elseif mode == "float" and isfunction(cvar.GetFloat) then
+        return cvar:GetFloat()
+    elseif mode == "bool" and isfunction(cvar.GetBool) then
+        return cvar:GetBool()
+    elseif mode == "string" and isfunction(cvar.GetString) then
+        return cvar:GetString()
     end
+
     return fallback or -1
+end
+
+function Reforger.SafeInt(name, fallback)
+    return Reforger.SafeCvar(name, "int", fallback or -1)
+end
+
+function Reforger.SafeFloat(name, fallback)
+    return Reforger.SafeCvar(name, "float", fallback or -1)
 end
