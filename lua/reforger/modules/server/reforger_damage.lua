@@ -72,17 +72,18 @@ function Reforger.IsCollisionDamageType(dmgType)
     return (dmgType == (DMG_VEHICLE + DMG_CRUSH) or dmgType == DMG_VEHICLE or dmgType == DMG_CRUSH)
 end
 
+local FIRE_DAMAGE_MASK = bit.bor(DMG_BURN, DMG_SLOWBURN, DMG_DIRECT)
+
 function Reforger.IsFireDamageType(veh, dmgType)
     assert(IsValid(veh), "IS NOT VALID VEHICLE TO CHECK DAMAGE TYPE: " .. tostring(veh))
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
 
     if veh.reforgerBase == VehBase.Glide then
-        return dmgType == DMG_DIRECT or (dmgType == DMG_CRUSH and veh:IsOnFire())
+        return dmgType == DMG_DIRECT or (bit.band(dmgType, DMG_CRUSH) ~= 0 and veh:IsOnFire())
     end
 
-    return dmgType == DMG_BURN or (dmgType == DMG_DIRECT and veh:IsOnFire())
+    return bit.band(dmgType, FIRE_DAMAGE_MASK) ~= 0
 end
-
 
 function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
     if not IsValid(ent) then return false end
