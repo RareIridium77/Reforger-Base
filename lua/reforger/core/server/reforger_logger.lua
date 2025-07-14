@@ -9,35 +9,47 @@
 
 -------------------------------------------------------------------------]]
 
+Reforger = Reforger or {}
+
 local dev_cvar = GetConVar("developer")
 
-function Reforger.Log(...)
+local loglevels = {
+    INFO = "INFO",
+    WARN = "WARN",
+    DEV  = "DEV",
+    ERROR = "ERROR"
+}
+
+Reforger.LogLevels = loglevels
+
+Reforger.LogColors = {
+    INFO  = Color(146, 236, 104),
+    WARN  = Color(238, 105, 52),
+    DEV   = Color(128, 104, 236),
+    ERROR = Color(255, 0, 0),
+    TEXT  = Color(100, 178, 241),
+    LOC   = Color(200, 200, 200)
+}
+
+function Reforger.LogMessage(level, ...)
+    local colorLevel = Reforger.LogColors[level] or color_white
     local args = {...}
 
-    MsgC(Color(146, 236, 104), "[Reforger] ")
+    MsgC(colorLevel, string.format("[%s-Reforger] ", level))
 
-    for _, arg in ipairs(args) do
-        MsgC(Color(100, 178, 241), Reforger.SafeToString(arg))
+    -- Optional: include file + line for DEV logs
+    if level == "DEV" then
+        local info = debug.getinfo(3, "Slfn")
+        local src = info.short_src or "unknown"
+        local file = string.match(src, "([^\\/]+)%.lua$") or src
+        local line = info.currentline or "?"
+        local func = info.name or "?"
+
+        MsgC(Reforger.LogColors.LOC, string.format("(%s:%s - %s) ", file, line, func))
     end
 
-    MsgC("\n")
-end
-
-function Reforger.DevLog(...)
-    if not dev_cvar or dev_cvar:GetInt() <= 0 then return end
-
-    local caller = debug.getinfo(2, "Slfn")
-    local src = caller.short_src or "unknown"
-    local filename = string.match(src, "([^\\/]+)%.lua$") or src
-    local line = caller.currentline or "?"
-    local func = caller.name or "?"
-
-    MsgC(Color(128, 104, 236), "[Dev-Reforger] ")
-    MsgC(Color(200, 200, 200), "(" .. filename .. ":" .. line .. " - " .. func .. ") ")
-
-    local args = {...}
     for _, arg in ipairs(args) do
-        MsgC(Color(100, 178, 241), Reforger.SafeToString(arg))
+        MsgC(Reforger.LogColors.TEXT, Reforger.SafeToString(arg))
     end
 
     MsgC("\n")
@@ -45,8 +57,37 @@ end
 
 function Reforger.SafeToString(val)
     if val == nil then return "nil" end
-    if isentity(val) and IsValid(val) then return tostring(val) .. " [" .. val:GetClass() .. "]" end
+    if isentity(val) and IsValid(val) then
+        return tostring(val) .. " [" .. val:GetClass() .. "]"
+    end
     if istable(val) then return "table: " .. tostring(val) end
     if isbool(val) then return val and "true" or "false" end
     return tostring(val)
 end
+
+--- [ !DEPRECATED! ] ---
+
+local function Deprecation(funcName)
+    MsgC(Color(255, 165, 0), string.format("[Reforger] WARNING: `%s` is deprecated. Use `Reforger.LogMessage(level, ...)`\n", funcName))
+end
+
+--- [ !DEPRECATED! ] ---
+
+function Reforger.Log(...)
+    Deprecation("Reforger.Log")
+    Reforger.LogMessage(loglevels.INFO, ...)
+end
+function Reforger.WarnLog(...)
+    Deprecation("Reforger.WarnLog")
+    Reforger.LogMessage(loglevels.WARN, ...)
+end
+function Reforger.DevLog(...)
+    if not dev_cvar or dev_cvar:GetInt() <= 0 then return end
+    Deprecation("Reforger.DevLog")
+    Reforger.LogMessage(loglevels.DEV, ...)
+end
+function Reforger.ErrorLog(...)
+    Deprecation("Reforger.ErrorLog")
+    Reforger.LogMessage(loglevels.ERROR, ...)
+end
+

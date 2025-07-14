@@ -228,8 +228,3 @@ function ENT:OnTakeDamage(dmginfo)
         util.Effect(type(effectName) == "string" and effectName or "BloodImpact", ed, true, true)
     end
 end
-
-function ENT:GetActiveWeapon() -- Needed for DWR V3
-    print(self)
-    return { dwr_cracksDisable = true }
-end
