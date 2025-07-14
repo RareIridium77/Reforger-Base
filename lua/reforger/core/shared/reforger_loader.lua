@@ -3,6 +3,10 @@ local blacklist = {
 	["autorun/reforger_init.lua"] = true -- impossible but okay
 }
 
+local priorityList = {
+	"reforger/core/server/reforger_logger.lua" -- loggers are priority
+}
+
 local function AddLuaFile(path, realm)
 	if realm == "server" then
 		if SERVER then
@@ -72,5 +76,22 @@ local function RecursiveLoad(basePath, root)
 end
 
 return function(basePath)
+	local visited = {}
+
+	for _, path in ipairs(priorityList) do
+		if blacklist[path] then -- :D
+			print("[SKIP] Blacklisted (priority): " .. path)
+			continue
+		end
+
+		local realm = DetectRealm(basePath, path)
+		if realm then
+			AddLuaFile(path, realm)
+			visited[path] = true
+		else
+			print("Reforger [WARN] Cannot find realm for priority file: " .. path)
+		end
+	end
+
 	RecursiveLoad(basePath)
 end

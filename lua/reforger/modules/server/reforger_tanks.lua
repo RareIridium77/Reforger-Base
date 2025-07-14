@@ -82,26 +82,3 @@ function Reforger.DamageDamagableParts(veh, damage)
         end
     end
 end
-
-concommand.Add("reforger.check.ammorack", function(ply, cmd, args)
-    if not Reforger.AdminDevToolValidation(ply) then return end
-
-    local tr = ply:GetEyeTrace()
-    local ent = tr.Entity
-
-    if not Reforger.IsValidReforger(ent) then
-        ply:ChatPrint("Look at vehicle.")
-        return
-    end
-
-    local ammoracks = Reforger.GetAmmoracks(ent)
-    if #ammoracks == 0 then
-        ply:ChatPrint("reforger.check.ammorack: Ammoracks not found.")
-        return
-    end
-
-    for _, ammorack in ipairs(ammoracks) do
-        local info = string.format("[%s] HP: %s", tostring(ammorack), isfunction(ammorack.GetHP) and ammorack:GetHP() or "???")
-        ply:ChatPrint(info)
-    end
-end)

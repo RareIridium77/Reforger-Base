@@ -1,5 +1,5 @@
 --[[-------------------------------------------------------------------------
-    [Reforger] Base v0.2.3 (Framework)
+    [Reforger] Base (Framework)
 
     Unified system for advanced vehicle logic and damage simulation.
     Supports LVS / Simfphys / Gmod Glide. Open-source.
@@ -61,7 +61,7 @@ function Reforger.GetVehicleType(ent)
         local vt = ent:GetVehicleType()
 
         local has_armor = ent._armorParts and #ent._armorParts >= 2
-        
+
         if has_armor then -- tank or not. has_armor - means its armored
             vehicle_type = types.ARMORED
         else
@@ -132,88 +132,3 @@ function Reforger.GetHealth(ent)
 
     return ent.Health and ent:Health() or -1
 end
-
-concommand.Add("reforger.destroy", function(ply)
-    if not Reforger.AdminDevToolValidation(ply) then return end
-
-    local tr = ply:GetEyeTrace()
-    if not IsValid(tr.Entity) then
-        ply:ChatPrint("Look at vehicle.")
-        return
-    end
-
-    local ent = tr.Entity
-    if not Reforger.IsValidReforger(ent) then
-        ply:ChatPrint("Look at vehicle.")
-        return 
-    end
-
-    if ent.Destroy then ent:Destroy() end
-    if ent.Explode then ent:Explode() end
-    if ent.ExplodeVehicle then ent:ExplodeVehicle() end
-end)
-
-concommand.Add("reforger.pair", function(ply, cmd, args)
-    if not Reforger.AdminDevToolValidation(ply) then return end
-
-    local tr = ply:GetEyeTrace()
-    local ent = tr.Entity
-
-    if not IsValid(ent) then
-        ply:ChatPrint("Look to a vehicle.")
-        return
-    end
-
-    local classToFind = args[1]
-    if not classToFind or classToFind == "" then
-        ply:ChatPrint("Send argument of class. Example: reforger.pair lvs_wheeldrive_ammorack")
-        return
-    end
-
-    local found = Reforger.PairEntityAll(ent, classToFind)
-
-    if not istable(found) or #found == 0 then
-        ply:ChatPrint("Nothing found for: " .. classToFind)
-        return
-    end
-
-    ply:ChatPrint("Found " .. #found .. " objects of class: " .. classToFind)
-    for _, paired in ipairs(found) do
-        local desc = "[" .. tostring(paired) .. "]"
-        if isfunction(paired.GetHP) then
-            desc = desc .. " HP: " .. tostring(paired:GetHP())
-        end
-        if isfunction(paired.GetDestroyed) then
-            desc = desc .. " Destroyed: " .. tostring(paired:GetDestroyed())
-        end
-        ply:ChatPrint(desc)
-    end
-end)
-
-concommand.Add("reforger.get.type", function(ply, cmd)
-    if not Reforger.AdminDevToolValidation(ply) then return end
-
-    local tr = ply:GetEyeTrace()
-    local ent = tr.Entity
-
-    if not Reforger.IsValidReforger(ent) then
-        ply:ChatPrint("Look to a vehicle.")
-        return
-    end
-
-    ply:ChatPrint("Vehicle Type Is "..ent.reforgerType)
-end)
-
-concommand.Add("reforger.get.base", function(ply, cmd)
-    if not Reforger.AdminDevToolValidation(ply) then return end
-
-    local tr = ply:GetEyeTrace()
-    local ent = tr.Entity
-
-    if not Reforger.IsValidReforger(ent) then
-        ply:ChatPrint("Look to a vehicle.")
-        return
-    end
-
-    ply:ChatPrint("Vehicle Base Is "..ent.reforgerBase)
-end)

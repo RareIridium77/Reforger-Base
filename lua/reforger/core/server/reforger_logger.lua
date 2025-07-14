@@ -31,13 +31,12 @@ Reforger.LogColors = {
     LOC   = Color(200, 200, 200)
 }
 
-function Reforger.LogMessage(level, ...)
+function Reforger.SLog(level, ...)
     local colorLevel = Reforger.LogColors[level] or color_white
     local args = {...}
 
     MsgC(colorLevel, string.format("[%s-Reforger] ", level))
 
-    -- Optional: include file + line for DEV logs
     if level == "DEV" then
         local info = debug.getinfo(3, "Slfn")
         local src = info.short_src or "unknown"
@@ -65,29 +64,13 @@ function Reforger.SafeToString(val)
     return tostring(val)
 end
 
---- [ !DEPRECATED! ] ---
+-- Removed Deprecation
 
-local function Deprecation(funcName)
-    MsgC(Color(255, 165, 0), string.format("[Reforger] WARNING: `%s` is deprecated. Use `Reforger.LogMessage(level, ...)`\n", funcName))
-end
-
---- [ !DEPRECATED! ] ---
-
-function Reforger.Log(...)
-    Deprecation("Reforger.Log")
-    Reforger.LogMessage(loglevels.INFO, ...)
-end
-function Reforger.WarnLog(...)
-    Deprecation("Reforger.WarnLog")
-    Reforger.LogMessage(loglevels.WARN, ...)
-end
+function Reforger.Log(...) Reforger.SLog(loglevels.INFO, ...) end
+function Reforger.WarnLog(...) Reforger.SLog(loglevels.WARN, ...) end
 function Reforger.DevLog(...)
     if not dev_cvar or dev_cvar:GetInt() <= 0 then return end
-    Deprecation("Reforger.DevLog")
-    Reforger.LogMessage(loglevels.DEV, ...)
+    Reforger.SLog(loglevels.DEV, ...)
 end
-function Reforger.ErrorLog(...)
-    Deprecation("Reforger.ErrorLog")
-    Reforger.LogMessage(loglevels.ERROR, ...)
-end
+function Reforger.ErrorLog(...) Reforger.SLog(loglevels.ERROR, ...) end
 

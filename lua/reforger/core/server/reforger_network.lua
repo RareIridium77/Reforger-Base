@@ -67,20 +67,3 @@ function Reforger.GetNetworkValue(ent, nType, nName)
 
     return nil
 end
-
-concommand.Add("reforger.dump.net", function(ply, cmd, args)
-    if not Reforger.AdminDevToolValidation(ply) then return end
-
-    local tr = ply:GetEyeTrace()
-    local ent = tr.Entity
-
-    if not Reforger.IsValidReforger(ent) then
-        Reforger.Log("Look at entity.")
-        return
-    end
-
-    Reforger.Log("Dump ReforgerNet:")
-    for k, v in pairs(ent.ReforgerNet or {}) do
-        print("  " .. k .. " [" .. v.Type .. "] = " .. tostring(v.Value))
-    end
-end)

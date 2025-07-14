@@ -1,5 +1,5 @@
 --[[-------------------------------------------------------------------------
-    [Reforger] Base v0.2.3 (Framework)
+    [Reforger] Base (Framework)
 
     Unified system for advanced vehicle logic and damage simulation.
     Supports LVS / Simfphys / Gmod Glide. Open-source.
