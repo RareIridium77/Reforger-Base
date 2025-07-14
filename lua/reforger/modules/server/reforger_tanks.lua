@@ -1,4 +1,4 @@
-if not Reforger then return end -- overthinker moment
+Reforger = Reforger or {}
 
 Reforger.Log("Reforger Tanks Loaded")
 

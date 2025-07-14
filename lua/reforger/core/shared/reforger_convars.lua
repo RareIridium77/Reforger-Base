@@ -1,6 +1,7 @@
 local FCVAR_SERVER = bit.bor(FCVAR_ARCHIVE, FCVAR_NOTIFY)
 local FCVAR_CLIENT = bit.bor(FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE)
 
+Reforger = Reforger or {}
 Reforger.CreatedConvars = Reforger.CreatedConvars or {}
 
 local server_prefix = "reforger."

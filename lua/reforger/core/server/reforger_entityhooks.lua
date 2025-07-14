@@ -10,6 +10,7 @@
 -------------------------------------------------------------------------]]
 
 Reforger = Reforger or {}
+
 Reforger.EntityHooks = Reforger.EntityHooks or {}
 
 function Reforger.AddEntityFunction(idf, func)

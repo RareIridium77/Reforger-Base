@@ -1,6 +1,4 @@
-if not Reforger then return end -- overthinker moment
-
-Reforger.Log("Damage Module Loaded")
+Reforger = Reforger or {}
 
 local VehBase = Reforger.VehicleBases
 local VehType = Reforger.VehicleTypes

@@ -1,4 +1,4 @@
-if not Reforger then return end
+Reforger = Reforger or {}
 
 -- Engines for simfphys and glide (damage and etc)
 

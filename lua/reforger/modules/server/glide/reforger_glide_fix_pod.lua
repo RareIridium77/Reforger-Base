@@ -1,5 +1,4 @@
-if not Reforger then return end
--- Fixes Aim steering
+-- Fixes Aim steering for Glide
 local function Glide_ActivateFixator()
     local EntityMeta = FindMetaTable( "Entity" )
     local PlayerMeta = FindMetaTable( "Player" )

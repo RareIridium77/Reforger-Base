@@ -8,6 +8,7 @@
     https://github.com/RareIridium77
 
 -------------------------------------------------------------------------]]
+Reforger = Reforger or {}
 
 Reforger.NetworkTypes = {
     Bool = true,

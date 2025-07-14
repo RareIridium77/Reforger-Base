@@ -1,4 +1,4 @@
-if not Reforger then return end
+Reforger = Reforger or {}
 
 Reforger.Log("Reforger Pods Loaded")
 
