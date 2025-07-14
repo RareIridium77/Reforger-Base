@@ -24,6 +24,4 @@ net.Receive("Reforger.SendGlideOffsets", function(_, ply)
     end
 
     ent.EngineFireOffsets = offsets
-
-    Reforger.DevLog("Recached Glide vehicle engine offsets from client: " .. tostring(ent))
 end)

@@ -185,7 +185,6 @@ function ENT:OnTakeDamage(dmginfo)
     )
 
     if not hit then
-        Reforger.DevLog("[FakeCollision] Missed pseudo-hitbox")
         return 0
     end
 
@@ -195,7 +194,6 @@ function ENT:OnTakeDamage(dmginfo)
         local center = (eyePos + self.pseudoPos) * 0.5
         local trace = util.TraceLine({ start = center, endpos = hitPos, filter = self:GetTraceFilter() })
         if trace.Hit and trace.Entity ~= self.Vehicle then
-            Reforger.DevLog("[FakeCollision] Blocked damage: no visibility to hit pos")
             return 0
         end
     end
@@ -215,8 +213,6 @@ function ENT:OnTakeDamage(dmginfo)
 
     self.Player:SetLastHitGroup(isHeadshot and 0 or 2)
     Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
-
-    Reforger.DevLog("[FakeCollision] OnTakeDamage | Damage: " .. tostring(damage), " Type: ", dmgType, " Is Headshot? ", isHeadshot and "yes" or "no")
 
     local effectName, shouldEffect = hook.Run("Reforger.PodBloodEffect", attacker, hitPos, damage)
 

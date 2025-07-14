@@ -55,7 +55,7 @@ function Reforger.IsRotorSpinning(rotor)
     local veh = rotor.reforgerVehicle
 
     if not IsValid(veh) then
-        Reforger.DevLog("Vehicle are not valid entity")
+        Reforger.DevLog("Vehicle of Rotor are not valid entity")
         return false
     end
 

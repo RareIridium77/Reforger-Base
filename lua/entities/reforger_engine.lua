@@ -63,8 +63,6 @@ function ENT:SetEngineData(data)
     debugoverlay.Sphere(pos, 10, 2, Color(25, 25, 255), true)
     debugoverlay.Line(self.VehicleBase:GetPos(), pos, 2, Color(255, 0, 0), true)
     debugoverlay.Sphere(self.VehicleBase:GetPos(), 10, 2, Color(25, 255, 25), true)
-
-    Reforger.DevLog(("[EngineCollision] Engine initialized: MaxHealth = %.2f"):format(self.simMaxHealth))
 end
 
 function ENT:Think()
@@ -104,30 +102,23 @@ function ENT:OnTakeDamage(dmginfo)
 
     if isSmallDamage and self.VehicleBase.reforgerType == "armored" then return end
 
-    Reforger.DevLog(("[EngineCollision] Took damage: %.2f from %s"):format(damage * 0.35, tostring(dmginfo:GetAttacker())))
-
     if vehBase == "glide" and vehicle.TakeEngineDamage then
         if not vehicle:IsEngineStarted() then return end
 
         vehicle:TakeEngineDamage(damage * math.Rand(0.1, 0.25))
-        Reforger.DevLog("[EngineCollision] Passed damage to Glide vehicle engine")
     elseif vehBase == "simfphys" then
         if not vehicle:EngineActive() then return end
 
         self.simHealth = math.Clamp(self.simHealth - damage * 0.35, -self.simMaxHealth, self.simMaxHealth)
         local lol = self.simHealth / self.simMaxHealth
 
-        Reforger.DevLog(("[EngineCollision] simHealth = %.2f (%.1f%%)"):format(self.simHealth, lol * 100))
-
         if lol < 0.75 and lol > 0.35 then
             if vehicle:EngineActive() then
-                Reforger.DevLog("[EngineCollision] EngineActive: triggering DamageStall()")
                 vehicle:DamageStall()
             end
         end
 
         if lol < 0.35 then
-            Reforger.DevLog("[EngineCollision] simHealth critically low, setting vehicle on fire")
             vehicle:SetOnFire(true)
         end
     end

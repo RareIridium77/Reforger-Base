@@ -61,13 +61,7 @@ function Reforger.GetVehicleType(ent)
         local vt = ent:GetVehicleType()
 
         local has_armor = ent._armorParts and #ent._armorParts >= 2
-
-        if has_armor then
-            Reforger.DevLog("This Vehicle has Armor")
-        end
-
-        Reforger.DevLog("LVS Vehicle Type ", vt)
-
+        
         if has_armor then -- tank or not. has_armor - means its armored
             vehicle_type = types.ARMORED
         else

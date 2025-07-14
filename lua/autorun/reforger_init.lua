@@ -31,29 +31,10 @@ if CLIENT then return end
 
 util.AddNetworkString("Reforger.NotifyDisabled")
 
-local ignoreK = {
-    IsValidReforger = true,
-    SafeToString = true,
-    DevLog = true,
-    Log
-}
 
 local function DisableReforger()
     if not istable(Reforger) then return end
-
-    for k, v in pairs(Reforger) do
-        if ignoreK[k] == true then continue end
-
-        if isfunction(v) then
-            Reforger[k] = function() end
-        elseif istable(v) then
-            for subk, subv in pairs(v) do
-                if isfunction(subv) then
-                    v[subk] = function() end
-                end
-            end
-        end
-    end
+    Reforger = {Disabled = true}
 
     Reforger.Disabled = true
 end
@@ -99,7 +80,6 @@ end
 
 local nextThink = 0
 local thinkInterval = 0.001
-
 
 local function GlobalThink()
     if CurTime() < nextThink then return end

@@ -78,7 +78,6 @@ function Reforger.DamageDamagableParts(veh, damage)
             local newHP = math.Clamp(curHP - damage, -maxHP, maxHP)
 
             if part.SetHP then
-                Reforger.DevLog("Parts getting damage: ", damage)
                 part:SetHP(newHP) end
         end
     end

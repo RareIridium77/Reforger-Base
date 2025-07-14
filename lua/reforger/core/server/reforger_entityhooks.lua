@@ -26,8 +26,6 @@ function Reforger.CallEntityFunctions(ent)
         ent.reforgerType = Reforger.GetVehicleType(ent)
         ent.reforgerBase = Reforger.GetVehicleBase(ent)
 
-        Reforger.DevLog("Vehicle Type: ", ent.reforgerType, " ", ent)
-
         Reforger.CacheRotors(ent)
         Reforger.CacheAmmorack(ent)
 
