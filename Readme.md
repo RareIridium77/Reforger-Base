@@ -1,5 +1,4 @@
-# Reforger Base
-
+# Reforger Base  
 **Reforger Base** is a shared system for my Garry's Mod addons under the [Reforger] tag.  
 Its main purpose is to provide a unified damage and logic framework for different vehicle systems, such as:
 
@@ -9,11 +8,10 @@ Its main purpose is to provide a unified damage and logic framework for differen
 
 **For getting Reforger table write console command: `reforger.table`**
 
-**Also reforger can automaticly load your modules for reforger. From your addons folder.**
+**Reforger can also automatically load your modules from your addons folder.**
 
-**Example**:
+**Example**:  
 `my_addon/lua/reforger/m/server/reforger_my_module.lua`
-
 ```lua
 -- /reforger/m/server/reforger_my_module.lua
 if Reforger then
@@ -21,15 +19,16 @@ if Reforger then
         Reforger.Log("You loaded the test file")
     end
 end
-```
-<img width="277" height="122" alt="изображение" src="https://github.com/user-attachments/assets/7d81278f-bc11-4919-944f-b199345c5f3e" />
+```  
+**Example output:**  
+<img width="277" height="122" alt="output console." src="https://github.com/user-attachments/assets/7d81278f-bc11-4919-944f-b199345c5f3e" />
 
-**The output**
+## Potentially Conflicting Addons  
+These addons may interfere with Reforger's damage logic and cause unintended behavior:  
+- [Damage Players In Seats](https://steamcommunity.com/sharedfiles/filedetails/?id=428278317)  
+  _May apply additional damage to players inside vehicles._  
+- [[LVS & Simfphys] Derby and more crash damage](https://steamcommunity.com/sharedfiles/filedetails/?id=3327523626)  
+  _May override or conflict with Reforger's collision damage system._
 
-# Possibly Conflicting Addons
-
-- [Damage Players In Seats](https://steamcommunity.com/sharedfiles/filedetails/?id=428278317) (May increase damage to players in vehicle)
-
-## License
-
+## License  
 You can freely use and modify this base within your GMod projects, but attribution is appreciated.
