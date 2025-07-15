@@ -12,6 +12,19 @@ local priorityList = {
 	"reforger/core/shared/reforger_convars.lua",
 }
 
+local priorityKeywords = {
+	"util", "base"
+}
+
+local function StringHasKeyword(path, keywords)
+	for _, keyword in ipairs(keywords) do
+		if string.find(path, keyword, 1, true) then
+			return true
+		end
+	end
+	return false
+end
+
 local function AddLuaFile(path, realm)
 	if realm == "server" then
 		if SERVER then
@@ -56,22 +69,40 @@ local function RecursiveLoad(basePath, root)
 
 	local files, dirs = file.Find(basePath .. "/*", "LUA")
 
+	local priorityFiles = {}
+	local normalFiles = {}
+
 	for _, fileName in ipairs(files) do
-		if fileName:EndsWith(".lua") then
-			local fullPath = basePath .. "/" .. fileName
+		if not fileName:EndsWith(".lua") then continue end
 
-			if blacklist[fullPath] then
-				print("[SKIP] Blacklisted: " .. fullPath)
-				continue
-			end
+		local fullPath = basePath .. "/" .. fileName
+		if blacklist[fullPath] then
+			print("[SKIP] Blacklisted: " .. fullPath)
+			continue
+		end
 
-			local realm = DetectRealm(root, fullPath)
+		if StringHasKeyword(fullPath, priorityKeywords) then
+			table.insert(priorityFiles, fullPath)
+		else
+			table.insert(normalFiles, fullPath)
+		end
+	end
 
-			if realm then
-				AddLuaFile(fullPath, realm)
-			else
-				print("Reforger [WARN] Cannot find realm for: " .. fullPath)
-			end
+	for _, fullPath in ipairs(priorityFiles) do
+		local realm = DetectRealm(root, fullPath)
+		if realm then
+			AddLuaFile(fullPath, realm)
+		else
+			print("Reforger [WARN] Cannot find realm (priority): " .. fullPath)
+		end
+	end
+
+	for _, fullPath in ipairs(normalFiles) do
+		local realm = DetectRealm(root, fullPath)
+		if realm then
+			AddLuaFile(fullPath, realm)
+		else
+			print("Reforger [WARN] Cannot find realm: " .. fullPath)
 		end
 	end
 
