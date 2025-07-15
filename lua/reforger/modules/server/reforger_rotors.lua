@@ -1,18 +1,19 @@
-Reforger = Reforger or {}
+local Rotors = {}
+Rotors._internal = {}
 
 Reforger.Log("Reforger Rotors Loaded")
 
 local VehBase = Reforger.VehicleBases
 local VehType = Reforger.VehicleTypes
 
-function Reforger.RotorsGetDamage(veh, dmginfo)
+function Rotors.RotorsGetDamage(veh, dmginfo)
     if not IsValid(veh) then return end
 
-    local rotor = Reforger.FindRotorAlongRay(veh, dmginfo)
+    local rotor = Rotors.FindRotorAlongRay(veh, dmginfo)
 
     if not IsValid(rotor) then return end
     if rotor.destroyed then return end
-    if not Reforger.IsRotorSpinning(rotor) then return end
+    if not Rotors.IsRotorSpinning(rotor) then return end
 
     if rotor.rotorHealth == nil and veh.reforgerBase == VehBase.LVS then
         if rotor.GetHP then
@@ -32,12 +33,12 @@ function Reforger.RotorsGetDamage(veh, dmginfo)
         hook.Run("Reforger.PostRotorDamage", rotor, dmginfo)
 
         if rotor.rotorHealth <= 0 and isfunction(rotor.Destroy) then
-            Reforger.DestroyRotor(rotor)
+            Rotors.DestroyRotor(rotor)
         end
     end
 end
 
-function Reforger.DestroyRotor(rotor)
+function Rotors.DestroyRotor(rotor)
     if not IsValid(rotor) or rotor.destroyed then return end
 
     rotor.destroyed = true
@@ -46,7 +47,7 @@ function Reforger.DestroyRotor(rotor)
     hook.Run("Reforger.RotorDestroyed", rotor)
 end
 
-function Reforger.IsRotorSpinning(rotor)
+function Rotors.IsRotorSpinning(rotor)
     if not IsValid(rotor) then
         Reforger.DevLog("Rotor is not valid entity")
         return false
@@ -73,7 +74,7 @@ function Reforger.IsRotorSpinning(rotor)
 end
 
 -- rotors needs own scanner, because in LVS rotors are just box entity.
-function Reforger.FindRotorAlongRay(veh, dmginfo)
+function Rotors.FindRotorAlongRay(veh, dmginfo)
     if not IsValid(veh) then return nil end
 
     local Len = veh:BoundingRadius() or 10
@@ -82,7 +83,7 @@ function Reforger.FindRotorAlongRay(veh, dmginfo)
     local dmgStart = dmgPos - dmgDir * (Len * 0.5)
 
     local closestEnt, closestDist = nil, Len * 2
-    local rotors = Reforger.FindRotors(veh)
+    local rotors = Rotors.FindRotors(veh)
 
     for _, ent in ipairs(rotors) do
         if not IsValid(ent) or ent:GetParent() ~= veh then continue end
@@ -124,7 +125,7 @@ function Reforger.FindRotorAlongRay(veh, dmginfo)
     return closestEnt
 end
 
-function Reforger.FindRotors(veh)
+function Rotors.FindRotors(veh)
     if not IsValid(veh) then return {} end
 
     if istable(veh.reforgerRotors) then return veh.reforgerRotors end
@@ -137,7 +138,7 @@ function Reforger.FindRotors(veh)
         if IsValid(veh.tailRotor) then table.insert(rotors, veh.tailRotor) end
 
         if #rotors == 0 and vehicle_type == VehType.PLANE then
-            rotors = Reforger.PairEntityAll(veh, "glide_rotor")
+            rotors = Reforger.Scanners.PairEntityAll(veh, "glide_rotor")
         end
     end
 
@@ -153,14 +154,14 @@ function Reforger.FindRotors(veh)
         if istable(lvs_rotors) then rotors = lvs_rotors end
 
         if #rotors == 0 then
-            rotors = Reforger.PairEntityAll(veh, "lvs_helicopter_rotor")
+            rotors = Reforger.Scanners.PairEntityAll(veh, "lvs_helicopter_rotor")
         end
     end
 
     return rotors
 end
 
-function Reforger.RepairRotors(veh)
+function Rotors.RepairRotors(veh)
     if veh.reforgerType ~= VehType.PLANE then return end
 
     for _, rotor in ipairs(Reforger.GetRotors(veh)) do
@@ -168,14 +169,19 @@ function Reforger.RepairRotors(veh)
     end
 end
 
-function Reforger.CacheRotors(veh)
+function Rotors.GetRotors(veh)
+    if not IsValid(veh) then return {} end
+    return veh.reforgerRotors or {}
+end
+
+function Rotors._internal:CacheRotors(veh)
     if not IsValid(veh) then return end
 
     if veh.reforgerBase == VehBase.Simfphys then return end
     if veh.reforgerType ~= VehType.HELICOPTER and veh.reforgerType ~=VehType.PLANE then return end
 
     timer.Simple(0, function()
-        veh.reforgerRotors = Reforger.FindRotors(veh)
+        veh.reforgerRotors = Rotors.FindRotors(veh)
 
         for _, rotor in ipairs(veh.reforgerRotors) do
             if IsValid(rotor) then
@@ -184,10 +190,8 @@ function Reforger.CacheRotors(veh)
         end
 
         hook.Run("Reforger.RotorsCached", veh, veh.reforgerRotors)
+        Reforger.DevLog("Rotors Cached")
     end)
 end
 
-function Reforger.GetRotors(veh)
-    if not IsValid(veh) then return {} end
-    return veh.reforgerRotors or {}
-end
+Reforger.Rotors = Rotors

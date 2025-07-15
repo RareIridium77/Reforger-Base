@@ -1,28 +1,14 @@
-Reforger = Reforger or {}
+local Damage = {}
 
 local VehBase = Reforger.VehicleBases
 local VehType = Reforger.VehicleTypes
 
-Reforger.DamageType = {
+Damage.DamageType = {
     DIRECT = 0,
     TRACED = 1,
 }
 
-Reforger.PodNoTraceDamage = { -- reforger_pod uses this
-    [DMG_GENERIC] = true,
-    [DMG_BLAST] = true,
-    [DMG_BLAST_SURFACE] = true,
-    [DMG_BUCKSHOT] = true,
-    [DMG_CLUB] = true,
-    [DMG_SONIC] = true,
-    [DMG_ACID] = true,
-    [DMG_BURN] = true,
-    [DMG_SLOWBURN] = true,
-    [DMG_DROWN] = true,
-    [DMG_PARALYZE] = true
-}
-
-Reforger.CollisionDamageConfig = {
+Damage.CollisionDamageConfig = {
     light = {
         minVelocity = 550,
         fireChance = 0.5,
@@ -60,19 +46,19 @@ Reforger.CollisionDamageConfig = {
     }
 }
 
-function Reforger.IsSmallDamageType(dmgType)
+function Damage.IsSmallDamageType(dmgType)
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
     return bit.band(dmgType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
 end
 
-function Reforger.IsCollisionDamageType(dmgType)
+function Damage.IsCollisionDamageType(dmgType)
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
     return (dmgType == (DMG_VEHICLE + DMG_CRUSH) or dmgType == DMG_VEHICLE or dmgType == DMG_CRUSH)
 end
 
 local FIRE_DAMAGE_MASK = bit.bor(DMG_BURN, DMG_SLOWBURN, DMG_DIRECT)
 
-function Reforger.IsFireDamageType(veh, dmgType)
+function Damage.IsFireDamageType(veh, dmgType)
     assert(IsValid(veh), "IS NOT VALID VEHICLE TO CHECK DAMAGE TYPE: " .. tostring(veh))
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
 
@@ -83,7 +69,7 @@ function Reforger.IsFireDamageType(veh, dmgType)
     return bit.band(dmgType, FIRE_DAMAGE_MASK) ~= 0
 end
 
-function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
+function Damage.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
     if not IsValid(ent) then return false end
     if not isnumber(damage) or damage <= 0 then return false end
 
@@ -110,33 +96,54 @@ function Reforger.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos
     return true
 end
 
-function Reforger.ApplyPlayerDamage(ply, damage, attacker, inflictor, custom)
+function Damage.ApplyPlayerDamage(ply, damage, attacker, inflictor, custom)
     if not IsValid(ply) or not ply:IsPlayer() or ply:HasGodMode() then return false end
-    return Reforger.ApplyDamageToEnt(ply, damage, attacker, inflictor, custom)
+    return Damage.ApplyDamageToEnt(ply, damage, attacker, inflictor, custom)
 end
 
-function Reforger.ApplyPlayersDamage(veh, dmginfo)
+function Damage.ApplyPlayersDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
-    for _, ply in ipairs(Reforger.GetEveryone(veh)) do
-        Reforger.ApplyPlayerDamage(
+    for _, ply in ipairs(Reforger.Scanners.GetEveryone(veh)) do
+        Damage.ApplyPlayerDamage(
             ply,
             dmginfo:GetDamage(),
             dmginfo:GetAttacker(),
             dmginfo:GetInflictor(),
-            Reforger.DamageType.DIRECT
+            Damage.DamageType.DIRECT
         )
     end
 end
 
-function Reforger.HandleCollisionDamage(veh, dmginfo)
+function Damage.DamageParts(veh, damage)
     if not IsValid(veh) then return end
 
-    local isCollisionDamage = Reforger.IsCollisionDamageType(dmginfo:GetDamageType())
+    if isnumber(damage) and damage <= 0 then return end
+
+    local newDamage = isnumber(damage) and damage or 10
+
+    if istable(veh._dmgParts) and #veh._dmgParts > 0 then
+        for _, part in ipairs(veh._dmgParts) do
+            if not IsValid(part) or not part.GetHP or not part.GetMaxHP then continue end
+
+            local curHP = part:GetHP()
+            local maxHP = part:GetMaxHP()
+            local newHP = math.Clamp(curHP - damage, -maxHP, maxHP)
+
+            if part.SetHP then
+                part:SetHP(newHP) end
+        end
+    end
+end
+
+function Damage.HandleCollisionDamage(veh, dmginfo)
+    if not IsValid(veh) then return end
+
+    local isCollisionDamage = Damage.IsCollisionDamageType(dmginfo:GetDamageType())
 
     if not isCollisionDamage then return end
 
     local vtype = veh.reforgerType or "undefined"
-    local cfg = Reforger.CollisionDamageConfig[vtype] or Reforger.CollisionDamageConfig["undefined"]
+    local cfg = Damage.CollisionDamageConfig[vtype] or Damage.CollisionDamageConfig["undefined"]
 
     local velocity = veh:GetVelocity():Length()
     if velocity < cfg.minVelocity then return end
@@ -155,12 +162,12 @@ function Reforger.HandleCollisionDamage(veh, dmginfo)
         end
 
         if canExplode then
-            Reforger.IgniteLimited(veh, veh:BoundingRadius(), 2)
+            Damage.IgniteLimited(veh, veh:BoundingRadius(), 2)
         else
             timer.Simple(math.Rand(0.5, 2), function()
                 if not IsValid(veh) then return end
 
-                Reforger.IgniteLimited(veh, veh:BoundingRadius(), 2)
+                Damage.IgniteLimited(veh, veh:BoundingRadius(), 2)
             end)
         end
     end
@@ -185,7 +192,7 @@ function Reforger.HandleCollisionDamage(veh, dmginfo)
     end
 end
 
-function Reforger.HandleRayDamage(veh, dmginfo)
+function Damage.HandleRayDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
 
     local Len = veh:BoundingRadius()
@@ -215,10 +222,10 @@ function Reforger.HandleRayDamage(veh, dmginfo)
     local finalDmg = originalDmg
     if isSmall and veh.reforgerType == VehType.ARMORED then finalDmg = originalDmg * 0.25 end
 
-    Reforger.ApplyDamageToEnt(hitEnt, finalDmg, dmginfo:GetAttacker(), dmginfo:GetInflictor(), Reforger.DamageType.TRACED, tr.HitPos)
+    Damage.ApplyDamageToEnt(hitEnt, finalDmg, dmginfo:GetAttacker(), dmginfo:GetInflictor(), Damage.DamageType.TRACED, tr.HitPos)
 end
 
-function Reforger.IgniteLimited(ent, size, repeatCount)
+function Damage.IgniteLimited(ent, size, repeatCount)
     if not IsValid(ent) then return end
     if ent._ignitingForever then return end
 
@@ -246,8 +253,10 @@ function Reforger.IgniteLimited(ent, size, repeatCount)
     end)
 end
 
-function Reforger.StopLimitedFire(ent)
+function Damage.StopLimitedFire(ent)
     if not IsValid(ent) then return end
     timer.Remove("reforger_limited_fire_" .. ent:EntIndex())
     ent._ignitingForever = nil
 end
+
+Reforger.Damage = Damage

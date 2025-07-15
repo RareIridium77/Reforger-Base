@@ -2,7 +2,7 @@ Reforger = Reforger or {}
 
 Reforger.Log("Reforger Pods Loaded")
 
-function Reforger.AddPlayerCollision(ply, veh)
+local function AddPlayerCollision(ply, veh)
     if not IsValid(ply) or not IsValid(veh) then return end
 
     if IsValid(ply.reforgerPod) then
@@ -32,8 +32,7 @@ function Reforger.AddPlayerCollision(ply, veh)
     end)
 end
 
-
-function Reforger.RemovePlayerCollision(ply, veh)
+local function RemovePlayerCollision(ply, veh)
     if not IsValid(veh) or not veh.reforgerPods then return end
 
     local pod = veh.reforgerPods[ply]
@@ -44,5 +43,5 @@ function Reforger.RemovePlayerCollision(ply, veh)
     veh.reforgerPods[ply] = nil
 end
 
-hook.Add("PlayerEnteredVehicle", "Reforger.PlayerEnteredVehicle", function(ply, veh, r) Reforger.AddPlayerCollision(ply, veh) end)
-hook.Add("PlayerLeaveVehicle", "Reforger.PlayerLeaveVehicle", function(ply, veh) Reforger.RemovePlayerCollision(ply, veh) end)
+hook.Add("PlayerEnteredVehicle", "Reforger.PlayerEnteredVehicle", function(ply, veh, r) AddPlayerCollision(ply, veh) end)
+hook.Add("PlayerLeaveVehicle", "Reforger.PlayerLeaveVehicle", function(ply, veh) RemovePlayerCollision(ply, veh) end)

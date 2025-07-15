@@ -15,7 +15,7 @@ ENT.DisableDuplicator = true
 
 if CLIENT then return end
 
-Reforger.BaseEntityIgnore = {
+local BaseEntityIgnore = {
     -- rpg_missile fix. https://github.com/ValveSoftware/source-sdk-2013/blob/master/src/game/server/hl2/weapon_rpg.cpp#L395
     ["rpg_missile"] = {
         i = true,
@@ -96,7 +96,7 @@ end
 
 function ENT:StartTouch(e)
     if not IsValid(e) then return end
-    local ignorance = Reforger.BaseEntityIgnore[e:GetClass()]
+    local ignorance = BaseEntityIgnore[e:GetClass()]
 
     if istable(ignorance) and ignorance.i == true and ignorance.callback then ignorance.callback(e, self) end
 end

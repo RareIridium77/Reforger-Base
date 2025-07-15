@@ -1,10 +1,10 @@
-Reforger = Reforger or {}
+local Scanners = {}
 
 Reforger.Log("Reforger Scanners Loaded")
 
 local VehBase = Reforger.VehicleBases
 
-function Reforger.PairEntity(parent, className)
+function Scanners.PairEntity(parent, className)
     if not IsValid(parent) or not isstring(className) then return nil end
 
     for _, child in ipairs(parent:GetChildren()) do
@@ -16,7 +16,7 @@ function Reforger.PairEntity(parent, className)
     return nil
 end
 
-function Reforger.PairEntityAll(parent, className)
+function Scanners.PairEntityAll(parent, className)
     if not IsValid(parent) or not isstring(className) then return {} end
 
     local result = {}
@@ -33,7 +33,7 @@ function Reforger.PairEntityAll(parent, className)
     return result
 end
 
-function Reforger.FindClosestByClass(veh, dmginfo, className)
+function Scanners.FindClosestByClass(veh, dmginfo, className)
     if not IsValid(veh) or not isstring(className) then return nil end
 
     local Len = veh:BoundingRadius() or 10
@@ -45,7 +45,7 @@ function Reforger.FindClosestByClass(veh, dmginfo, className)
     local closestEnt = nil
     local closestDist = Len * 2
 
-    for _, ent in ipairs(Reforger.PairEntityAll(veh, className)) do
+    for _, ent in ipairs(Scanners.PairEntityAll(veh, className)) do
         if not IsValid(ent) then continue end
         if ent:GetParent() ~= veh then continue end
 
@@ -73,7 +73,7 @@ function Reforger.FindClosestByClass(veh, dmginfo, className)
     return closestEnt
 end
 
-function Reforger.GetEveryone(veh)
+function Scanners.GetEveryone(veh)
     if not IsValid(veh) then return {} end
 
     local players = {}
@@ -119,3 +119,5 @@ function Reforger.GetEveryone(veh)
 
     return players
 end
+
+Reforger.Scanners = Scanners

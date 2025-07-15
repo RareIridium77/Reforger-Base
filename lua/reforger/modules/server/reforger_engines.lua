@@ -1,6 +1,7 @@
-Reforger = Reforger or {}
-
 -- Engines for simfphys and glide (damage and etc)
+
+local Engines = {}
+Engines._internal = {}
 
 Reforger.Log("Reforger Engines Loaded (Simfphys, Glide)")
 
@@ -17,7 +18,7 @@ local function SpawnEngine(veh, offset)
     veh.reforgerEngine.entity = ent
 end
 
-function Reforger.CacheEngine(veh)
+function Engines._internal:CacheEngine(veh)
     if not Reforger.IsValidReforger(veh) then return end
     local base = veh.reforgerBase
     if base == VehBase.LVS or base == nil then return end
@@ -41,4 +42,7 @@ function Reforger.CacheEngine(veh)
     }
     
     SpawnEngine(veh, engine_offset)
+    Reforger.DevLog("Engine Cached and Spawned")
 end
+
+Reforger.Engines = Engines

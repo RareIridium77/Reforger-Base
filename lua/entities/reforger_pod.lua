@@ -15,6 +15,20 @@ ENT.DisableDuplicator = true
 
 if CLIENT then return end
 
+local IsIgnoredDamageType = { -- reforger_pod uses this
+    [DMG_GENERIC] = true,
+    [DMG_BLAST] = true,
+    [DMG_BLAST_SURFACE] = true,
+    [DMG_BUCKSHOT] = true,
+    [DMG_CLUB] = true,
+    [DMG_SONIC] = true,
+    [DMG_ACID] = true,
+    [DMG_BURN] = true,
+    [DMG_SLOWBURN] = true,
+    [DMG_DROWN] = true,
+    [DMG_PARALYZE] = true
+}
+
 local seqAdjustments = {
     sit_rollercoaster = { maxZ = 1.9, minZ = 0.1, offset = -2 },
     sit               = { maxZ = 1.9, minZ = 0.1, offset = -5 },
@@ -137,8 +151,10 @@ end
 
 function ENT:OnTakeDamage(dmginfo)
     local attacker = dmginfo:GetAttacker()
+    
     if not IsValid(self.Player) or not IsValid(self.VehicleBase) or not IsValid(attacker) or attacker == self.Player then return end
 
+    local D = Reforger.Damage
     local damage = dmginfo:GetDamage()
 
     if damage < 1 then return end
@@ -148,8 +164,8 @@ function ENT:OnTakeDamage(dmginfo)
     local dmgType = dmginfo:GetDamageType()
     local isTraced = dmginfo:GetDamageCustom() == 1
 
-    if Reforger.PodNoTraceDamage[dmgType] or Reforger.IsFireDamageType(self.VehicleBase, dmgType) then
-        Reforger.ApplyPlayerDamage(self.Player, damage, attacker, inflictor, nil)
+    if IsIgnoredDamageType[dmgType] or D.IsFireDamageType(self.VehicleBase, dmgType) then
+        D.ApplyPlayerDamage(self.Player, damage, attacker, inflictor, nil)
         return
     end
 
@@ -212,7 +228,7 @@ function ENT:OnTakeDamage(dmginfo)
     local finalDamage = isHeadshot and damage or isTraced and damage * 0.4 or damage * 0.85
 
     self.Player:SetLastHitGroup(isHeadshot and 0 or 2)
-    Reforger.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
+    D.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
 
     local effectName, shouldEffect = hook.Run("Reforger.PodBloodEffect", attacker, hitPos, damage)
 

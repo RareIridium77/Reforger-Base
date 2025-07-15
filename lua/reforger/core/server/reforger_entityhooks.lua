@@ -22,17 +22,12 @@ function Reforger.CallEntityFunctions(ent)
     if not Reforger.IsValidReforger(ent) then return end
     if not istable(Reforger.EntityHooks) then return end
 
-    timer.Simple(0, function()
-        ent.reforgerType = Reforger.GetVehicleType(ent)
-        ent.reforgerBase = Reforger.GetVehicleBase(ent)
+    ent.reforgerType = Reforger.GetVehicleType(ent)
+    ent.reforgerBase = Reforger.GetVehicleBase(ent)
 
-        Reforger.CacheRotors(ent)
-        Reforger.CacheAmmorack(ent)
-
-        timer.Simple(0.5, function() -- because of net for glide
-            Reforger.CacheEngine(ent) -- NOT FOR LVS (AGAIN)
-        end)
-    end)
+    Reforger.Armored._internal:CacheAmmorack(ent)
+    Reforger.Engines._internal:CacheEngine(ent)
+    Reforger.Rotors._internal:CacheRotors(ent)
 
     for idf, func in pairs(Reforger.EntityHooks) do
         if isfunction(func) then

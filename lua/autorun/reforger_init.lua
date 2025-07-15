@@ -71,11 +71,9 @@ end
 
 local function EntityCreated(ent)
     if not Reforger.Init then return end
-    timer.Simple(0, function()
+    timer.Simple(0.1, function()
         if not IsValid(ent) then return end
-        if Reforger.IsValidReforger(ent) then
-            Reforger.CallEntityFunctions(ent)
-        end
+        Reforger.CallEntityFunctions(ent)
     end)
 end
 
