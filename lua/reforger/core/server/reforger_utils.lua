@@ -29,7 +29,10 @@ Reforger.ValidClasslist = {
     ["gmod_sent_vehicle_fphysics_base"] = true,
     ["simfphys_tankprojectile"] = true,
     ["glide_gib"] = true,
-    ["prop_vehicle_prisoner_pod"] = true
+    ["prop_vehicle_prisoner_pod"] = true,
+    --- lvs projectlies
+    ["lvs_bomb"] = true,
+    ["lvs_missile"] = true
 }
 
 function Reforger.GetVehicleType(ent)
@@ -91,7 +94,7 @@ function Reforger.GetVehicleBase(ent)
 
     local base = nil
 
-    if ent.LVS then base = "lvs" end
+    if ent.LVS or ent.lvsProjectile then base = "lvs" end
     if ent.IsGlideVehicle then base = "glide" end
     if ent.IsSimfphysVehicle or ent:GetClass() == "gmod_sent_vehicle_fphysics_base" then base = "simfphys" end
 
