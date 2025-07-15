@@ -6,7 +6,7 @@ Its main purpose is to provide a unified damage and logic framework for differen
 - **[Simfphys](https://github.com/SpaxscE/simfphys_base)** 
 - **[Gmod Glide](https://github.com/StyledStrike/gmod-glide)**
 
-**For getting Reforger table write console command: `reforger.table`**
+**For getting Reforger table write console command: `dev.reforger.framework.table`**
 
 **Reforger can also automatically load your modules from your addons folder.**
 
