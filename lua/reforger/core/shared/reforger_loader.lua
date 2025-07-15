@@ -4,7 +4,12 @@ local blacklist = {
 }
 
 local priorityList = {
-	"reforger/core/server/reforger_logger.lua" -- loggers are priority
+	--- Client
+	"reforger/core/server/reforger_logger.lua",
+	"reforger/core/server/reforger_network.lua",
+
+	--- Shared
+	"reforger/core/shared/reforger_convars.lua",
 }
 
 local function AddLuaFile(path, realm)

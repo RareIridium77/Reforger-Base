@@ -41,7 +41,7 @@ function Reforger.CreateAdminCommand(name, descOrCallback, maybeCallback)
 
         local ok, err = pcall(callback, ply, cmd, args)
         if not ok then
-            Reforger.LogMessage("DEV", "Error in admin command '", namePrefixed, "': ", err)
+            Reforger.SLog("DEV", "Error in admin command '", namePrefixed, "': ", err)
             if IsValid(ply) then ply:ChatPrint("Internal error in command.") end
         end
     end)
@@ -49,7 +49,7 @@ function Reforger.CreateAdminCommand(name, descOrCallback, maybeCallback)
     Reforger.Commands = Reforger.Commands or {}
     table.insert(Reforger.Commands, { name = namePrefixed, desc = desc })
 
-    Reforger.LogMessage("DEV", "Registered admin command: "..namePrefixed.." — "..desc)
+    Reforger.SLog("DEV", "Registered admin command: "..namePrefixed.." — "..desc)
 end
 
 local function ValidateTraceEntity(ply)
