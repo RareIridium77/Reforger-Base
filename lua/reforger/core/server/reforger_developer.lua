@@ -76,13 +76,7 @@ Reforger.CreateAdminCommand("framework.table", "Prints Reforger table", function
 end)
 
 Reforger.CreateAdminCommand("framework.reload", "Reload whole reforger framework and modules including", function(ply)
-    Reforger = Reforger or {}
-    Reforger.CreatedConvars = {}
-
-    include("reforger/core/shared/reforger_loader.lua")("reforger")
-    Reforger.DevLog("Reforger reloaded via concommand.")
-
-    hook.Run("Reforger.Init")
+    hook.Run("Reforger.Reload")
     ply:ChatPrint("Reforger scripts reloaded.")
 end)
 

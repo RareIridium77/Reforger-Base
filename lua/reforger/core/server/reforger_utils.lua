@@ -60,7 +60,7 @@ function Reforger.GetVehicleType(ent)
         if vt == gvht.HELICOPTER then vehicle_type = types.HELICOPTER end
         if vt == gvht.TANK then vehicle_type = types.ARMORED end
 
-    elseif vehicle_base == "lvs" then
+    elseif vehicle_base == "lvs" and ent.GetVehicleType then
         local vt = ent:GetVehicleType()
 
         local has_armor = ent._armorParts and #ent._armorParts >= 2

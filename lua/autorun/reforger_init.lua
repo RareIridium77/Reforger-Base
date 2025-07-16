@@ -91,3 +91,10 @@ end
 hook.Add("InitPostEntity", "Reforger.InitPostEntity", InitPostEntity)
 hook.Add("OnEntityCreated", "Reforger.EntityHook", EntityCreated)
 hook.Add("Think", "Reforger.GlobalThinkHook", GlobalThink)
+hook.Add("Reforger.Reload", "Reforger.FReloaded", function()
+    Reforger = Reforger or {}
+    Reforger.CreatedConvars = {}
+
+    include("reforger/core/shared/reforger_loader.lua")("reforger")
+    Reforger.DevLog("Reforger reloaded via concommand.")
+end)
