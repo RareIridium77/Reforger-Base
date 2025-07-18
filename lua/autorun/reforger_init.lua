@@ -65,7 +65,7 @@ local function InitPostEntity()
         hook.Run("Reforger.Init")
 
         Reforger.Init = true
-        Reforger.Log("Reforger version: " .. Reforger.Version)
+        Reforger.Log("Reforger version: " .. Reforger.Version .. " : ".. Reforger.VersionType)
     end)
 end
 

@@ -29,10 +29,6 @@ Reforger.ValidClasslist = {
     ["gmod_sent_vehicle_fphysics_base"] = true,
     ["simfphys_tankprojectile"] = true,
     ["glide_gib"] = true,
-    ["prop_vehicle_prisoner_pod"] = true,
-    --- lvs projectlies
-    ["lvs_bomb"] = true,
-    ["lvs_missile"] = true
 }
 
 function Reforger.GetVehicleType(ent)
@@ -111,7 +107,7 @@ function Reforger.IsValidReforger(ent)
     if (IsValid(uav) and uav.LVSUAV == true) or ent.LVSUAV == true then return false end
 
     if ent.IsReforgerEntity then return true end
-    if ent.LVS or ent.IsGlideVehicle then return true end
+    if ent.LVS or ent.IsGlideVehicle or ent.lvsProjectile then return true end
     if Reforger.ValidClasslist and Reforger.ValidClasslist[class] then return true end
     return false
 end

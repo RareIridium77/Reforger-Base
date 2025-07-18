@@ -21,13 +21,22 @@ function Reforger.CreateConvar(name, value, helptext, min, max)
     local prefix = SERVER and server_prefix or client_prefix
     local fullname = prefix .. name
 
-    if ConVarExists(fullname) or Reforger.CreatedConvars[fullname] then return end
+    if Reforger.CreatedConvars[fullname] then
+        return Reforger.CreatedConvars[fullname]
+    end
+
+    if ConVarExists(fullname) then
+        local cvar = GetConVar(fullname)
+        Reforger.CreatedConvars[fullname] = cvar
+        return cvar
+    end
 
     if SERVER then
         Reforger.CreatedConvars[fullname] = CreateConVar(fullname, value, FCVAR_SERVER, helptext, min, max)
     else
         Reforger.CreatedConvars[fullname] = CreateConVar(fullname, value, FCVAR_CLIENT, helptext, min, max)
     end
+    return Reforger.CreatedConvars[fullname]
 end
 
 function Reforger.Convar(name)
