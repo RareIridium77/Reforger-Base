@@ -16,6 +16,27 @@ function Weapons.Get(veh)
     if not IsWeaponed(veh) then return {} end
     return veh.WEAPONS
 end
+function Weapons.GetActive(veh)
+	if not Weapons.IsWeaponed(veh) then return nil end
+
+	local getSelected = isfunction(veh.GetSelectedWeapon) and veh.GetSelectedWeapon or veh.GetSelectedWeaponID
+	if not isfunction(getSelected) then return nil end
+
+	local selectedID = getSelected(veh)
+	if not selectedID then return nil end
+
+	local weaponGroups = veh.WEAPONS
+	if not istable(weaponGroups) then return nil end
+
+	local group = weaponGroups[selectedID]
+	if istable(group) and istable(group[1]) then
+		return group[1]
+	elseif istable(group) then
+		return group
+	end
+
+	return nil
+end
 
 --- [ LVS Weapons ] ---
 

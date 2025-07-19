@@ -105,8 +105,8 @@ function Reforger.IsValidReforger(ent)
     local uav = ent:GetNWEntity("UAV")
 
     if (IsValid(uav) and uav.LVSUAV == true) or ent.LVSUAV == true then return false end
-
     if ent.IsReforgerEntity then return true end
+    if ent.SWBombV3 and ent.IsRocket then return true end
     if ent.LVS or ent.IsGlideVehicle or ent.lvsProjectile then return true end
     if Reforger.ValidClasslist and Reforger.ValidClasslist[class] then return true end
     return false

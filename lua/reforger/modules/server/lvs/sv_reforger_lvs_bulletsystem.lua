@@ -1,5 +1,27 @@
 if not LVS then return end
 
+local Bullets = {}
+
+function Bullets.GetField(bulletData, field, fallbackTable, defaultValue, typeCheck)
+    if not istable(bulletData) then return defaultValue end
+    if not isstring(field) then return defaultValue end
+
+    local value = bulletData[field]
+    if not typeCheck or typeCheck(value) then
+        return value
+    end
+
+    local tracerName = bulletData.TracerName
+    if fallbackTable and istable(fallbackTable) and isstring(tracerName) then
+        local fallback = fallbackTable[tracerName]
+        if not typeCheck or typeCheck(fallback) then
+            return fallback
+        end
+    end
+
+    return defaultValue
+end
+
 hook.Add("Reforger.Init", "LVS_Reforger.ChangeBulletFire", function()
     local origFireBullet = LVS.FireBullet
 
@@ -72,3 +94,5 @@ hook.Add("Reforger.Init", "LVS_Reforger.ChangeBulletFire", function()
         end
     end
 end)
+
+Reforger.Bullets = Bullets

@@ -91,13 +91,8 @@ local function __missile_touch(missile)
 end
 
 local function __missile_active(missile)
-    local oenable = missile.SetTrigger
-    missile.SetTrigger = function(self, state)
-        if oenable then oenable(self, state) end
-        print("Missile enabled")
-        runhook("Reforger.LVS_MissileActivated", self)
-        runhook("Reforger.LVS_ProjectileActivated", self, missilestr)
-    end
+    runhook("Reforger.LVS_MissileActivated", missile)
+    runhook("Reforger.LVS_ProjectileActivated", missile, missilestr)
 end
 
 local function __missile_collide( missile ) -- I just wanna some style in code, but I can do that normally
