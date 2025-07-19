@@ -10,6 +10,10 @@ View.Type = {
 
 Reforger.View = View
 
+function Reforger.View:GetViewType(ply)
+    return ply.ReforgerView and ply:ReforgerView() or View.Type.FPV
+end
+
 local plyMeta = FindMetaTable("Player")
 
 function plyMeta:ReforgerView()

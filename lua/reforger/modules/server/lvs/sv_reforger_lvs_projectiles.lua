@@ -12,15 +12,18 @@ local bombstr = "bomb"
 local missilestr = "missile"
 
 function Projectiles.IsProjectile( ent )
-    return IsValid(ent) and ent.lvsProjectile
+    if not IsValid(ent) then return false end
+    
+    return ent.lvsProjectile or ent.SWBombV3 or ent.IsRocket
 end
 
+--- CURRENTLY SUPPORTS ONLY LVS BOMBS ---
 function Projectiles.IsBomb(ent)
-    return Projectiles.IsProjectile(ent) and ent:GetClass() == "lvs_bomb"
+    return Projectiles.IsProjectile(ent) and ent:GetClass() == "lvs_bomb" or (ent.SWBombV3 and not ent.IsRocket)
 end
 
 function Projectiles.IsMissile(ent)
-    return Projectiles.IsProjectile(ent) and ent:GetClass() == "lvs_missile"
+    return Projectiles.IsProjectile(ent) and (ent:GetClass() == "lvs_missile" or ent.IsRocket)
 end
 
 --- [ LVS_BOMB ] ---
@@ -69,7 +72,7 @@ end
 
 local function __bomb_hooks(bomb)
     if not Projectiles.IsBomb(bomb) then return end
-    
+    print(bomb)
     __bomb_touch(bomb)
     __bomb_active(bomb)
     __bomb_collide(bomb)
@@ -91,8 +94,21 @@ local function __missile_touch(missile)
 end
 
 local function __missile_active(missile)
-    runhook("Reforger.LVS_MissileActivated", missile)
-    runhook("Reforger.LVS_ProjectileActivated", missile, missilestr)
+    local function doAct()
+        runhook("Reforger.LVS_MissileActivated", missile)
+        runhook("Reforger.LVS_ProjectileActivated", missile, missilestr)
+    end
+
+    if missile.Launch then
+        local olaunch = missile.Launch
+
+        missile.Launch = function(self, phys)
+            if olaunch then olaunch(self, phys) end
+            doAct()
+        end
+    else
+        doAct()
+    end
 end
 
 local function __missile_collide( missile ) -- I just wanna some style in code, but I can do that normally
@@ -106,14 +122,26 @@ local function __missile_collide( missile ) -- I just wanna some style in code, 
 end
 
 local function __missile_detonate(missile)
-    local odetonate = missile.Detonate
+    if missile.Detonate then
+        local odetonate = missile.Detonate
 
-    missile.Detonate = function(self, target)
-        if odetonate then odetonate(self, target) end
-        if self._rlfx_detonated then return end
-        self._rlfx_detonated = true
-        runhook("Reforger.LVS_MissileDetonated", self, target)
-        runhook("Reforger.LVS_ProjectileDetonated", self, target, missilestr)
+        missile.Detonate = function(self, target)
+            if odetonate then odetonate(self, target) end
+            if self._rlfx_detonated then return end
+            self._rlfx_detonated = true
+            runhook("Reforger.LVS_MissileDetonated", self, target)
+            runhook("Reforger.LVS_ProjectileDetonated", self, target, missilestr)
+        end
+    elseif missile.Explode then
+        local oexplode = missile.Explode
+
+        missile.Explode = function(self, target)
+            if oexplode then oexplode(self, target) end
+            if self._rlfx_detonated then return end
+            self._rlfx_detonated = true
+            runhook("Reforger.LVS_MissileDetonated", self, target)
+            runhook("Reforger.LVS_ProjectileDetonated", self, target, missilestr)
+        end
     end
 end
 
