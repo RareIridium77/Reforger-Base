@@ -55,11 +55,11 @@ hook.Add("Reforger.Init", "LVS_Reforger.ChangeBulletFire", function()
             end
 
             local attacker = bullet.Attacker
-
-            if IsValid(attacker) and IsValid(attacker.reforgerPod) then
-                table.insert(bullet.Filter, attacker.reforgerPod)
+            local pod = attacker.reforgerPod
+            if IsValid(pod) and not table.HasValue(bullet.Filter, pod) then
+                table.insert(bullet.Filter, pod)
             end
-
+ 
             hook.Run("Reforger.LVS_BulletFired", bullet)
 
             local bulletOnCollide = bullet.OnCollide

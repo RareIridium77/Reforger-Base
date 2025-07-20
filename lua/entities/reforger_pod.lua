@@ -151,6 +151,10 @@ end
 
 function ENT:OnTakeDamage(dmginfo)
     local attacker = dmginfo:GetAttacker()
+    local attackerPod = attacker.reforgerPod
+    if IsValid(attackerPod) and attackerPod.VehicleBase == self.VehicleBase then
+        return 
+    end
     
     if not IsValid(self.Player) or not IsValid(self.VehicleBase) or not IsValid(attacker) or attacker == self.Player then return end
 
@@ -185,7 +189,7 @@ function ENT:OnTakeDamage(dmginfo)
         end
     end
 
-    if aimVector:IsZero() then
+    if not isvector(aimVector) or aimVector:IsZero() then
         local force = dmginfo:GetDamageForce()
         if force:IsZero() then return end
         aimVector = force:GetNormalized()

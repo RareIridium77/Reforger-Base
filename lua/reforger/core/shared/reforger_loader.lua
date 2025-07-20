@@ -13,7 +13,7 @@ local priorityList = {
 }
 
 local priorityKeywords = {
-	"util", "base"
+	"util", "base", "log", "logger"
 }
 
 local function StringHasKeyword(path, keywords)
