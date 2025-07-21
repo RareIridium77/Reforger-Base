@@ -131,3 +131,13 @@ function Reforger.GetHealth(ent)
 
     return ent.Health and ent:Health() or -1
 end
+
+function Reforger.DoInDev(func)
+    if not Reforger.IsDeveloper() then return end
+    if not isfunction(func) then return end
+
+    local success, err = pcall(func)
+    if not success then
+        Reforger.ErrorLog("Error in Dev function: " .. tostring(err))
+    end
+end

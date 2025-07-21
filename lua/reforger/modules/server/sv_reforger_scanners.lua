@@ -3,6 +3,7 @@ local Scanners = {}
 Reforger.Log("Reforger Scanners Loaded")
 
 local VehBase = Reforger.VehicleBases
+local isdevmode = Reforger.IsDeveloper
 
 function Scanners.PairEntity(parent, className)
     if not IsValid(parent) or not isstring(className) then return nil end
@@ -59,7 +60,7 @@ function Scanners.FindClosestByClass(veh, dmginfo, className)
         local HitPos = util.IntersectRayWithOBB(dmgStart, dmgDir * Len * 1.5, pos, ang, mins, maxs)
 
         if HitPos then
-            debugoverlay.BoxAngles(pos, mins, maxs, ang, 1, Color(255, 0, 0, 50))
+            if isdevmode() then debugoverlay.BoxAngles(pos, mins, maxs, ang, 1, Color(255, 0, 0, 50)) end
 
             local dist = (HitPos - dmgPos):Length()
 

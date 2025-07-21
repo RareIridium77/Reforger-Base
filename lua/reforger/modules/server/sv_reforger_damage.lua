@@ -202,15 +202,19 @@ function Damage.HandleRayDamage(veh, dmginfo)
 	local start = dmgPos - dmgDir * (Len * 0.1)
 	local finish = start + dmgDir * Len * 2
 
-	debugoverlay.Line(dmgPos - dmgDir * 2, finish, 0.8, Color(255, 0, 0))
-
     local tr = util.TraceLine({
         start = start,
         endpos = finish,
         filter = function(ent) return ent ~= veh end
     })
 
-    if tr.HitPos then debugoverlay.Sphere(tr.HitPos, 2, 0.8, Color(255, 0, 212), true) end
+    Reforger.DoInDev(function()
+        debugoverlay.Line(dmgPos - dmgDir * 2, finish, 0.8, Color(255, 0, 0))
+
+        if tr.HitPos then
+            debugoverlay.Sphere(tr.HitPos, 2, 0.8, Color(255, 0, 212), true)
+        end
+    end)
 
     local hitEnt = tr.Entity
     if not IsValid(hitEnt) or not hitEnt.ReforgerDamageable then return end

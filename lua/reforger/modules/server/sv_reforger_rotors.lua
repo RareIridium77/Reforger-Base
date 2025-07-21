@@ -5,6 +5,34 @@ Reforger.Log("Reforger Rotors Loaded")
 
 local VehBase = Reforger.VehicleBases
 local VehType = Reforger.VehicleTypes
+local isdevmode = Reforger.IsDeveloper
+
+local random = math.random
+local runhook = hook.Run
+
+local rotorDamageChanceCvar = Reforger.CreateConvar(
+    "rotor.chance.damage", "0.35",
+    "Chance of rotor damage on hit. 0.35 = 35% chance.",
+    0, 1
+)
+
+local rotorCriticalDamageChanceCvar = Reforger.CreateConvar(
+    "rotor.chance.damage.critical", "0.15",
+    "Chance of rotor critical damage on hit. 0.15 = 15% chance.",
+    0, 1
+)
+
+local rotorIgniteChanceCvar = Reforger.CreateConvar(
+    "rotor.chance.ignite", "0.5",
+    "Chance of rotor ignition on hit. 0.5 = 50% chance.",
+    0, 1
+)
+
+local rotorIgniteTimeCvar = Reforger.CreateConvar(
+    "rotor.time.ignite", "10",
+    "Time of rotor ignition in seconds. 10 = 10 seconds.",
+    0, 60
+)
 
 function Rotors.RotorsGetDamage(veh, dmginfo)
     if not IsValid(veh) then return end
@@ -23,18 +51,34 @@ function Rotors.RotorsGetDamage(veh, dmginfo)
         end
     end
 
-    if math.random() < 0.35 then
-        local pre = hook.Run("Reforger.PreRotorDamage", rotor, dmginfo)
+    local damageChance = rotorDamageChanceCvar:GetFloat() or 0.35
+    local criticalChance = rotorCriticalDamageChanceCvar:GetFloat() or 0.15
+    local igniteChance = rotorIgniteChanceCvar:GetFloat() or 0.5
+    local igniteTime = rotorIgniteTimeCvar:GetInt() or 10
 
+    -- Damage chance
+    if random() < damageChance then
+        local pre = runhook("Reforger.PreRotorDamage", rotor, dmginfo)
         if pre == false then return end
 
         rotor.rotorHealth = rotor.rotorHealth - dmginfo:GetDamage()
-
-        hook.Run("Reforger.PostRotorDamage", rotor, dmginfo)
+        runhook("Reforger.PostRotorDamage", rotor, dmginfo)
 
         if rotor.rotorHealth <= 0 and isfunction(rotor.Destroy) then
             Rotors.DestroyRotor(rotor)
         end
+    end
+
+    -- Critical damage chance (independent)
+    if not rotor._criticalDamage and random() < criticalChance then
+        rotor._criticalDamage = true
+        runhook("Reforger.RotorGotCriticalDamage", rotor, dmginfo)
+    end
+
+    -- Ignite chance (independent)
+    if IsValid(rotor) and random() < igniteChance and not rotor:IsOnFire() then
+        rotor:Ignite(igniteTime, 2)
+        runhook("Reforger.RotorIgnited", rotor, dmginfo)
     end
 end
 
@@ -44,7 +88,7 @@ function Rotors.DestroyRotor(rotor)
     rotor.destroyed = true
     rotor:Destroy()
 
-    hook.Run("Reforger.RotorDestroyed", rotor)
+    runhook("Reforger.RotorDestroyed", rotor)
 end
 
 function Rotors.IsRotorSpinning(rotor)
@@ -83,7 +127,7 @@ function Rotors.FindRotorAlongRay(veh, dmginfo)
     local dmgStart = dmgPos - dmgDir * (Len * 0.5)
 
     local closestEnt, closestDist = nil, Len * 2
-    local rotors = Rotors.FindRotors(veh)
+    local rotors = veh.reforgerRotors or Rotors.FindRotors(veh)
 
     for _, ent in ipairs(rotors) do
         if not IsValid(ent) or ent:GetParent() ~= veh then continue end
@@ -96,9 +140,12 @@ function Rotors.FindRotorAlongRay(veh, dmginfo)
             radius = ent:GetRadius()
         elseif veh.reforgerBase == VehBase.Glide then
             ang = veh:LocalToWorldAngles(ent.baseAngles)
+
             local axis = ent.spinAxis or "Forward"
             local rotAxis = ang[axis] and ang[axis](ang) or ang:Forward()
+
             ang:RotateAroundAxis(rotAxis, ent.traceAngle or 0)
+
             radius = ent.radius
         end
 
@@ -112,7 +159,7 @@ function Rotors.FindRotorAlongRay(veh, dmginfo)
         local HitPos = util.IntersectRayWithOBB(dmgStart, dmgDir * Len * 1.5, pos, ang, mins, maxs)
 
         if HitPos then
-            debugoverlay.BoxAngles(pos, mins, maxs, ang, 1, Color(255, 0, 0, 50))
+            if isdevmode() then debugoverlay.BoxAngles(pos, mins, maxs, ang, 1, Color(255, 0, 0, 50)) end
 
             local dist = (HitPos - dmgPos):Length()
             if dist < closestDist then
@@ -189,7 +236,7 @@ function Rotors._internal:CacheRotors(veh)
             end
         end
 
-        hook.Run("Reforger.RotorsCached", veh, veh.reforgerRotors)
+        runhook("Reforger.RotorsCached", veh, veh.reforgerRotors)
         Reforger.DevLog("Rotors Cached")
     end)
 end

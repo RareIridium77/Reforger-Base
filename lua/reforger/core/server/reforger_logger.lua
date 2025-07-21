@@ -31,13 +31,19 @@ Reforger.LogColors = {
     LOC   = Color(200, 200, 200)
 }
 
+function Reforger.IsDeveloper()
+    return dev_cvar and dev_cvar:GetInt() > 0
+end
+
+local isdevmode = Reforger.IsDeveloper
+
 function Reforger.SLog(level, ...)
     local colorLevel = Reforger.LogColors[level] or color_white
     local args = {...}
 
     MsgC(colorLevel, string.format("[%s-Reforger] ", level))
 
-    if level == "DEV" then
+    if level == "DEV" and isdevmode() then
         local info = debug.getinfo(3, "Slfn")
         local src = info.short_src or "unknown"
         local file = string.match(src, "([^\\/]+)%.lua$") or src
@@ -68,9 +74,6 @@ end
 
 function Reforger.Log(...) Reforger.SLog(loglevels.INFO, ...) end
 function Reforger.WarnLog(...) Reforger.SLog(loglevels.WARN, ...) end
-function Reforger.DevLog(...)
-    if not dev_cvar or dev_cvar:GetInt() <= 0 then return end
-    Reforger.SLog(loglevels.DEV, ...)
-end
+function Reforger.DevLog(...) Reforger.SLog(loglevels.DEV, ...) end
 function Reforger.ErrorLog(...) Reforger.SLog(loglevels.ERROR, ...) end
 
