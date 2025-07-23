@@ -9,8 +9,12 @@ local function __lvs_explode(lvs)
     local oexplode = lvs.Explode
 
     lvs.Explode = function(self)
+        if self.reforgerExploded then return end
+        
         if oexplode then oexplode(self) end
         runhook("Reforger.LVS_Exploded", self)
+
+        self.reforgerExploded = true
     end
 end
 
