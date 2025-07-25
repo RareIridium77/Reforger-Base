@@ -72,7 +72,6 @@ end
 
 local function __bomb_hooks(bomb)
     if not Projectiles.IsBomb(bomb) then return end
-    print(bomb)
     __bomb_touch(bomb)
     __bomb_active(bomb)
     __bomb_collide(bomb)

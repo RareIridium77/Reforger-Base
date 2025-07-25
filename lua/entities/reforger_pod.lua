@@ -182,7 +182,6 @@ function ENT:OnTakeDamage(dmginfo)
     local vehBase = self.VehicleBase.reforgerBase
 
     local isReforgerType = Reforger.IsValidReforger(inflictor)
-    print(isReforgerType)
     if not isReforgerType and IsIgnoredDamageType[dmgType] or D.IsFireDamageType(self.VehicleBase, dmgType) then
         D.ApplyPlayerDamage(self.Player, damage, attacker, inflictor, nil)
         return
