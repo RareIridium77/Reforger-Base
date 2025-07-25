@@ -13,7 +13,7 @@ Reforger = Reforger or {}
 
 function Reforger.AdminDevToolValidation(ply)
     if not IsValid(ply) then return false end
-    if not ply:IsAdmin() then Reforger.Log("You are not admin.") return false end
+    if not ply:IsAdmin() and not ply:IsSuperAdmin() then Reforger.Log("You are not admin or either super admin.") return false end
     if GetConVar("developer"):GetInt() <= 0 then Reforger.Log("Developer mode disabled. Enable it => 'developer 1'") return false end
 
     return true
@@ -232,4 +232,61 @@ Reforger.CreateAdminCommand("search.data", "Searh data by key in entity table (e
     ply:ChatPrint("[Reforger] Searching for \"" .. search .. "\"...")
     SearchTable(ent:GetTable(), search, ent:GetClass())
     ply:ChatPrint("[Reforger] Searching end.")
+end)
+
+Reforger.CreateAdminCommand("bot.seat", "Seats bot in vehicle", function(ply, cmd, args)
+    local vehicle = ValidateTraceEntity(ply)
+    if not IsValid(vehicle) then return end
+
+    local vehicleBase = vehicle.reforgerBase
+
+    local bot
+    for _, v in ipairs(player.GetBots()) do
+        if IsValid(v) and not v:InVehicle() then
+            bot = v
+            break
+        end
+    end
+
+    if not IsValid(bot) then
+        ply:ChatPrint("[Reforger] No bots available.")
+        return
+    end
+
+    local seats = {}
+
+    if vehicleBase == "lvs" and vehicle.GetDriverSeat then
+        local dSeat = vehicle:GetDriverSeat()
+        local pSeats = vehicle:GetPassengerSeats() or {}
+
+        if IsValid(dSeat) then
+            table.insert(seats, dSeat)
+        end
+
+        for _, seat in ipairs(pSeats) do
+            if IsValid(seat) then
+                table.insert(seats, seat)
+            end
+        end
+    elseif vehicleBase == "simfphys" then
+        ply:ChatPrint("[Reforger] Simfphys vehicles do not support bot seating in this version.")
+        return
+    elseif vehicleBase == "glide" then
+        ply:ChatPrint("[Reforger] Glide vehicles do not support bot seating in this version.")
+        return
+    end
+
+    if #seats == 0 then
+        table.insert(seats, vehicle)
+    end
+
+    for _, seat in ipairs(seats) do
+        if IsValid(seat) and seat:IsVehicle() and not IsValid(seat:GetDriver()) then
+            bot:EnterVehicle(seat)
+            ply:ChatPrint("[Reforger] Bot successfully seated in vehicle.")
+            return
+        end
+    end
+
+    ply:ChatPrint("[Reforger] No available seat found.")
 end)
