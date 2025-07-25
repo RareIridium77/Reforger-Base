@@ -46,6 +46,18 @@ Damage.CollisionDamageConfig = {
     }
 }
 
+function Damage.FixDamageForce(dmginfo, attacker, victim)
+    assert(IsValid(dmginfo), "CTakeDamageInfo is not valid!")
+    assert(IsValid(attacker), "Attacker entity is not valid!")
+    assert(IsValid(victim), "Victim entity is not valid!")
+
+    if dmginfo:GetDamageForce():IsZero() then
+        local dir = (victim:GetPos() - attacker:GetPos()):GetNormalized()
+        local pushStrength = 2 -- arbitrary low force
+        dmginfo:SetDamageForce(dir * pushStrength)
+    end
+end
+
 function Damage.IsSmallDamageType(dmgType)
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
     return bit.band(dmgType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
