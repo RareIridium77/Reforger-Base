@@ -85,9 +85,16 @@ function ENT:Think()
 
     local extraZ = 0
 
-    local headBoneID = self.Player:LookupBone("ValveBiped.Bip01_Head1")
-    if headBoneID then
-        local headPos = self.Player:GetBonePosition(headBoneID)
+    if not self.headBoneID then
+        local bone = self.Player:LookupBone("ValveBiped.Bip01_Head1")
+        if bone then
+            self.headBoneID = bone
+            Reforger.DevLog(("[FakeCollision] Found head bone ID: %d for %s"):format(bone, self.Player:Nick()))
+        end
+    end
+
+    if self.headBoneID then
+        local headPos = self.Player:GetBonePosition(self.headBoneID)
         if headPos and headPos.z > self.pseudoPos.z + self.pseudoMax.z then
             local relativeHeadZ = headPos.z - self.pseudoPos.z
             self.pseudoMax.z = relativeHeadZ * 1.05
@@ -123,8 +130,10 @@ function ENT:Think()
         math.abs(eyePos.y - self.pseudoPos.y),
         math.abs(eyePos.z - self.pseudoPos.z)
     ) * 0.5
+
+    local podPos = self:GetPos()
     
-    if self:GetPos() ~= center then self:SetPos(center) end
+    if podPos:DistToSqr(center) > 1 then self:SetPos(center) end
     
     extent:Add(Vector(12, 10, 15 + extraZ))
 
@@ -133,8 +142,11 @@ function ENT:Think()
         self:SetCollisionBounds(-extent, extent)
     end
 
-    debugoverlay.BoxAngles(self.pseudoPos, self.pseudoMin, self.pseudoMax, self.pseudoAng, 0.06, Color(255, 255, 255, 10))
-    debugoverlay.Text(self.pseudoPos, "Seq ID: "..tostring(seqID).." Seq Name: "..seqName, 0.06)
+    if Reforger.IsDeveloper() then
+        debugoverlay.BoxAngles(self.pseudoPos, self.pseudoMin, self.pseudoMax, self.pseudoAng, 0.06, Color(255, 255, 255, 10))
+        debugoverlay.Text(self.pseudoPos, "Seq ID: "..tostring(seqID).." Seq Name: "..seqName, 0.06)
+    end
+
     self:NextThink(CurTime() + 0.025)
     return true
 end
@@ -167,13 +179,16 @@ function ENT:OnTakeDamage(dmginfo)
     local damagePos = dmginfo:GetDamagePosition()
     local dmgType = dmginfo:GetDamageType()
     local isTraced = dmginfo:GetDamageCustom() == 1
+    local vehBase = self.VehicleBase.reforgerBase
 
-    if IsIgnoredDamageType[dmgType] or D.IsFireDamageType(self.VehicleBase, dmgType) then
+    local isReforgerType = Reforger.IsValidReforger(inflictor)
+    print(isReforgerType)
+    if not isReforgerType and IsIgnoredDamageType[dmgType] or D.IsFireDamageType(self.VehicleBase, dmgType) then
         D.ApplyPlayerDamage(self.Player, damage, attacker, inflictor, nil)
         return
     end
 
-    if self.VehicleBase.reforgerBase == Reforger.VehicleBases.Simfphys and GetConVar("sv_simfphys_playerdamage"):GetInt() <= 0 then return end
+    if vehBase == Reforger.VehicleBases.Simfphys and GetConVar("sv_simfphys_playerdamage"):GetInt() <= 0 then return end
 
     local margin = 1.5
 
