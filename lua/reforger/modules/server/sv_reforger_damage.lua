@@ -48,11 +48,14 @@ Damage.CollisionDamageConfig = {
 
 function Damage.FixDamageForce(dmginfo, attacker, victim)
     assert(IsValid(dmginfo), "CTakeDamageInfo is not valid!")
-    assert(IsValid(attacker), "Attacker entity is not valid!")
-    assert(IsValid(victim), "Victim entity is not valid!")
+    assert(IsValid(victim), "Entity Victim is not valid")
+    
+    -- TODO: FIX ATTACKER IS NULL, NIL
+
+    local attk = Reforger.SafeEntity(attacker)
 
     if dmginfo:GetDamageForce():IsZero() then
-        local dir = (victim:GetPos() - attacker:GetPos()):GetNormalized()
+        local dir = (victim:GetPos() - attk:GetPos()):GetNormalized()
         local pushStrength = 2 -- arbitrary low force
         dmginfo:SetDamageForce(dir * pushStrength)
     end
