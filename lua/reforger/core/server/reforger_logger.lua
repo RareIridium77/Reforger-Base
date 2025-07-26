@@ -32,21 +32,23 @@ Reforger.LogColors = {
 }
 
 function Reforger.IsDeveloper()
-    return dev_cvar and dev_cvar:GetInt() > 0
+    return dev_cvar and dev_cvar:GetInt() == 1 or false
 end
 
 local isdevmode = Reforger.IsDeveloper
 
 function Reforger.SLog(level, ...)
-    local colorLevel = Reforger.LogColors[level] or color_white
+    if level == loglevels.DEV and not isdevmode() then return end
+    
     local args = {...}
+    local colorLevel = Reforger.LogColors[level] or color_white
 
     MsgC(colorLevel, string.format("[%s-Reforger] ", level))
 
-    if level == "DEV" and isdevmode() then
+    if level == loglevels.DEV then
         local info = debug.getinfo(3, "Slfn")
         local src = info.short_src or "unknown"
-        local file = string.match(src, "([^\\/]+)%.lua$") or src
+        local file = src:match("([^\\/]+)%.lua$") or src
         local line = info.currentline or "?"
         local func = info.name or "?"
 
