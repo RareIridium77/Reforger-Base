@@ -68,8 +68,6 @@ function Damage.IsMeleeDamageType(dmgType)
     local hasSlash    = bit.band(dmgType, DMG_SLASH)    ~= 0
 
     if hasClub or hasSlash then
-        if hasClub     then print("  - has DMG_CLUB") end
-        if hasSlash    then print("  - has DMG_SLASH") end
         return true
     else
         return false
@@ -85,10 +83,6 @@ function Damage.IsSmallDamageType(dmgType)
     local hasSlash    = bit.band(dmgType, DMG_SLASH)    ~= 0
 
     if hasBullet or hasBuckshot or hasClub or hasSlash then
-        if hasBullet   then print("  - has DMG_BULLET") end
-        if hasBuckshot then print("  - has DMG_BUCKSHOT") end
-        if hasClub     then print("  - has DMG_CLUB") end
-        if hasSlash    then print("  - has DMG_SLASH") end
         return true
     else
         return false
