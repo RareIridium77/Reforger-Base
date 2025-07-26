@@ -1,3 +1,5 @@
+Reforger = Reforger or {}
+
 local Damage = {}
 
 local VehBase = Reforger.VehicleBases
@@ -61,9 +63,36 @@ function Damage.FixDamageForce(dmginfo, attacker, victim)
     end
 end
 
+function Damage.IsMeleeDamageType(dmgType)
+    local hasClub     = bit.band(dmgType, DMG_CLUB)     ~= 0
+    local hasSlash    = bit.band(dmgType, DMG_SLASH)    ~= 0
+
+    if hasClub or hasSlash then
+        if hasClub     then print("  - has DMG_CLUB") end
+        if hasSlash    then print("  - has DMG_SLASH") end
+        return true
+    else
+        return false
+    end
+end
+
 function Damage.IsSmallDamageType(dmgType)
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
-    return bit.band(dmgType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
+
+    local hasBullet   = bit.band(dmgType, DMG_BULLET)   ~= 0
+    local hasBuckshot = bit.band(dmgType, DMG_BUCKSHOT) ~= 0
+    local hasClub     = bit.band(dmgType, DMG_CLUB)     ~= 0
+    local hasSlash    = bit.band(dmgType, DMG_SLASH)    ~= 0
+
+    if hasBullet or hasBuckshot or hasClub or hasSlash then
+        if hasBullet   then print("  - has DMG_BULLET") end
+        if hasBuckshot then print("  - has DMG_BUCKSHOT") end
+        if hasClub     then print("  - has DMG_CLUB") end
+        if hasSlash    then print("  - has DMG_SLASH") end
+        return true
+    else
+        return false
+    end
 end
 
 function Damage.IsCollisionDamageType(dmgType)
@@ -278,4 +307,5 @@ function Damage.StopLimitedFire(ent)
     ent._ignitingForever = nil
 end
 
+Reforger.Damage = {}
 Reforger.Damage = Damage
