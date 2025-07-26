@@ -1,3 +1,8 @@
+```
+⚠️ This project is currently a Work In Progress (WIP).
+It's in an experimental phase, so breaking changes may happen. Documentation is still being worked on.
+```
+
 # Reforger Base  
 **Reforger Base** is a shared system for my Garry's Mod addons under the [Reforger] tag.  
 Its main purpose is to provide a unified damage and logic framework for different vehicle systems, such as:
