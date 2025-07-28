@@ -142,6 +142,8 @@ end
 function Damage.ApplyPlayersDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
     for _, ply in ipairs(Reforger.Scanners.GetEveryone(veh)) do
+        if not IsValid(ply) or not ply:InVehicle() then continue end -- Fix: Damage applies to player that not in vehicle lol.
+
         Damage.ApplyPlayerDamage(
             ply,
             dmginfo:GetDamage(),
