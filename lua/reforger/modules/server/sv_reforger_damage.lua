@@ -49,7 +49,7 @@ Damage.CollisionDamageConfig = {
 }
 
 function Damage.FixDamageForce(dmginfo, attacker, victim)
-    assert(IsValid(dmginfo), "CTakeDamageInfo is not valid!")
+    assert(dmginfo and isfunction(dmginfo.GetDamage), "CTakeDamageInfo is not valid!")
     assert(IsValid(victim), "Entity Victim is not valid")
     
     -- TODO: FIX ATTACKER IS NULL, NIL
@@ -91,7 +91,7 @@ end
 
 function Damage.IsCollisionDamageType(dmgType)
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
-    return (dmgType == (DMG_VEHICLE + DMG_CRUSH) or dmgType == DMG_VEHICLE or dmgType == DMG_CRUSH)
+    return bit.band(dmgType, DMG_VEHICLE) ~= 0 or bit.band(dmgType, DMG_CRUSH) ~= 0
 end
 
 local FIRE_DAMAGE_MASK = bit.bor(DMG_BURN, DMG_SLOWBURN, DMG_DIRECT)
@@ -118,7 +118,7 @@ function Damage.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
     inflictor = IsValid(inflictor) and inflictor or game.GetWorld()
 
     local dmg = DamageInfo()
-    dmg:SetDamage(damage * 2)
+    dmg:SetDamage(damage)
     dmg:SetAttacker(attacker)
     dmg:SetInflictor(inflictor)
     dmg:SetDamageType(DMG_DIRECT)
@@ -143,6 +143,7 @@ function Damage.ApplyPlayersDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
     for _, ply in ipairs(Reforger.Scanners.GetEveryone(veh)) do
         if not IsValid(ply) or not ply:InVehicle() then continue end -- Fix: Damage applies to player that not in vehicle lol.
+        if ply:HasGodMode() then continue end
 
         Damage.ApplyPlayerDamage(
             ply,
@@ -167,7 +168,7 @@ function Damage.DamageParts(veh, damage)
 
             local curHP = part:GetHP()
             local maxHP = part:GetMaxHP()
-            local newHP = math.Clamp(curHP - damage, -maxHP, maxHP)
+            local newHP = math.Clamp(curHP - newDamage, -maxHP, maxHP)
 
             if part.SetHP then
                 part:SetHP(newHP) end
@@ -261,7 +262,7 @@ function Damage.HandleRayDamage(veh, dmginfo)
 
     local dmgType = dmginfo:GetDamageType()
     local originalDmg = dmginfo:GetDamage()
-    local isSmall = bit.band(dmgType, DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
+    local isSmall = Damage.IsSmallDamageType(dmgType)
 
     local finalDmg = originalDmg
     if isSmall and veh.reforgerType == VehType.ARMORED then finalDmg = originalDmg * 0.25 end
@@ -272,6 +273,7 @@ end
 function Damage.IgniteLimited(ent, size, repeatCount)
     if not IsValid(ent) then return end
     if ent._ignitingForever then return end
+    if ent:EntIndex() <= 0 then return end
 
     local radius = size or ent:BoundingRadius()
     local maxRepeats = repeatCount or 5
@@ -281,7 +283,7 @@ function Damage.IgniteLimited(ent, size, repeatCount)
     ent._ignitingForever = true
     ent:Ignite(5, radius)
 
-    if timer.Exists(timerID) then timer.Remove(timerID) return end
+    if timer.Exists(timerID) then timer.Remove(timerID) end
 
     timer.Create(timerID, 4.75, 0, function()
         if not IsValid(ent) then return timer.Remove(timerID) end
@@ -299,6 +301,8 @@ end
 
 function Damage.StopLimitedFire(ent)
     if not IsValid(ent) then return end
+    if ent:EntIndex() <= 0 then return end
+
     timer.Remove("reforger_limited_fire_" .. ent:EntIndex())
     ent._ignitingForever = nil
 end
