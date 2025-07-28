@@ -5,12 +5,16 @@ local Damage = {}
 local VehBase = Reforger.VehicleBases
 local VehType = Reforger.VehicleTypes
 
-Damage.DamageType = {
+Damage.Type = {
     DIRECT = 0,
     TRACED = 1,
 }
 
-Damage.CollisionDamageConfig = {
+Damage.Multipliers = {
+    SmallToArmored = 0.25
+}
+
+Damage.CollisionConfig = {
     light = {
         minVelocity = 550,
         fireChance = 0.5,
@@ -48,6 +52,23 @@ Damage.CollisionDamageConfig = {
     }
 }
 
+function Damage.HasDamageType(dmgType, mask)
+    assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
+
+    return bit.band(dmgType, mask) ~= 0
+end
+
+local hasdmgtype = Damage.HasDamageType
+
+function Damage.HasAnyType(dmgType, ...)
+    for _, mask in ipairs({...}) do
+        if hasdmgtype(dmgType, mask) then return true end
+    end
+    return false
+end
+
+local dmganytype = Damage.HasAnyType
+
 function Damage.FixDamageForce(dmginfo, attacker, victim)
     assert(dmginfo and isfunction(dmginfo.GetDamage), "CTakeDamageInfo is not valid!")
     assert(IsValid(victim), "Entity Victim is not valid")
@@ -57,54 +78,28 @@ function Damage.FixDamageForce(dmginfo, attacker, victim)
     local attk = Reforger.SafeEntity(attacker)
 
     if dmginfo:GetDamageForce():IsZero() then
-        local dir = (victim:GetPos() - attk:GetPos()):GetNormalized()
+        local delta = (victim:GetPos() - attk:GetPos())
+        local dir = delta:IsZero() and VectorRand() or delta:GetNormalized()
+
         local pushStrength = 2 -- arbitrary low force
         dmginfo:SetDamageForce(dir * pushStrength)
     end
 end
 
-function Damage.IsMeleeDamageType(dmgType)
-    local hasClub     = bit.band(dmgType, DMG_CLUB)     ~= 0
-    local hasSlash    = bit.band(dmgType, DMG_SLASH)    ~= 0
-
-    if hasClub or hasSlash then
-        return true
-    else
-        return false
-    end
-end
-
-function Damage.IsSmallDamageType(dmgType)
-    assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
-
-    local hasBullet   = bit.band(dmgType, DMG_BULLET)   ~= 0
-    local hasBuckshot = bit.band(dmgType, DMG_BUCKSHOT) ~= 0
-    local hasClub     = bit.band(dmgType, DMG_CLUB)     ~= 0
-    local hasSlash    = bit.band(dmgType, DMG_SLASH)    ~= 0
-
-    if hasBullet or hasBuckshot or hasClub or hasSlash then
-        return true
-    else
-        return false
-    end
-end
-
-function Damage.IsCollisionDamageType(dmgType)
-    assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
-    return bit.band(dmgType, DMG_VEHICLE) ~= 0 or bit.band(dmgType, DMG_CRUSH) ~= 0
-end
-
-local FIRE_DAMAGE_MASK = bit.bor(DMG_BURN, DMG_SLOWBURN, DMG_DIRECT)
+function Damage.IsMeleeDamageType(dmgType) return dmganytype(dmgType, DMG_CLUB, DMG_SLASH) end
+function Damage.IsSmallDamageType(dmgType) return dmganytype(dmgType, DMG_BULLET, DMG_BUCKSHOT, DMG_SLASH, DMG_CLUB) end
+function Damage.IsCollisionDamageType(dmgType) return dmganytype(dmgType, DMG_VEHICLE, DMG_CRUSH) end
 
 function Damage.IsFireDamageType(veh, dmgType)
-    assert(IsValid(veh), "IS NOT VALID VEHICLE TO CHECK DAMAGE TYPE: " .. tostring(veh))
-    assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
-
-    if veh.reforgerBase == VehBase.Glide then
-        return dmgType == DMG_DIRECT or (bit.band(dmgType, DMG_CRUSH) ~= 0 and veh:IsOnFire())
+    if not isentity(veh) or not IsValid(veh) then
+        return dmganytype(dmgType, DMG_BURN, DMG_SLOWBURN)
     end
 
-    return bit.band(dmgType, FIRE_DAMAGE_MASK) ~= 0
+    if veh.reforgerBase == VehBase.Glide then
+        return hasdmgtype(dmgType, DMG_DIRECT) or hasdmgtype(dmgType, DMG_CRUSH) and veh:IsOnFire()
+    end
+
+    return dmganytype(dmgType, DMG_BURN, DMG_SLOWBURN)
 end
 
 function Damage.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
@@ -125,7 +120,7 @@ function Damage.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
     dmg:SetDamagePosition(pos or ent:GetPos())
 
     if isnumber(custom) and custom > 0 and custom < 4096 then
-        dmg:SetDamageCustom(custom)
+        dmg:SetDamageBonus(custom) -- Upd: changed SetDamageCustom -> SetDamageBonus because it's not work
     end
 
     ent:TakeDamageInfo(dmg)
@@ -150,7 +145,7 @@ function Damage.ApplyPlayersDamage(veh, dmginfo)
             dmginfo:GetDamage(),
             dmginfo:GetAttacker(),
             dmginfo:GetInflictor(),
-            Damage.DamageType.DIRECT
+            Damage.Type.DIRECT
         )
     end
 end
@@ -184,7 +179,7 @@ function Damage.HandleCollisionDamage(veh, dmginfo)
     if not isCollisionDamage then return end
 
     local vtype = veh.reforgerType or "undefined"
-    local cfg = Damage.CollisionDamageConfig[vtype] or Damage.CollisionDamageConfig["undefined"]
+    local cfg = Damage.CollisionConfig[vtype] or Damage.CollisionConfig["undefined"]
 
     local velocity = veh:GetVelocity():Length()
     if velocity < cfg.minVelocity then return end
@@ -235,10 +230,10 @@ end
 
 function Damage.HandleRayDamage(veh, dmginfo)
     if not IsValid(veh) or not IsValid(dmginfo) then return end
-
     local Len = veh:BoundingRadius()
 	local dmgPos = dmginfo:GetDamagePosition()
-	local dmgDir = dmginfo:GetDamageForce():GetNormalized()
+	local force = dmginfo:GetDamageForce()
+    local dmgDir = force:IsZero() and Vector(0, 0, -1) or force:GetNormalized()
 
 	local start = dmgPos - dmgDir * (Len * 0.1)
 	local finish = start + dmgDir * Len * 2
@@ -246,55 +241,84 @@ function Damage.HandleRayDamage(veh, dmginfo)
     local tr = util.TraceLine({
         start = start,
         endpos = finish,
-        filter = function(ent) return ent ~= veh end
+        filter = function(ent)
+            return ent ~= veh and ent.IsReforgerEntity and not ent:IsPlayer() and not ent:IsVehicle()
+        end
     })
 
     Reforger.DoInDev(function()
-        debugoverlay.Line(dmgPos - dmgDir * 2, finish, 0.8, Color(255, 0, 0))
+        debugoverlay.Sphere(start, 2, 0.8, Color(255, 0, 200), true)
+
+        debugoverlay.Line(start, finish, 0.8, Color(255, 0, 0))
 
         if tr.HitPos then
-            debugoverlay.Sphere(tr.HitPos, 2, 0.8, Color(255, 0, 212), true)
+            debugoverlay.Sphere(tr.HitPos, 2, 0.8, Color(9, 255, 0), true)
         end
     end)
 
     local hitEnt = tr.Entity
     if not IsValid(hitEnt) or not hitEnt.ReforgerDamageable then return end
 
+    local hitEntParent = hitEnt:GetParent()
+    if not IsValid(hitEntParent) and hitEnt == veh then return end
+
+    -- Damage reducing: Warthunder Technology 🤣
+    local travelDist = dmgPos:Distance(tr.HitPos)
+    local maxDist = Len * 2
+    local damageFalloff = 1 - (travelDist / maxDist)
+    damageFalloff = math.Clamp(damageFalloff, 0.1, 1) -- minimum is 10%
+
+    Reforger.DevLog("Damage Fallof: ", damageFalloff)
+    
     local dmgType = dmginfo:GetDamageType()
+    local notvaliddmg = Damage.IsCollisionDamageType(dmgType) or Damage.IsFireDamageType(veh, dmgType)
+
+    if notvaliddmg then return end
+
     local originalDmg = dmginfo:GetDamage()
+    local finalDmg = originalDmg * damageFalloff
+
     local isSmall = Damage.IsSmallDamageType(dmgType)
 
-    local finalDmg = originalDmg
-    if isSmall and veh.reforgerType == VehType.ARMORED then finalDmg = originalDmg * 0.25 end
+    if isSmall and veh.reforgerType == VehType.ARMORED then
+        finalDmg = finalDmg * (Damage.Multipliers.SmallToArmored or 0.25)
+    end
 
-    Damage.ApplyDamageToEnt(hitEnt, finalDmg, dmginfo:GetAttacker(), dmginfo:GetInflictor(), Damage.DamageType.TRACED, tr.HitPos)
+    Damage.ApplyDamageToEnt(hitEnt, finalDmg, dmginfo:GetAttacker(), dmginfo:GetInflictor(), Damage.Type.TRACED, tr.HitPos)
 end
 
 function Damage.IgniteLimited(ent, size, repeatCount)
     if not IsValid(ent) then return end
     if ent._ignitingForever then return end
-    if ent:EntIndex() <= 0 then return end
+
+    if not isfunction(ent.Ignite) or not isfunction(ent.Extinguish) then return end
+
+    local id = ent:EntIndex()
+    if id <= 0 then return end
 
     local radius = size or ent:BoundingRadius()
     local maxRepeats = repeatCount or 5
     local repeats = 0
-    local timerID = "reforger_limited_fire_" .. ent:EntIndex()
+    local timerID = "reforger_limited_fire_" .. id
 
     ent._ignitingForever = true
     ent:Ignite(5, radius)
 
-    if timer.Exists(timerID) then timer.Remove(timerID) end
-
     timer.Create(timerID, 4.75, 0, function()
-        if not IsValid(ent) then return timer.Remove(timerID) end
-        if not ent:IsOnFire() then ent._ignitingForever = nil return timer.Remove(timerID) end
-
-        repeats = repeats + 1
-        if repeats >= maxRepeats then
-            ent._ignitingForever = nil
-            return timer.Remove(timerID)
+        if not IsValid(ent) then
+            timer.Remove(timerID)
+            return
         end
 
+        repeats = repeats + 1
+
+        if repeats >= maxRepeats then
+            ent._ignitingForever = nil
+            timer.Remove(timerID)
+            return
+        end
+
+        ent:Extinguish()
         ent:Ignite(5, radius)
     end)
 end
@@ -303,9 +327,10 @@ function Damage.StopLimitedFire(ent)
     if not IsValid(ent) then return end
     if ent:EntIndex() <= 0 then return end
 
+    ent:Extinguish() -- Now in base.
+
     timer.Remove("reforger_limited_fire_" .. ent:EntIndex())
     ent._ignitingForever = nil
 end
 
-Reforger.Damage = {}
 Reforger.Damage = Damage

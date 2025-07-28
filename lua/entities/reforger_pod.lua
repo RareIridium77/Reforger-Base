@@ -162,6 +162,8 @@ function ENT:GetTraceFilter()
 end
 
 function ENT:OnTakeDamage(dmginfo)
+    if not isvector(self.pseudoPos) or not isangle(self.pseudoAng) then return end
+
     local attacker = dmginfo:GetAttacker()
     local attackerPod = attacker.reforgerPod
     if IsValid(attackerPod) and attackerPod.VehicleBase == self.VehicleBase then
@@ -170,7 +172,7 @@ function ENT:OnTakeDamage(dmginfo)
     
     if not IsValid(self.Player) or not IsValid(self.VehicleBase) or not IsValid(attacker) or attacker == self.Player then return end
 
-    local D = Reforger.Damage
+    local RDamage = Reforger.Damage
     local damage = dmginfo:GetDamage()
 
     if damage < 1 then return end
@@ -178,12 +180,14 @@ function ENT:OnTakeDamage(dmginfo)
     local inflictor = dmginfo:GetInflictor()
     local damagePos = dmginfo:GetDamagePosition()
     local dmgType = dmginfo:GetDamageType()
-    local isTraced = dmginfo:GetDamageCustom() == 1
+    local isTraced = dmginfo:GetDamageBonus() == RDamage.Type.TRACED -- Upd: New Reforger Damage Type sending format
     local vehBase = self.VehicleBase.reforgerBase
 
+    Reforger.DevLog("Damage is trace? ", isTraced, " Damage type: ", dmginfo:GetDamageBonus())
+
     local isReforgerType = Reforger.IsValidReforger(inflictor)
-    if not isReforgerType and IsIgnoredDamageType[dmgType] or D.IsFireDamageType(self.VehicleBase, dmgType) then
-        D.ApplyPlayerDamage(self.Player, damage, attacker, inflictor, nil)
+    if not isReforgerType and IsIgnoredDamageType[dmgType] or RDamage.IsFireDamageType(self.VehicleBase, dmgType) then
+        RDamage.ApplyPlayerDamage(self.Player, damage, attacker, inflictor, nil)
         return
     end
 
@@ -246,7 +250,7 @@ function ENT:OnTakeDamage(dmginfo)
     local finalDamage = isHeadshot and damage or isTraced and damage * 0.4 or damage * 0.85
 
     self.Player:SetLastHitGroup(isHeadshot and 0 or 2)
-    D.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
+    RDamage.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
 
     local effectName, shouldEffect = hook.Run("Reforger.PodBloodEffect", attacker, hitPos, damage)
 
