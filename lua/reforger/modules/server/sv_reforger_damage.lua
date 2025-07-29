@@ -91,12 +91,18 @@ function Damage.IsSmallDamageType(dmgType) return dmganytype(dmgType, DMG_BULLET
 function Damage.IsCollisionDamageType(dmgType) return dmganytype(dmgType, DMG_VEHICLE, DMG_CRUSH) end
 
 function Damage.IsFireDamageType(veh, dmgType)
-    if not isentity(veh) or not IsValid(veh) then
-        return dmganytype(dmgType, DMG_BURN, DMG_SLOWBURN)
+    if not dmgType then return false end
+
+    local vehValid = isentity(veh) and IsValid(veh)
+
+    if vehValid and veh.reforgerBase == VehBase.Glide then
+        return hasdmgtype(dmgType, DMG_DIRECT) or (hasdmgtype(dmgType, DMG_CRUSH) and veh:IsOnFire())
     end
 
-    if veh.reforgerBase == VehBase.Glide then
-        return hasdmgtype(dmgType, DMG_DIRECT) or hasdmgtype(dmgType, DMG_CRUSH) and veh:IsOnFire()
+    if vehValid and veh:IsOnFire() then return true end
+
+    if vFireInstalled then
+        return dmganytype(dmgType, DMG_BURN, DMG_SLOWBURN, DMG_NEVERGIB, DMG_NERVEGAS)
     end
 
     return dmganytype(dmgType, DMG_BURN, DMG_SLOWBURN)
