@@ -4,11 +4,11 @@ local blacklist = {
 }
 
 local priorityList = {
-	--- Client
-	"reforger/core/server/reforger_logger.lua",
+	--- Server
 	"reforger/core/server/reforger_network.lua",
-
+	
 	--- Shared
+	"reforger/core/shared/reforger_logger.lua",
 	"reforger/core/shared/reforger_convars.lua",
 }
 
