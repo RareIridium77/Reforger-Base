@@ -83,7 +83,12 @@ function Reforger._internal:ReadEntityNetData(ent)
     end
 end
 
-function Reforger:AddEntityModule(idf, func)
+function Reforger:AddEntityModule(idf, func, force)
+    if isfunction(self.EntityHooks[idf]) and not force then
+        Reforger.WarnLog("Entity module " .. idf.. " is already exist.")
+        return
+    end
+
     if not isstring(idf) or not isfunction(func) then return end
     self.EntityHooks[idf] = func
 end
@@ -116,6 +121,8 @@ function Reforger._internal:InitializeEntity(ent)
             net.Broadcast()
         end)
     end
+
+    PrintTable(ref.EntityHooks)
 
     for idf, func in pairs(ref.EntityHooks) do
         if isfunction(func) then
