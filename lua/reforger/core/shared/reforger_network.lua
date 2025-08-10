@@ -16,6 +16,11 @@ Reforger = Reforger or {}
 local PREFIX = "Reforger." -- Local Reforger Prefix
 
 function Reforger.SetNetworkValue(ent, nType, nName, nValue)
+    if CLIENT then
+        Reforger.ErrorLog("Blocked client-side SetNetworkValue for "..nName)
+        return 
+    end
+
     if not IsValid(ent) then return end
     if not Reforger.NetworkTypes[nType] then
         Reforger.DevLog("Network Type <"..nType.."> Is not supported")

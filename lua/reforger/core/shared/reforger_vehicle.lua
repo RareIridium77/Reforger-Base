@@ -22,48 +22,38 @@ function Reforger.GetVehicleBase(ent)
     if ent.IsSimfphysVehicle or ent:GetClass() == "gmod_sent_vehicle_fphysics_base" then return "simfphys" end
 end
 
-function Reforger.GetVehicleType(ent)
+local function _ResolveVehicleType(ent)
     local types = Reforger.VehicleTypes
-
     if not Reforger.IsValidReforger(ent) then return types.UNDEFINED end
     if ent.reforgerType ~= nil then return ent.reforgerType end
 
     local vehicle_base = Reforger.GetVehicleBase(ent)
-    local vehicle_type = types.UNDEFINED
+    if not vehicle_base then return types.UNDEFINED end
 
     if vehicle_base == "glide" then
         local vt = ent.VehicleType
         local gvht = Glide.VEHICLE_TYPE
-
-        if vt == gvht.CAR or vt == gvht.MOTORCYCLE or vt == gvht.BOAT then
-            vehicle_type = types.LIGHT
-        elseif vt == gvht.PLANE then
-            vehicle_type = types.PLANE
-        elseif vt == gvht.HELICOPTER then
-            vehicle_type = types.HELICOPTER
-        elseif vt == gvht.TANK then
-            vehicle_type = types.ARMORED
-        end
+        if vt == gvht.CAR or vt == gvht.MOTORCYCLE or vt == gvht.BOAT then return types.LIGHT end
+        if vt == gvht.PLANE then return types.PLANE end
+        if vt == gvht.HELICOPTER then return types.HELICOPTER end
+        if vt == gvht.TANK then return types.ARMORED end
 
     elseif vehicle_base == "lvs" and ent.GetVehicleType then
         local vt = ent:GetVehicleType()
-        local hasArmor = ent._armorParts and #ent._armorParts >= 2
-
-        if vt == "plane" then
-            vehicle_type = types.PLANE
-        elseif vt == "helicopter" then
-            vehicle_type = types.HELICOPTER
-        elseif hasArmor then
-            vehicle_type = types.ARMORED
-        else
-            vehicle_type = types.LIGHT
-        end
+        if vt == "plane" then return types.PLANE end
+        if vt == "helicopter" then return types.HELICOPTER end
+        if ent.reforgerArmorCount and ent.reforgerArmorCount >= 2 then return types.ARMORED end
+        return types.LIGHT
 
     elseif vehicle_base == "simfphys" then
-        vehicle_type = ent.IsArmored and types.ARMORED or types.LIGHT
+        return ent.IsArmored and types.ARMORED or types.LIGHT
     end
 
-    return vehicle_type
+    return types.UNDEFINED
+end
+
+function Reforger.GetVehicleType(ent)
+    return _ResolveVehicleType(ent)
 end
 
 function Reforger.GetHealth(ent)

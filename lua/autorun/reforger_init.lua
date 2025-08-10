@@ -53,6 +53,7 @@ if CLIENT then return end
 if Reforger.Init then return end
 
 util.AddNetworkString("Reforger.NotifyDisabled")
+util.AddNetworkString("Reforger.InitializeEntity")
 
 local function DisableReforger()
     if not istable(Reforger) then return end
