@@ -1,5 +1,4 @@
---- shared
-
+// SECTION Reforger View Shared
 local View = Reforger.View or {}
 
 View.Type = {
@@ -14,6 +13,9 @@ function Reforger.View:GetViewType(ply)
     return ply.ReforgerView and ply:ReforgerView() or View.Type.FPV
 end
 
+local function IsClient() return CLIENT end
+local function IsServer() return SERVER end
+
 local plyMeta = FindMetaTable("Player")
 
 function plyMeta:ReforgerView()
@@ -25,3 +27,14 @@ function plyMeta:ReforgerView()
 
     return View.Type.UV
 end
+
+function plyMeta:ReforgerShakeView(intensity, duration) // NOTE Does nothing on serverside
+    if IsServer() then return end
+    local scale = intensity or 1
+    local time = duration or 0.5
+
+    util.ScreenShake(self:GetPos(), scale * 5, 5, time, 100)
+end
+
+
+// !SECTION

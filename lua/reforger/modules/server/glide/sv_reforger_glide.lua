@@ -1,4 +1,4 @@
---- [ Reforger Glide Recieve Offsets ] ---
+// SECTION Reforger Glide Recieve Offsets
 
 util.AddNetworkString("Reforger.SendGlideOffsets")
 
@@ -28,8 +28,10 @@ net.Receive("Reforger.SendGlideOffsets", function(_, ply)
     ent.EngineFireOffsets = offsets
 end)
 
+// !SECTION
 
---- [ Reforger Glide Fix Pod ] ---
+
+// SECTION Reforger Glide Fix Pod
 local function Glide_ActivateFixator()
     local EntityMeta = FindMetaTable( "Entity" )
     local PlayerMeta = FindMetaTable( "Player" )
@@ -67,3 +69,5 @@ hook.Add("Reforger.Init", "Glide.InitPodFixer", function()
         Reforger.Log("Glide AIM Positioning fixed")
     end)
 end)
+
+// !SECTION
