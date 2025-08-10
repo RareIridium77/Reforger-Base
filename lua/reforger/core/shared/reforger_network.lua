@@ -8,17 +8,10 @@
     https://github.com/RareIridium77
 
 -------------------------------------------------------------------------]]
-Reforger = Reforger or {}
 
-Reforger.NetworkTypes = {
-    Bool = true,
-    Float = true,
-    String = true,
-    Int = true,
-    Vector = true,
-    Angle = true,
-    Entity = true
-}
+-- // REVIEW This code needs testing
+
+Reforger = Reforger or {}
 
 local PREFIX = "Reforger." -- Local Reforger Prefix
 
@@ -32,11 +25,13 @@ function Reforger.SetNetworkValue(ent, nType, nName, nValue)
     local fullName = PREFIX .. nName
 
     -- Local Cache (SERVER)
-    ent.ReforgerNet = ent.ReforgerNet or {}
-    ent.ReforgerNet[nName] = {
-        Type = nType,
-        Value = nValue
-    }
+    if SERVER then
+        ent.ReforgerNet = ent.ReforgerNet or {}
+        ent.ReforgerNet[nName] = {
+            Type = nType,
+            Value = nValue
+        }
+    end
 
     -- SetNW<TYPE>
     local setter = ent["SetNW" .. nType]

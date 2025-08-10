@@ -1,13 +1,23 @@
+--[[-------------------------------------------------------------------------
+    [Reforger] Base (Framework)
+
+    Unified system for advanced vehicle logic and damage simulation.
+    Supports LVS / Simfphys / Gmod Glide. Open-source.
+
+    Created by RareIridium77
+    https://github.com/RareIridium77
+
+-------------------------------------------------------------------------]]
+
 local blacklist = {
 	["reforger/core/shared/reforger_loader.lua"] = true,
 	["autorun/reforger_init.lua"] = true -- impossible but okay
 }
 
 local priorityList = {
-	--- Server
-	"reforger/core/shared/reforger_network.lua",
-	
 	--- Shared
+	"reforger/core/shared/reforger_constants.lua",
+	"reforger/core/shared/reforger_network.lua",
 	"reforger/core/shared/reforger_logger.lua",
 	"reforger/core/shared/reforger_convars.lua",
 }

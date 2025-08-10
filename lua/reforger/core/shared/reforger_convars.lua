@@ -1,3 +1,14 @@
+--[[-------------------------------------------------------------------------
+    [Reforger] Base (Framework)
+
+    Unified system for advanced vehicle logic and damage simulation.
+    Supports LVS / Simfphys / Gmod Glide. Open-source.
+
+    Created by RareIridium77
+    https://github.com/RareIridium77
+
+-------------------------------------------------------------------------]]
+
 local FCVAR_SERVER = bit.bor(FCVAR_ARCHIVE, FCVAR_NOTIFY)
 local FCVAR_CLIENT = bit.bor(FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE)
 
@@ -7,9 +18,8 @@ Reforger.CreatedConvars = Reforger.CreatedConvars or {}
 local server_prefix = "reforger."
 local client_prefix = "cl_reforger."
 
-
--- CLIENT Convars will created with "cl_reforger." prefix
--- SERVER Convars will created with "reforger." prefix
+--// NOTE CLIENT Convars will created with "cl_reforger." prefix
+--// NOTE SERVER Convars will created with "reforger." prefix
 
 function Reforger.CreateConvar(name, value, helptext, min, max)
     if not isstring(name) or name == "" then return end

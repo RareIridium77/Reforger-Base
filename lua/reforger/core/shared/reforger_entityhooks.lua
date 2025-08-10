@@ -21,7 +21,7 @@ function Reforger:InitializeEntity(ent)
     if not self.IsValidReforger(ent) then return end
     if not istable(self.EntityHooks) then return end
 
-    timer.Simple(0.15, function() -- LVS have delayed initialization for armor parts and other things some reason
+    timer.Simple(0.15, function() -- // NOTE LVS have delayed initialization for armor parts and other things some reason
         if SERVER then
             ent.reforgerType = self.GetVehicleType(ent)
             ent.reforgerBase = self.GetVehicleBase(ent)

@@ -12,24 +12,7 @@
 Reforger = Reforger or {}
 
 local dev_cvar = GetConVar("developer")
-
-local loglevels = {
-    INFO = "INFO",
-    WARN = "WARN",
-    DEV  = "DEV",
-    ERROR = "ERROR"
-}
-
-Reforger.LogLevels = loglevels
-
-Reforger.LogColors = {
-    INFO  = Color(146, 236, 104),
-    WARN  = Color(238, 105, 52),
-    DEV   = Color(128, 104, 236),
-    ERROR = Color(255, 0, 0),
-    TEXT  = Color(100, 178, 241),
-    LOC   = Color(200, 200, 200)
-}
+local loglevels = Reforger.LogLevels
 
 function Reforger.IsDeveloper()
     return dev_cvar and dev_cvar:GetInt() == 1 or false
