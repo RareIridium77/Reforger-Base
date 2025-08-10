@@ -28,13 +28,16 @@ function plyMeta:ReforgerView()
     return View.Type.UV
 end
 
-function plyMeta:ReforgerShakeView(intensity, duration) // NOTE Does nothing on client
+function plyMeta:ReforgerShakeView(intensity) --// NOTE Does nothing on client
     if IsClient() then return end
 
     local scale = intensity or 1
-    local time = duration or 0.5
 
-    local punchAngle = Angle(-5 * scale, 0, 0)
+    local pitch = math.Rand(-1, 1) * scale
+    local yaw = math.Rand(-1, 1) * scale
+    local roll = math.Rand(-1, 1) * scale
+
+    local punchAngle = Angle(pitch, yaw, roll)
     self:ViewPunch(punchAngle)
 end
 
@@ -42,7 +45,7 @@ concommand.Add(".testpunch", function(ply)
     if not Reforger.IsDeveloper() then return end
     
     if not IsValid(ply) then return end
-    ply:ReforgerShakeView(10, 1)
+    ply:ReforgerShakeView(1)
 end)
 
 // !SECTION
@@ -58,6 +61,7 @@ local function __lvs_weapon_view(weapon) // ANCHOR Weapon View
         weapon.CalcView = function(self, ply, pos, angles, fov, pod)
             local view = oldCalcView(self, ply, pos, angles, fov, pod)
             view.angles = ply:GetViewPunchAngles() + view.angles
+            print("Weapon calc")
             return
         end
     end
@@ -68,10 +72,12 @@ local function __lvs_view(lvs) // ANCHOR Main view calc
     local activeWeapon = lvs:GetActiveWeapon()
 
     if not oldCalcView then return end
+    print(lvs, activeWeapon)
     
     lvs.CalcView = function(self, ply, pos, angles, fov, pod)
         local view = oldCalcView(self, ply, pos, angles, fov, pod)
         view.angles = ply:GetViewPunchAngles() + view.angles
+        print("Lvs calc")
         return view
     end
 
@@ -80,7 +86,6 @@ end
 
 local function __lvs_init_view(ent)
     if not ent.LVS then return end
-
     __lvs_view(ent)
 end
 
