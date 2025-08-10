@@ -39,6 +39,8 @@ function plyMeta:ReforgerShakeView(intensity, duration) // NOTE Does nothing on 
 end
 
 concommand.Add(".testpunch", function(ply)
+    if not Reforger.IsDeveloper() then return end
+    
     if not IsValid(ply) then return end
     ply:ReforgerShakeView(10, 1)
 end)

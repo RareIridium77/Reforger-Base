@@ -26,19 +26,6 @@ if CLIENT then
         chat.AddText(Color(255, 100, 100), "[Reforger] Framework disabled on server.")
         print("[Reforger] Framework disabled on server.")
     end)
-
-    concommand.Add("UtilTest", function(ply, cmd)
-        local trace = ply:GetEyeTrace()
-        local ent = trace.Entity
-
-        if IsValid(ent) then
-            local vbase = Reforger.GetVehicleBase(ent)
-            local vtype = Reforger.GetVehicleType(ent)
-            local health = Reforger.GetHealth(ent)
-
-            ply:ChatPrint(""..tostring(vbase).." "..tostring(vtype).." "..tostring(health))
-        end
-    end)
 end
 
 local function EntityCreated(ent)
