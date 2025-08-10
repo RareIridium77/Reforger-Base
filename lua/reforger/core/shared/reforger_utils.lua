@@ -8,6 +8,9 @@
     https://github.com/RareIridium77
 
 -------------------------------------------------------------------------]]
+
+--// REVIEW Fuck this all shit in this file needs to be refactored.
+
 Reforger = Reforger or {}
 
 Reforger.VehicleTypes = {
@@ -32,6 +35,10 @@ Reforger.ValidClasslist = {
 }
 
 function Reforger.GetVehicleType(ent)
+    local netType = Reforger.GetNetworkValue(ent, "String", "VehicleType", nil)
+    
+    if netType then return netType end
+
     if not Reforger.IsValidReforger(ent) then
         return Reforger.VehicleTypes.UNDEFINED
     end
@@ -59,9 +66,9 @@ function Reforger.GetVehicleType(ent)
     elseif vehicle_base == "lvs" and ent.GetVehicleType then
         local vt = ent:GetVehicleType()
 
-        local has_armor = ent._armorParts and #ent._armorParts >= 2
+        local hasArmor = ent._armorParts and #ent._armorParts >= 2
 
-        if has_armor then -- tank or not. has_armor - means its armored
+        if hasArmor then -- tank or not. hasArmor - means its armored
             vehicle_type = types.ARMORED
         else
             vehicle_type = types.LIGHT
@@ -77,6 +84,8 @@ function Reforger.GetVehicleType(ent)
             vehicle_type = types.LIGHT
         end
     end
+
+    Reforger.SetNetworkValue(ent, "String", "VehicleType", vehicle_type)
 
     return vehicle_type
 end

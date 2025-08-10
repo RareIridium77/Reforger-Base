@@ -1,7 +1,10 @@
 if not LVS then return end
 
 local runhook   = hook.Run
-local rafunc    = Reforger.AddEntityFunction
+local addmodule = Reforger.AddEntityModule
+local rafunc    = function(idf, func)
+    addmodule(Reforger, idf, func)
+end
 
 // SECTION Reforger LVS Bullet System]
 

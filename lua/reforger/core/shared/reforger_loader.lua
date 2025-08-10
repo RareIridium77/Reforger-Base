@@ -5,7 +5,7 @@ local blacklist = {
 
 local priorityList = {
 	--- Server
-	"reforger/core/server/reforger_network.lua",
+	"reforger/core/shared/reforger_network.lua",
 	
 	--- Shared
 	"reforger/core/shared/reforger_logger.lua",
@@ -13,7 +13,7 @@ local priorityList = {
 }
 
 local priorityKeywords = {
-	"util", "base", "log", "logger"
+	"util", "base", "log", "logger", "utils"
 }
 
 local function StringHasKeyword(path, keywords)

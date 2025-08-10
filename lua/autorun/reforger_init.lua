@@ -14,11 +14,11 @@ AddCSLuaFile("reforger/core/shared/reforger_loader.lua")
 
 Reforger = Reforger or {}
 
-Reforger.Version = "0.2.7"
-Reforger.VersionType = "release-candidate"
+Reforger.Version = "0.2.8"
+Reforger.VersionType = "non-stable beta"
 Reforger.CreatedConvars = Reforger.CreatedConvars or {}
 
-include("reforger/core/shared/reforger_loader.lua")("reforger")
+if not Reforger.Init then include("reforger/core/shared/reforger_loader.lua")("reforger") end
 
 if CLIENT then
     net.Receive("Reforger.NotifyDisabled", function()
@@ -26,12 +26,33 @@ if CLIENT then
         chat.AddText(Color(255, 100, 100), "[Reforger] Framework disabled on server.")
         print("[Reforger] Framework disabled on server.")
     end)
+
+    concommand.Add("UtilTest", function(ply, cmd)
+        local trace = ply:GetEyeTrace()
+        local ent = trace.Entity
+
+        if IsValid(ent) then
+            local vbase = Reforger.GetVehicleBase(ent)
+            local vtype = Reforger.GetVehicleType(ent)
+            local health = Reforger.GetHealth(ent)
+
+            ply:ChatPrint(""..tostring(vbase).." "..tostring(vtype).." "..tostring(health))
+        end
+    end)
 end
+
+local function EntityCreated(ent)
+    if Reforger.Disabled then return end
+    if not IsValid(ent) then return end
+    Reforger:InitializeEntity(ent)
+end
+hook.Add("OnEntityCreated", "Reforger.EntityHook", EntityCreated)
 
 if CLIENT then return end
 
-util.AddNetworkString("Reforger.NotifyDisabled")
+if Reforger.Init then return end
 
+util.AddNetworkString("Reforger.NotifyDisabled")
 
 local function DisableReforger()
     if not istable(Reforger) then return end
@@ -68,12 +89,7 @@ local function InitPostEntity()
         Reforger.Log("Reforger version: " .. Reforger.Version .. " : ".. Reforger.VersionType)
     end)
 end
-
-local function EntityCreated(ent)
-    if not Reforger.Init then return end
-    if not IsValid(ent) then return end
-    Reforger.CallEntityFunctions(ent)
-end
+hook.Add("InitPostEntity", "Reforger.InitPostEntity", InitPostEntity)
 
 local nextThink = 0
 local thinkInterval = 0.001
@@ -86,8 +102,6 @@ local function GlobalThink()
     hook.Run("Reforger.GlobalThink")
 end
 
-hook.Add("InitPostEntity", "Reforger.InitPostEntity", InitPostEntity)
-hook.Add("OnEntityCreated", "Reforger.EntityHook", EntityCreated)
 hook.Add("Think", "Reforger.GlobalThinkHook", GlobalThink)
 hook.Add("Reforger.Reload", "Reforger.FReloaded", function()
     Reforger = Reforger or {}

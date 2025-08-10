@@ -117,7 +117,7 @@ function Rotors.IsRotorSpinning(rotor)
     return isSpinning
 end
 
--- rotors needs own scanner, because in LVS rotors are just box entity.
+-- // NOTE: rotors needs own scanner, because in LVS rotors are just box entity.
 function Rotors.FindRotorAlongRay(veh, dmginfo)
     if not IsValid(veh) then return nil end
 

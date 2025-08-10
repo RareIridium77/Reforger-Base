@@ -48,11 +48,11 @@ function Reforger.SetNetworkValue(ent, nType, nName, nValue)
     Reforger.Log(nType.." was not handled by network. Is not supported")
 end
 
-function Reforger.GetNetworkValue(ent, nType, nName)
-    if not IsValid(ent) then return nil end
+function Reforger.GetNetworkValue(ent, nType, nName, fallback)
+    if not IsValid(ent) then return fallback end
     if not Reforger.NetworkTypes[nType] then
         Reforger.Log("Network Type <"..nType.."> Is not supported")
-        return nil
+        return fallback
     end
 
     local fullName = PREFIX .. nName
@@ -65,5 +65,5 @@ function Reforger.GetNetworkValue(ent, nType, nName)
 
     Reforger.DevLog(nType.." was not handled by network. Is not supported")
 
-    return nil
+    return fallback
 end
