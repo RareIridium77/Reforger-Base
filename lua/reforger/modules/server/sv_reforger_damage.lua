@@ -73,9 +73,7 @@ local dmganytype = Damage.HasAnyType
 
 --// TODO Make hook call method for damage.
 
-function Damage.FixDamageForce(dmginfo, attacker, victim) --// REVIEW @RareIridium77 Deprecation
-    Reforger.WarnLog("FixDamageForce Is Deprecated.")
-
+function Damage.FixDamageForce(dmginfo, attacker, victim)
     assert(dmginfo and isfunction(dmginfo.GetDamage), "CTakeDamageInfo is not valid!")
     assert(IsValid(victim), "Entity Victim is not valid")
 
