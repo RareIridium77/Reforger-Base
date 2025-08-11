@@ -344,6 +344,7 @@ end
 
 local function HandleReforgerDamage(target, dmginfo)
     if Reforger.IsValidReforger(target) then
+        if target.CallDamageHook == false then return end
 
         local attacker = dmginfo:GetAttacker()
         local victim = target

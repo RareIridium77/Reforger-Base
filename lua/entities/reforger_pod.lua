@@ -12,6 +12,7 @@ ENT.ReforgerDamageable = true
 ENT.PhysgunDisabled = true
 ENT.DoNotDuplicate = true
 ENT.DisableDuplicator = true
+ENT.CallDamageHook = false
 
 if CLIENT then return end
 
