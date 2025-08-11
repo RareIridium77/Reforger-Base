@@ -136,7 +136,7 @@ function ENT:Think()
     
     if podPos:DistToSqr(center) > 1 then self:SetPos(center) end
     
-    extent:Add(Vector(12, 10, 15 + extraZ))
+    extent:Add(Vector(12, 12, 20 + extraZ))
 
     if not self.lastExtent or self.lastExtent ~= extent then
         self.lastExtent = extent
@@ -146,6 +146,7 @@ function ENT:Think()
     if Reforger.IsDeveloper() then
         debugoverlay.BoxAngles(self.pseudoPos, self.pseudoMin, self.pseudoMax, self.pseudoAng, 0.06, Color(255, 255, 255, 10))
         debugoverlay.Text(self.pseudoPos, "Seq ID: "..tostring(seqID).." Seq Name: "..seqName, 0.06)
+        debugoverlay.BoxAngles(self:GetPos(), -extent, extent, self:GetAngles(), 0.06, Color(255, 255, 255, 10))
     end
 
     self:NextThink(CurTime() + 0.025)
@@ -168,7 +169,7 @@ function ENT:OnTakeDamage(dmginfo)
     local attacker = dmginfo:GetAttacker()
     local attackerPod = attacker.reforgerPod
     if IsValid(attackerPod) and attackerPod.VehicleBase == self.VehicleBase then
-        return 
+        return
     end
     
     if not IsValid(self.Player) or not IsValid(self.VehicleBase) or not IsValid(attacker) or attacker == self.Player then return end
@@ -183,8 +184,6 @@ function ENT:OnTakeDamage(dmginfo)
     local dmgType = dmginfo:GetDamageType()
     local isTraced = dmginfo:GetDamageBonus() == RDamage.Type.TRACED -- Upd: New Reforger Damage Type sending format
     local vehBase = self.VehicleBase.reforgerBase
-
-    Reforger.DevLog("Damage is trace? ", isTraced, " Damage type: ", dmginfo:GetDamageBonus())
 
     local isReforgerType = Reforger.IsValidReforger(inflictor)
     if not isReforgerType and IsIgnoredDamageType[dmgType] or RDamage.IsFireDamageType(self.VehicleBase, dmgType) then
@@ -213,9 +212,9 @@ function ENT:OnTakeDamage(dmginfo)
         if force:IsZero() then return end
         aimVector = force:GetNormalized()
     end
-
+    local start = damagePos - (aimVector * 5)
     local hitPos, _, hit = util.IntersectRayWithOBB(
-        damagePos - (aimVector * 128),
+        start,
         aimVector * 256,
         self.pseudoPos,
         self.pseudoAng,
@@ -224,16 +223,18 @@ function ENT:OnTakeDamage(dmginfo)
     )
 
     if not hit then
-        return 0
+        return
     end
 
     if not isTraced and self.VehicleBase.reforgerType == "armored" then
+        Reforger.DevLog("Damage is trace? ", isTraced, " Damage type: ", dmginfo:GetDamageBonus())
+        
         local eyeDir = (self.Player:EyePos() - self.pseudoPos):GetNormalized()
         local eyePos = self.pseudoPos + eyeDir * 35
         local center = (eyePos + self.pseudoPos) * 0.5
         local trace = util.TraceLine({ start = center, endpos = hitPos, filter = self:GetTraceFilter() })
         if trace.Hit and trace.Entity ~= self.Vehicle then
-            return 0
+            return
         end
     end
 
@@ -247,10 +248,22 @@ function ENT:OnTakeDamage(dmginfo)
     local plyZ = self.Player:GetPos().z + self.Player:OBBMins().z
     if hitPos.z < plyZ then return end
 
-    local isHeadshot = hitPos.z >= self.headZone - 2 and hitPos.z <= self.headZone + 8
+    local headBottom = self.headZone + 2
+    local headTop = self.headZone + 11
+
+    local isHeadshot = hitPos.z >= headBottom and hitPos.z <= headTop
     local finalDamage = isHeadshot and damage or isTraced and damage * 0.4 or damage * 0.85
 
-    self.Player:SetLastHitGroup(isHeadshot and 0 or 2)
+    if isHeadshot then
+        Reforger.DoInDev(function()
+            debugoverlay.Sphere(Vector(hitPos.x, hitPos.y, headBottom), 1, 1, Color(0, 255, 0), true)
+            debugoverlay.Sphere(Vector(hitPos.x, hitPos.y, headTop), 1, 1, Color(255, 0, 0), true)
+            debugoverlay.Line(Vector(hitPos.x, hitPos.y, headBottom), Vector(hitPos.x, hitPos.y, headTop), 1, Color(0, 255, 255), true)
+        end)
+    end
+
+    self.Player:SetLastHitGroup(isHeadshot and HITGROUP_HEAD or HITGROUP_CHEST)
+
     RDamage.ApplyPlayerDamage(self.Player, finalDamage, attacker, inflictor, nil)
 
     local effectName, shouldEffect = hook.Run("Reforger.PodBloodEffect", attacker, hitPos, damage)
