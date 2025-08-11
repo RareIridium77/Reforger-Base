@@ -52,6 +52,8 @@ Damage.CollisionConfig = {
     }
 }
 
+local hrun = hook.Run
+
 function Damage.HasDamageType(dmgType, mask)
     assert(isnumber(dmgType), "IS NOT NUMBER TO CHECK DAMAGE TYPE: " .. tostring(dmgType))
 
@@ -69,15 +71,18 @@ end
 
 local dmganytype = Damage.HasAnyType
 
-function Damage.FixDamageForce(dmginfo, attacker, victim)
+--// TODO Make hook call method for damage.
+
+function Damage.FixDamageForce(dmginfo, attacker, victim) --// REVIEW @RareIridium77 Deprecation
+    Reforger.WarnLog("FixDamageForce Is Deprecated.")
+
     assert(dmginfo and isfunction(dmginfo.GetDamage), "CTakeDamageInfo is not valid!")
     assert(IsValid(victim), "Entity Victim is not valid")
-    
-    -- TODO: FIX ATTACKER IS NULL, NIL
 
-    local attk = Reforger.SafeEntity(attacker)
+    local attk = Reforger.SafeEntity(attacker) --// NOTE Fixed
+    local damageForce = dmginfo:GetDamageForce()
 
-    if dmginfo:GetDamageForce():IsZero() then
+    if damageForce:IsZero() then
         local delta = (victim:GetPos() - attk:GetPos())
         local dir = delta:IsZero() and VectorRand() or delta:GetNormalized()
 
@@ -112,7 +117,7 @@ function Damage.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
     if not IsValid(ent) then return false end
     if not isnumber(damage) or damage <= 0 then return false end
 
-    local pre = hook.Run("Reforger.PreEntityDamage", ent, damage, attacker, inflictor, custom, pos)
+    local pre = hrun("Reforger.PreEntityDamage", ent, damage, attacker, inflictor, custom, pos)
     if pre == false then return false end
 
     attacker = IsValid(attacker) and attacker or game.GetWorld()
@@ -131,7 +136,7 @@ function Damage.ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos)
 
     ent:TakeDamageInfo(dmg)
 
-    hook.Run("Reforger.PostEntityDamage", ent, damage, attacker, inflictor, custom, pos)
+    hrun("Reforger.PostEntityDamage", ent, damage, attacker, inflictor, custom, pos)
     return true
 end
 
@@ -338,5 +343,17 @@ function Damage.StopLimitedFire(ent)
     timer.Remove("reforger_limited_fire_" .. ent:EntIndex())
     ent._ignitingForever = nil
 end
+
+local function HandleReforgerDamage(target, dmginfo)
+    if Reforger.IsValidReforger(target) then
+
+        local attacker = dmginfo:GetAttacker()
+        local victim = target
+
+        Damage.FixDamageForce(dmginfo, attacker, victim)
+        hrun("Reforger.ReforgerTookDamage", dmginfo, attacker, victim)
+    end
+end
+hook.Add("EntityTakeDamage", "Reforger.DamageHook", HandleReforgerDamage)
 
 Reforger.Damage = Damage
