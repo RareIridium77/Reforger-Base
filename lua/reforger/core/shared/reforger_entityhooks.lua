@@ -122,8 +122,6 @@ function Reforger._internal:InitializeEntity(ent)
         end)
     end
 
-    PrintTable(ref.EntityHooks)
-
     for idf, func in pairs(ref.EntityHooks) do
         if isfunction(func) then
             local success, err = pcall(func, ent)
