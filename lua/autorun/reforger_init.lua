@@ -14,8 +14,8 @@ AddCSLuaFile("reforger/core/shared/reforger_loader.lua")
 
 Reforger = Reforger or {}
 
-Reforger.Version = "0.2.8"
-Reforger.VersionType = "non-stable beta"
+Reforger.Version = "0.3"
+Reforger.VersionType = "stable"
 Reforger.CreatedConvars = Reforger.CreatedConvars or {}
 
 if not Reforger.Init then include("reforger/core/shared/reforger_loader.lua")("reforger") end
