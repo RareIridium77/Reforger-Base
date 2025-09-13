@@ -14,27 +14,38 @@ ENT.DoNotDuplicate    = true
 ENT.DisableDuplicator = true
 ENT.CallDamageHook = true 
 
+local COLLISION_BOUNDS = {
+    min = Vector(-8, -8, -4),
+    max = Vector( 8,  8,  4),
+}
+
+local COLLISION_GROUP  = COLLISION_GROUP_WEAPON -- solid to bullets
+local ENGINE_HEALTH    = 350                   -- simfphys engine health
+local DAMAGE_REDUCTION = 0.35                  -- multiplier for simfphys damage
+local DAMAGE_RAND_MIN  = 0.10                  -- glide: min random damage
+local DAMAGE_RAND_MAX  = 0.25                  -- glide: max random damage
+
+local STALL_THRESHOLD  = 0.75                  -- simfphys: engine stall threshold
+local FIRE_THRESHOLD   = 0.35                  -- simfphys: fire trigger threshold
+
+local DEBUG_DURATION   = 2                     -- debugoverlay duration
+local DEBUG_COLOR_HIT  = Color(255, 50, 50, 248)
+local DEBUG_COLOR_BOX  = Color(255, 50, 50, 49)
+
 if CLIENT then return end
 
 function ENT:InitReforgerEntity()
-    if CLIENT then return end
+    self.min = COLLISION_BOUNDS.min
+    self.max = COLLISION_BOUNDS.max
 
-    self.min = Vector(-8, -8, -4)
-    self.max = Vector(8, 8,  4)
-
-    
     self:SetNoDraw(true)
     self:SetTrigger(true)
-    
     self:SetNotSolid(false)
-    
-    self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- solid to bullets
-    
+    self:SetCollisionGroup(COLLISION_GROUP)
     self:SetCollisionBounds(self.min, self.max)
     self:SetMoveType(MOVETYPE_NONE)
 
     self.simHealth = -1
-
     self.firstSet = false
 end
 
@@ -58,36 +69,22 @@ function ENT:SetEngineData(data)
     self:SetAngles(self.VehicleBase:GetAngles())
     self:SetParent(self.VehicleBase)
 
-    self.simMaxHealth = 350
+    self.simMaxHealth = ENGINE_HEALTH
     self.simHealth = self.simMaxHealth
 
-    debugoverlay.Sphere(pos, 10, 2, Color(25, 25, 255), true)
-    debugoverlay.Line(self.VehicleBase:GetPos(), pos, 2, Color(255, 0, 0), true)
-    debugoverlay.Sphere(self.VehicleBase:GetPos(), 10, 2, Color(25, 255, 25), true)
+    debugoverlay.Sphere(pos, 10, DEBUG_DURATION, Color(25, 25, 255), true)
+    debugoverlay.Line(self.VehicleBase:GetPos(), pos, DEBUG_DURATION, Color(255, 0, 0), true)
+    debugoverlay.Sphere(self.VehicleBase:GetPos(), 10, DEBUG_DURATION, Color(25, 255, 25), true)
 end
 
 function ENT:Think()
-    if CLIENT then return end
-
     if not IsValid(self.VehicleBase) then
         self:Remove()
         return
     end
-    debugoverlay.Box(
-        self:GetPos(),
-        self.min,
-        self.max,
-        0.2,
-        Color(255, 255, 255, 28)
-    )
-    debugoverlay.BoxAngles(
-        self:GetPos(),
-        self.min,
-        self.max,
-        self:GetAngles(),
-        0.2,
-        Color(255, 50, 50, 49)
-    )
+
+    debugoverlay.Box(self:GetPos(), self.min, self.max, 0.2, Color(255, 255, 255, 28))
+    debugoverlay.BoxAngles(self:GetPos(), self.min, self.max, self:GetAngles(), 0.2, DEBUG_COLOR_BOX)
 
     self:NextThink(CurTime())
     return true
@@ -98,38 +95,31 @@ function ENT:OnTakeDamage(dmginfo)
 
     local vehicle = self.VehicleBase
     local vehBase = vehicle.reforgerBase
-    local damage = dmginfo:GetDamage()
+    local damage  = dmginfo:GetDamage()
     local isSmallDamage = bit.band(dmginfo:GetDamageType(), DMG_BULLET + DMG_BUCKSHOT + DMG_CLUB) ~= 0
 
     if isSmallDamage and self.VehicleBase.reforgerType == "armored" then return end
 
     if vehBase == "glide" and vehicle.TakeEngineDamage then
         if not vehicle:IsEngineStarted() then return end
+        vehicle:TakeEngineDamage(damage * math.Rand(DAMAGE_RAND_MIN, DAMAGE_RAND_MAX))
 
-        vehicle:TakeEngineDamage(damage * math.Rand(0.1, 0.25))
     elseif vehBase == "simfphys" then
         if not vehicle:EngineActive() then return end
 
-        self.simHealth = math.Clamp(self.simHealth - damage * 0.35, -self.simMaxHealth, self.simMaxHealth)
-        local lol = self.simHealth / self.simMaxHealth
+        self.simHealth = math.Clamp(self.simHealth - damage * DAMAGE_REDUCTION, -self.simMaxHealth, self.simMaxHealth)
+        local healthFrac = self.simHealth / self.simMaxHealth
 
-        if lol < 0.75 and lol > 0.35 then
+        if healthFrac < STALL_THRESHOLD and healthFrac > FIRE_THRESHOLD then
             if vehicle:EngineActive() then
                 vehicle:DamageStall()
             end
         end
 
-        if lol < 0.35 then
+        if healthFrac < FIRE_THRESHOLD then
             vehicle:SetOnFire(true)
         end
     end
 
-    debugoverlay.BoxAngles(
-        self:GetPos(),
-        self.min,
-        self.max,
-        self:GetAngles(),
-        0.1,
-        Color(255, 50, 50, 248)
-    )
+    debugoverlay.BoxAngles(self:GetPos(), self.min, self.max, self:GetAngles(), 0.1, DEBUG_COLOR_HIT)
 end

@@ -40,6 +40,36 @@ local seqAdjustments = {
     cwalk_revolver    = { maxZ = 2.75, minZ = 0.23 },
 }
 
+local COLLISION_UPDATE_INTERVAL   = 0.025 -- per 25ms update hitbox
+local HEAD_ZONE_RATIO             = 0.7225 -- relative head position in hitbox
+local COLLISION_MARGIN            = 1.5    -- expand OBB
+local EYE_OFFSET                  = 35     -- eye offset from center
+
+-- Damage multipliers
+local DAMAGE_REDUCTION_ARMORED    = 0.35
+local DAMAGE_REDUCTION_NONTRACE   = 0.85
+local DAMAGE_REDUCTION_NONTRACE_ARMOR_BLOCK = 0.40 -- no trace, but armored
+
+-- Extents / bounds
+local DEFAULT_MAXZ_MULTIPLIER     = 1.9
+local DEFAULT_MINZ_MULTIPLIER     = 0.1
+local EXTENT_SCALE                = 0.85
+local EXTENT_MARGIN               = Vector(17, 17, 20) -- add extent
+
+-- Headshot zone
+local HEADSHOT_ZONE_BOTTOM_OFFSET = 2
+local HEADSHOT_ZONE_TOP_OFFSET    = 11
+local HEAD_BONE_HEIGHT_MULT       = 1.05
+local HEAD_EXTRA_MARGIN_RATIO     = 0.2
+
+-- Eye calc
+local EYE_DIR_DISTANCE            = 35
+local EYE_CENTER_BLEND            = 0.5
+
+-- Trace
+local TRACE_LENGTH                = 256
+local TRACE_BACK_OFFSET           = 5
+
 function ENT:InitReforgerEntity()
     if CLIENT then return end
     
@@ -82,7 +112,7 @@ function ENT:Think()
     local offset = self.Vehicle:GetForward() * (adjust and adjust.offset or 0)
 
     self.pseudoPos, self.pseudoAng = vehPos + offset, vehAng
-    self.headZone = self.pseudoPos.z + (self.pseudoMax.z * 0.7225)
+    self.headZone = self.pseudoPos.z + (self.pseudoMax.z * HEAD_ZONE_RATIO)
 
     local extraZ = 0
 
@@ -98,9 +128,9 @@ function ENT:Think()
         local headPos = self.Player:GetBonePosition(self.headBoneID)
         if headPos and headPos.z > self.pseudoPos.z + self.pseudoMax.z then
             local relativeHeadZ = headPos.z - self.pseudoPos.z
-            self.pseudoMax.z = relativeHeadZ * 1.05
-            self.headZone = self.pseudoPos.z + (self.pseudoMax.z * 0.7225)
-            extraZ = (self.pseudoMax.z - self.pseudoMin.z) * 0.2 --margin for extent
+            self.pseudoMax.z = relativeHeadZ * HEAD_BONE_HEIGHT_MULT
+            self.headZone = self.pseudoPos.z + (self.pseudoMax.z * HEAD_ZONE_RATIO)
+            extraZ = (self.pseudoMax.z - self.pseudoMin.z) * HEAD_EXTRA_MARGIN_RATIO --margin for extent
             Reforger.DevLog(("[FakeCollision] Adjusted pseudoMax.z to head bone height: %.2f"):format(self.pseudoMax.z))
         end
     end
@@ -115,16 +145,16 @@ function ENT:Think()
             newMax.z = newMax.z * adjust.maxZ
             newMin.z = newMax.z * adjust.minZ
         else
-            newMax.z, newMin.z = newMax.z * 1.9, newMax.z * 0.1
+            newMax.z, newMin.z = newMax.z * DEFAULT_MAXZ_MULTIPLIER, newMax.z * DEFAULT_MINZ_MULTIPLIER
         end
 
-        self.pseudoMin, self.pseudoMax = newMin * 0.85, newMax * 0.85
-        self.headZone = self.pseudoPos.z + (self.pseudoMax.z * 0.7225)
+        self.pseudoMin, self.pseudoMax = newMin * EXTENT_SCALE, newMax * EXTENT_SCALE
+        self.headZone = self.pseudoPos.z + (self.pseudoMax.z * HEAD_ZONE_RATIO)
         Reforger.DevLog(('[FakeCollision] Updated pseudo-bounds for %s (%d)'):format(seqName, seqID))
     end
 
     local eyeDir = (self.Player:EyePos() - self.pseudoPos):GetNormalized()
-    local eyePos = self.pseudoPos + eyeDir * 35
+    local eyePos = self.pseudoPos + eyeDir * EYE_OFFSET
     local center = (eyePos + self.pseudoPos) * 0.5
     local extent = Vector(
         math.abs(eyePos.x - self.pseudoPos.x),
@@ -136,7 +166,7 @@ function ENT:Think()
     
     if podPos:DistToSqr(center) > 1 then self:SetPos(center) end
     
-    extent:Add(Vector(12, 12, 20 + extraZ))
+    extent:Add(EXTENT_MARGIN + Vector(0, 0, extraZ))
 
     if not self.lastExtent or self.lastExtent ~= extent then
         self.lastExtent = extent
@@ -149,7 +179,7 @@ function ENT:Think()
         debugoverlay.BoxAngles(self:GetPos(), -extent, extent, self:GetAngles(), 0.06, Color(255, 255, 255, 10))
     end
 
-    self:NextThink(CurTime() + 0.025)
+    self:NextThink(CurTime() + COLLISION_UPDATE_INTERVAL)
     return true
 end
 
@@ -193,7 +223,7 @@ function ENT:OnTakeDamage(dmginfo)
 
     if vehBase == Reforger.VehicleBases.Simfphys and GetConVar("sv_simfphys_playerdamage"):GetInt() <= 0 then return end
 
-    local margin = 1.5
+    local margin = COLLISION_MARGIN
 
     local expandedMin = self.pseudoMin - Vector(margin, margin, margin)
     local expandedMax = self.pseudoMax + Vector(margin, margin, margin)
@@ -212,10 +242,10 @@ function ENT:OnTakeDamage(dmginfo)
         if force:IsZero() then return end
         aimVector = force:GetNormalized()
     end
-    local start = damagePos - (aimVector * 5)
+    local start = damagePos - (aimVector * TRACE_BACK_OFFSET)
     local hitPos, _, hit = util.IntersectRayWithOBB(
         start,
-        aimVector * 256,
+        aimVector * TRACE_LENGTH,
         self.pseudoPos,
         self.pseudoAng,
         expandedMin,
@@ -239,7 +269,7 @@ function ENT:OnTakeDamage(dmginfo)
     end
 
     if isTraced and self.VehicleBase.reforgerType == "armored" then
-        damage = 0.35 * damage
+        damage = DAMAGE_REDUCTION_ARMORED * damage
     end
 
     if damage <= 0 then return end
@@ -248,11 +278,11 @@ function ENT:OnTakeDamage(dmginfo)
     local plyZ = self.Player:GetPos().z + self.Player:OBBMins().z
     if hitPos.z < plyZ then return end
 
-    local headBottom = self.headZone + 2
-    local headTop = self.headZone + 11
+    local headBottom = self.headZone + HEADSHOT_ZONE_BOTTOM_OFFSET
+    local headTop = self.headZone + HEADSHOT_ZONE_TOP_OFFSET
 
     local isHeadshot = hitPos.z >= headBottom and hitPos.z <= headTop
-    local finalDamage = isHeadshot and damage or isTraced and damage * 0.4 or damage * 0.85
+    local finalDamage = isHeadshot and damage or isTraced and damage * DAMAGE_REDUCTION_NONTRACE_ARMOR_BLOCK or damage * DAMAGE_REDUCTION_NONTRACE
 
     if isHeadshot then
         Reforger.DoInDev(function()
