@@ -226,11 +226,11 @@ local function __missile_active(missile) // REVIEW Missile Activation methods
         runhook("Reforger.LVS_ProjectileActivated", missile, missilestr)
     end
 
-    if missile.Launch then
-        local olaunch = missile.Launch
+    if missile.Enable then
+        local olaunch = missile.Enable
 
-        missile.Launch = function(self, phys)
-            if olaunch then olaunch(self, phys) end
+        missile.Enable = function(self)
+            if olaunch then olaunch(self) end
             doAct()
         end
     else
