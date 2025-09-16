@@ -9,8 +9,6 @@
 
 -------------------------------------------------------------------------]]
 
--- // TODO Refactor all this shit
-
 Reforger = Reforger or {}
 
 function Reforger.GetVehicleBase(ent)

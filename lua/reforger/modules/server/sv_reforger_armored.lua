@@ -25,7 +25,7 @@ function Armored.GetAmmoracks(veh)
     return veh.reforgerAmmoracks or {}
 end
 
-function Armored.IsAmmorackDestroyed(veh) --// REVIEW Find better ways to check ammorack status
+function Armored.IsAmmorackDestroyed(veh)
     if not IsValid(veh) or not istable(veh.reforgerAmmoracks) then return false end
 
     for _, ammorack in ipairs(veh.reforgerAmmoracks) do

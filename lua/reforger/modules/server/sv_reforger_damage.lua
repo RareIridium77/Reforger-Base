@@ -71,13 +71,11 @@ end
 
 local dmganytype = Damage.HasAnyType
 
---// TODO Make hook call method for damage.
-
 function Damage.FixDamageForce(dmginfo, attacker, victim)
     assert(dmginfo and isfunction(dmginfo.GetDamage), "CTakeDamageInfo is not valid!")
     assert(IsValid(victim), "Entity Victim is not valid")
 
-    local attk = Reforger.SafeEntity(attacker) --// NOTE Fixed
+    local attk = Reforger.SafeEntity(attacker)
     local damageForce = dmginfo:GetDamageForce()
 
     if damageForce:IsZero() then

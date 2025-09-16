@@ -9,8 +9,6 @@
 
 -------------------------------------------------------------------------]]
 
--- // REVIEW This code needs testing
-
 Reforger = Reforger or {}
 
 local PREFIX = "Reforger." -- Local Reforger Prefix
