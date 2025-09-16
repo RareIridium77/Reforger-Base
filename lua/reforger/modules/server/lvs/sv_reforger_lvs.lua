@@ -10,26 +10,6 @@ end
 
 local Bullets = {}
 
-function Bullets.GetField(bulletData, field, fallbackTable, defaultValue, typeCheck) // REVIEW
-    if not istable(bulletData) then return defaultValue end
-    if not isstring(field) then return defaultValue end
-
-    local value = bulletData[field]
-    if not typeCheck or typeCheck(value) then
-        return value
-    end
-
-    local tracerName = bulletData.TracerName
-    if fallbackTable and istable(fallbackTable) and isstring(tracerName) then
-        local fallback = fallbackTable[tracerName]
-        if not typeCheck or typeCheck(fallback) then
-            return fallback
-        end
-    end
-
-    return defaultValue
-end
-
 hook.Add("Reforger.Init", "LVS_Reforger.ChangeBulletFire", function()
     local origFireBullet = LVS.FireBullet
 
@@ -130,8 +110,6 @@ end
 
 // SECTION Reforger LVS Projectiles
 
-// TODO Fix projectile activation.
-
 local Projectiles   = Reforger.Projectiles  or {}
 
 Projectiles.Bomb    = Projectiles.Bomb      or {}
@@ -220,7 +198,7 @@ local function __missile_touch(missile)
     end
 end
 
-local function __missile_active(missile) // REVIEW Missile Activation methods
+local function __missile_active(missile)
     local function doAct()
         runhook("Reforger.LVS_MissileActivated", missile)
         runhook("Reforger.LVS_ProjectileActivated", missile, missilestr)
@@ -283,7 +261,6 @@ end
 // !SECTION
 
 // SECTION Reforger LVS Weapons
-// TODO: Extend
 
 local Weapons   = Reforger.Weapons or {}
 
