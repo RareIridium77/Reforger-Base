@@ -269,11 +269,24 @@ Reforger.CreateAdminCommand("bot.seat", "Seats bot in vehicle", function(ply, cm
             end
         end
     elseif vehicleBase == "simfphys" then
-        ply:ChatPrint("[Reforger] Simfphys vehicles do not support bot seating in this version.")
-        return
-    elseif vehicleBase == "glide" then
-        ply:ChatPrint("[Reforger] Glide vehicles do not support bot seating in this version.")
-        return
+        local dSeat = vehicle:GetDriverSeat()
+        local pSeats = vehicle:GetPassengerSeats() or {}
+
+        if IsValid(dSeat) then
+            table.insert(seats, dSeat)
+        end
+
+        for _, seat in ipairs(pSeats) do
+            if IsValid(seat) then
+                table.insert(seats, seat)
+            end
+        end
+    elseif vehicleBase == "glide" and vehicle.GetFreeSeat then
+        local freeSeat = vehicle:GetFreeSeat()
+        
+        if IsValid(freeSeat) then
+            table.insert(seats, freeSeat)
+        end
     end
 
     if #seats == 0 then
