@@ -9,6 +9,43 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Logging System
+    - Provides structured logging with levels and developer-only debug tracing.
+    - Integrates with GMod console coloring for readability.
+
+    Functions:
+        * IsDeveloper()
+            - Returns true if `developer` ConVar is enabled.
+
+        * SLog(level, ...)
+            - Core logging function
+            - Skips DEV logs if not in developer mode
+            - Adds file/line/function trace for DEV logs
+            - Uses color-coded prefixes and safe string conversion
+
+        * SafeToString(val)
+            - Converts any type to readable string
+            - Handles nil, entities, tables, and booleans gracefully
+
+        * Log(...)
+            - INFO log
+
+        * WarnLog(...)
+            - WARN log
+
+        * DevLog(...)
+            - DEV log, only visible in dev mode
+
+        * ErrorLog(...)
+            - ERROR log
+
+    Notes:
+        - Colors are taken from `Reforger.LogColors`
+        - Levels are defined in `Reforger.LogLevels`
+        - DEV logs print caller info (file, line, function)
+]]
+
 Reforger = Reforger or {}
 
 local dev_cvar = GetConVar("developer")

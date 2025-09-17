@@ -9,6 +9,17 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Blacklisted Addon Notifier
+    - Listens for server notification about blacklisted addons
+    - Networking:
+        * net.Receive("Reforger.NotifyBAddon")
+            - Reads count of addons
+            - Prints each addon’s title and WSID to chat
+    - Purpose:
+        * Warns players about mounted blacklisted addons that may cause issues
+]]
+
 net.Receive("Reforger.NotifyBAddon", function()
     local count = net.ReadUInt(8)
     if count <= 0 then return end

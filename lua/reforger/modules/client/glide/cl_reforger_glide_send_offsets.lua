@@ -1,4 +1,15 @@
-if not Reforger then return end
+--[[
+    Reforger Glide Client Offsets
+    - Sends engine fire offsets from client to server for Glide vehicles
+    - Functions:
+        * OnGlideEntityCreate(glide_entity)
+            - Validates entity and sends offset data via net message
+    - Hooks:
+        * OnEntityCreated → Delays and triggers offset sync for new Glide vehicles
+    - Networking:
+        * net.Start("Reforger.SendGlideOffsets")
+            - Writes vehicle entity and offset vectors
+]]
 
 local function OnGlideEntityCreate(glide_entity)
     if not IsValid(glide_entity) then return end

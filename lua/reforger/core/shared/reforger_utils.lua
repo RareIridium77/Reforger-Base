@@ -9,6 +9,17 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Core Utilities
+    - Provides validation and safe helpers for entities and dev-only execution
+    - Functions:
+        * SafeEntity(ent) → Returns entity if valid, otherwise world
+        * IsValidReforger(ent) → Checks if entity is valid for Reforger systems
+        * DoInDev(func) → Executes function only in developer mode, with error handling
+    - Validation:
+        * Filters out invalid UAVs and ensures entity belongs to supported classes or systems
+]]
+
 Reforger = Reforger or {}
 
 function Reforger.SafeEntity(ent)

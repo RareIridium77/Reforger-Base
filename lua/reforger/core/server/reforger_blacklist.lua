@@ -9,6 +9,24 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Addon Blacklist
+    - Manages blacklisted addons that may break functionality
+    - Features:
+        * Stores blacklisted addon IDs with reasons
+        * Provides API to get or modify blacklist
+        * Checks mounted addons on init and logs blacklisted ones
+        * Notifies clients about active blacklisted addons
+    - Functions:
+        * Reforger.GetAddonsBlacklist() → Returns blacklist table
+        * Reforger.BlacklistAddon(id, reason, blacklisted) → Adds or updates blacklist entry
+    - Hooks:
+        * Reforger.Init → Scans addons and logs blacklisted ones
+        * PlayerInitialSpawn → Sends blacklist info to joining players
+    - Networking:
+        * "Reforger.NotifyBAddon" → Sends active blacklist entries to clients
+]]
+
 local alreadyServerNotified = false
 
 local ABlackList = {
@@ -19,6 +37,16 @@ local ABlackList = {
 }
 
 function Reforger.GetAddonsBlacklist() return ABlackList end
+function Reforger.BlacklistAddon(id, reason, blacklisted)
+    assert(isstring(id), "Addon ID must be a string")
+    assert(isstring(reason), "Reason must be a string")
+    blacklisted = isbool(blacklisted) and blacklisted or true
+
+    ABlackList[id] = {
+        isBlacklisted = blacklisted,
+        reason = reason,
+    }
+end
 
 local activeBlacklistedAddons = {}
 

@@ -1,3 +1,11 @@
+--[[
+    Pods Module for Reforger
+    - Manages collision pods for players inside vehicles
+    - Hooks:
+        * PlayerEnteredVehicle → Creates pod on entry
+        * PlayerLeaveVehicle → Removes pod on exit
+]]
+
 Reforger = Reforger or {}
 
 Reforger.Log("Reforger Pods Loaded")

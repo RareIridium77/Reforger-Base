@@ -9,6 +9,22 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Vehicle Utilities
+    - Provides unified functions to detect vehicle base, type, and health
+    - Functions:
+        * GetVehicleBase(ent)
+            - Returns vehicle base: "lvs", "glide", "simfphys" or nil
+        * GetVehicleType(ent)
+            - Resolves vehicle type (LIGHT, PLANE, HELICOPTER, ARMORED, UNDEFINED)
+        * GetHealth(ent)
+            - Returns vehicle health depending on its base
+    - Internal:
+        * _ResolveVehicleType(ent) → Handles logic for determining vehicle type
+    - Safety:
+        * All functions validate Reforger-compatible entities before resolving
+]]
+
 Reforger = Reforger or {}
 
 function Reforger.GetVehicleBase(ent)

@@ -1,3 +1,21 @@
+--[[
+    Reforger Glide Integration
+    - Provides networking and fixes for Glide vehicles
+    - Sections:
+        * Receive Offsets → Syncs engine fire offsets from client to server
+        * Pod Fix → Fixes aim position tracing for players in Glide vehicles
+    - Networking:
+        * net.Receive("Reforger.SendGlideOffsets")
+            - Validates vehicle entity and player input
+            - Reads and stores up to 16 engine fire offsets as vectors
+    - Functions:
+        * Player:GlideGetAimPos()
+            - Returns player’s aim position in Glide vehicle
+            - Uses trace from camera with proper entity filtering
+    - Hooks:
+        * Reforger.Init → Delayed activation of Glide pod fix
+]]
+
 // SECTION Reforger Glide Recieve Offsets
 
 util.AddNetworkString("Reforger.SendGlideOffsets")

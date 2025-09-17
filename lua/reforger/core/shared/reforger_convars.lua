@@ -9,6 +9,29 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Convar System
+    - Unified API for creating and accessing server/client convars
+    - Prefixes:
+        * Server convars → "reforger."
+        * Client convars → "cl_reforger."
+    - Functions:
+        * CreateConvar(name, value, helptext, min, max)
+            - Creates convar with proper prefix depending on realm
+            - Stores and reuses references in Reforger.CreatedConvars
+        * Convar(name)
+            - Returns convar reference if it exists
+        * SafeCvar(name, mode, fallback)
+            - Safely retrieves convar value in given type ("int", "float", "bool", "string")
+            - Returns fallback if missing
+        * SafeInt(name, fallback)
+        * SafeFloat(name, fallback)
+            - Shorthands for numeric access
+    - Safety:
+        * Prevents duplicate creation
+        * Validates input types and provides fallback values
+]]
+
 local FCVAR_SERVER = bit.bor(FCVAR_ARCHIVE, FCVAR_NOTIFY)
 local FCVAR_CLIENT = bit.bor(FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE)
 

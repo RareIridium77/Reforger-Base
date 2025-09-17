@@ -1,3 +1,14 @@
+--[[
+    Armored Module for Reforger
+    - Handles ammorack interactions for armored vehicles
+    - Provides damage transmission, caching, and status checks
+    - Functions:
+        * DamageAmmoracks(veh, dmginfo) → Applies transmitted damage to vehicle ammoracks
+        * GetAmmoracks(veh) → Returns list of cached ammoracks
+        * IsAmmorackDestroyed(veh) → Checks if any ammorack is destroyed
+        * _internal:CacheAmmorack(veh) → Scans and caches vehicle ammoracks
+]]
+
 local Armored = {}
 Armored._internal = {}
 

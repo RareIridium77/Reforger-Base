@@ -1,3 +1,24 @@
+--[[
+    Reforger Base Entity
+    - Base class for all Reforger entities with shared logic and safety features
+    - Properties:
+        * IsReforgerEntity → Marks entity as part of Reforger
+        * ReforgerDamageable → Toggle damage handling
+        * PhysgunDisabled, DoNotDuplicate, DisableDuplicator → Prevents duplication and physgun abuse
+        * CallDamageHook → Enables custom damage hook if needed
+    - Special Handling:
+        * BaseEntityIgnore["rpg_missile"] → Fix for RPG missiles (collision reset workaround)
+    - Lifecycle:
+        * InitReforgerEntity() → Custom initializer (to override)
+        * Initialize() → Enables damage, runs init and hook
+        * Think(), OnTakeDamage(dmg), OnRemove() → Base callbacks
+    - Vehicle Integration:
+        * SetVehicleBase(veh) → Links entity to a vehicle, adds to Glide traceFilter
+        * RemoveVehicleBase() → Cleans up entity from traceFilter
+    - Collision:
+        * StartTouch(e) → Handles ignored entities via BaseEntityIgnore rules
+]]
+
 AddCSLuaFile()
 
 DEFINE_BASECLASS("base_entity")

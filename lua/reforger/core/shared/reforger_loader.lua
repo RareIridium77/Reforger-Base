@@ -9,6 +9,46 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger AutoLoader
+    - Recursively loads Lua files by realm (server, client, shared)
+    - Handles priority and blacklist rules
+
+    Features:
+        * Blacklist:
+            - Prevents specific files from being loaded
+            - Example: loader itself, init file
+
+        * PriorityList:
+            - Ensures critical files (constants, network, logger, convars) are loaded first
+            - Uses explicit paths for guaranteed ordering
+
+        * PriorityKeywords:
+            - Files containing keywords like "util", "base", "logger" are prioritized before others
+
+        * AddLuaFile(path, realm):
+            - Includes or AddCSLuaFile depending on realm and environment
+            - Prints log for each operation
+
+        * DetectRealm(basePath, filePath):
+            - Determines if file belongs to "server", "client", or "shared" by folder structure
+
+        * RecursiveLoad(basePath, root):
+            - Finds all Lua files in a directory
+            - Splits into priorityFiles and normalFiles
+            - Recursively processes subdirectories
+
+        * Return Function(basePath):
+            - Executes priorityList first (if not blacklisted)
+            - Runs RecursiveLoad to handle the rest
+            - Ensures visited paths are not duplicated
+
+    Notes:
+        - Blacklist takes absolute priority
+        - Missing realm detection results in warnings, not errors
+        - Prints every action for traceability
+]]
+
 local blacklist = {
 	["reforger/core/shared/reforger_loader.lua"] = true,
 	["autorun/reforger_init.lua"] = true -- impossible but okay

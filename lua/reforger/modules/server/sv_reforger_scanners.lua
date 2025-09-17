@@ -1,3 +1,13 @@
+--[[
+    Scanners Module for Reforger
+    - Utility functions to scan and find child entities and players in vehicles
+    - Functions:
+        * PairEntity(parent, className) → Returns first child entity by class
+        * PairEntityAll(parent, className) → Returns all child entities by class
+        * FindClosestByClass(veh, dmginfo, className) → Finds closest child entity by class using ray intersection
+        * GetEveryone(veh) → Returns list of all players inside a vehicle across different bases
+]]
+
 local Scanners = {}
 
 Reforger.Log("Reforger Scanners Loaded")

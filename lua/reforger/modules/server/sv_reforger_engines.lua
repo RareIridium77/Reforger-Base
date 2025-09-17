@@ -1,4 +1,11 @@
--- Engines for simfphys and glide (damage and etc)
+--[[
+    Engines Module for Reforger (Simfphys & Glide)
+    - Handles engine entity spawning and caching
+    - Functions:
+        * _internal:CacheEngine(veh) → Removes old engine entity and spawns a new one
+    - Internal:
+        * SpawnEngine(veh, offset) → Creates and attaches engine entity to vehicle
+]]
 
 local Engines = {}
 Engines._internal = {}

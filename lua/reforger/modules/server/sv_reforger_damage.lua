@@ -1,3 +1,27 @@
+--[[
+    Damage Module for Reforger
+    - Provides utilities for handling and applying entity/vehicle damage
+    - Includes damage types, multipliers, and collision/fire configs
+    - Functions:
+        * HasDamageType(dmgType, mask) → Checks if damage type matches mask
+        * HasAnyType(dmgType, ...) → Checks if damage type matches any mask
+        * FixDamageForce(dmginfo, attacker, victim) → Ensures valid damage force
+        * IsMeleeDamageType(dmgType) → Detects melee damage
+        * IsSmallDamageType(dmgType) → Detects small-arms damage
+        * IsCollisionDamageType(dmgType) → Detects collision damage
+        * IsFireDamageType(veh, dmgType) → Detects fire-related damage
+        * ApplyDamageToEnt(ent, damage, attacker, inflictor, custom, pos) → Applies direct damage
+        * ApplyPlayerDamage(ply, ...) → Applies damage to a single player
+        * ApplyPlayersDamage(veh, dmginfo) → Applies damage to all players in a vehicle
+        * DamageParts(veh, damage) → Reduces HP of vehicle parts
+        * HandleCollisionDamage(veh, dmginfo) → Handles collision fire/explosion chance
+        * HandleRayDamage(veh, dmginfo) → Applies traced damage with falloff
+        * IgniteLimited(ent, size, repeatCount) → Temporary ignition with limited repeats
+        * StopLimitedFire(ent) → Stops limited ignition loop
+    - Hooks:
+        * EntityTakeDamage → Routes damage into Reforger system
+]]
+
 Reforger = Reforger or {}
 
 local Damage = {}

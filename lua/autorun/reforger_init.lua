@@ -9,6 +9,53 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    [Reforger] Base Framework
+
+    Unified system for advanced vehicle logic and damage simulation.
+    Supports multiple vehicle bases:
+      * LVS
+      * Simfphys
+      * GMod Glide
+    Created by RareIridium77 (GitHub: RareIridium77)
+
+    Purpose:
+    * Provides initialization of the Reforger framework
+    * Handles compatibility checks (vehicle bases installed)
+    * Manages network setup, global hooks, and reload logic
+
+    Versioning:
+    * Reforger.Version     → Current version number ("0.3")
+    * Reforger.VersionType → Release type ("stable")
+
+    Networking:
+    * "Reforger.NotifyDisabled"  → Sent when framework is disabled server-side
+    * "Reforger.InitializeEntity"→ Used to initialize entities
+
+    Lifecycle:
+    * InitPostEntity()
+        - Verifies that at least one supported base exists
+        - If none found, disables framework, removes hooks, warns server
+        - Otherwise schedules `Reforger.Init` hook after 5 seconds
+    * EntityCreated(ent)
+        - Called when a new entity is created
+        - Attempts to initialize entity under Reforger if valid
+    * GlobalThink()
+        - Runs every ~1ms
+        - Dispatches `Reforger.GlobalThink` hook for internal logic
+
+    Hooks:
+    * OnEntityCreated → `Reforger:InitializeEntity` for all new entities
+    * InitPostEntity  → Runs base compatibility check, sets up framework
+    * Think           → Calls Reforger.GlobalThink with throttling
+    * Reforger.Reload → Resets framework and reloads loader
+
+    Special Features:
+    * Automatic disabling if no LVS/Simfphys/Glide base found
+    * Broadcasts disabled status to clients via net message
+    * Provides developer log output and reload support
+]]
+
 AddCSLuaFile()
 AddCSLuaFile("reforger/core/shared/reforger_loader.lua")
 

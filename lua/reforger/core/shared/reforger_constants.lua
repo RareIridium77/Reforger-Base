@@ -9,7 +9,20 @@
 
 -------------------------------------------------------------------------]]
 
--- // NOTE This file contains all Reforger/Core Constants
+--[[
+    Reforger Core Constants
+    - Defines enums and constants used across Reforger modules
+    - Sections:
+        * Logging
+            - LogLevels → INFO, WARN, DEV, ERROR
+            - LogColors → Color mapping for log types
+        * Networking
+            - NetworkTypes → Allowed networked data types
+        * Vehicles
+            - VehicleTypes → LIGHT, ARMORED, PLANE, HELICOPTER, UNDEFINED
+            - VehicleBases → Glide, LVS, Simfphys
+            - ValidClasslist → Whitelisted vehicle-related classnames
+]]
 
 Reforger = Reforger or {}
 

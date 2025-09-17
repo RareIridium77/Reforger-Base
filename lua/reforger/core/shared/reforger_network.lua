@@ -9,6 +9,30 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Network System
+    - Provides abstraction layer for safe NWVar setting/getting with Reforger namespace.
+    - Ensures server authority and local caching for networked values.
+
+    Functions:
+        * SetNetworkValue(ent, nType, nName, nValue)
+            - Only allowed on server
+            - Validates entity and network type
+            - Stores value in local cache (ent.ReforgerNet)
+            - Uses SetNW<TYPE> if available
+            - Logs unsupported types
+
+        * GetNetworkValue(ent, nType, nName, fallback)
+            - Validates entity and type
+            - Uses GetNW<TYPE> if available
+            - Returns fallback if not supported
+            - DevLogs unsupported cases
+
+    Notes:
+        - PREFIX = "Reforger." prepends all network keys
+        - Reforger.NetworkTypes must define supported NW types (e.g., "Int", "Bool", "String")
+]]
+
 Reforger = Reforger or {}
 
 local PREFIX = "Reforger." -- Local Reforger Prefix

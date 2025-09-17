@@ -1,3 +1,29 @@
+--[[
+    Rotors Module for Reforger
+    - Manages rotor entities for helicopters and planes
+    - Provides damage handling, destruction, ignition, and caching
+    - Functions:
+        * RotorsGetDamage(veh, dmginfo) → Handles rotor damage, ignition, and critical hits
+        * DestroyRotor(rotor) → Marks rotor destroyed and calls entity Destroy
+        * IsRotorSpinning(rotor) → Checks if rotor is currently spinning
+        * FindRotorAlongRay(veh, dmginfo) → Traces and finds rotor hit by damage ray
+        * FindRotors(veh) → Finds and caches rotors depending on vehicle base/type
+        * RepairRotors(veh) → Repairs rotors if applicable
+        * GetRotors(veh) → Returns cached rotor entities
+        * _internal:CacheRotors(veh) → Scans and caches rotors for valid vehicles
+    - Config (ConVars, reforger.):
+        * rotor.chance.damage → Chance of rotor taking normal damage
+        * rotor.chance.damage.critical → Chance of rotor taking critical damage
+        * rotor.chance.ignite → Chance of rotor igniting
+        * rotor.time.ignite → Rotor ignition duration
+    - Hooks (Reforger.):
+        * PreRotorDamage / PostRotorDamage
+        * RotorGotCriticalDamage
+        * RotorIgnited
+        * RotorDestroyed
+        * RotorsCached
+]]
+
 local Rotors = {}
 Rotors._internal = {}
 

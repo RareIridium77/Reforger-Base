@@ -1,3 +1,35 @@
+--[[
+    Reforger Fake Engine Collision Entity
+    - Purpose: Provides a custom collision hitbox for engines 
+               in Glide and Simfphys vehicles, enabling 
+               engine-specific damage simulation.
+
+    Properties:
+    * IsReforgerEntity     → Marks as Reforger entity
+    * ReforgerDamageable   → Can take damage
+    * PhysgunDisabled      → Cannot be physgunned
+    * DoNotDuplicate       → Prevents duplication
+    * DisableDuplicator    → Blocks duplicator
+    * CallDamageHook       → Routes OnTakeDamage
+
+    Constants:
+    * COLLISION_BOUNDS → Defines bounding box of fake engine
+    * ENGINE_HEALTH    → Base engine HP (Simfphys)
+    * DAMAGE_REDUCTION → Damage multiplier for Simfphys
+    * DAMAGE_RAND_MIN/MAX → Glide random damage scaling
+    * STALL_THRESHOLD  → Simfphys: chance to stall engine
+    * FIRE_THRESHOLD   → Simfphys: chance to ignite
+    * DEBUG_*          → Debug overlay visuals
+
+    Lifecycle:
+    * InitReforgerEntity() → Sets collision, no draw, trigger
+    * SetEngineData(data)  → Positions entity, parents to vehicle
+    * Think()              → Maintains debug overlays, validates parent
+    * OnTakeDamage(dmginfo)
+        - Glide: Uses TakeEngineDamage with randomized scaling
+        - Simfphys: Applies reduced damage to fake health pool, stalls or ignites based on thresholds
+]]
+
 AddCSLuaFile()
 
 DEFINE_BASECLASS("reforger_base_entity")

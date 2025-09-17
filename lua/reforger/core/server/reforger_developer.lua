@@ -9,6 +9,39 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Admin & Dev Commands
+    - Provides admin-only developer utilities for debugging and controlling Reforger
+    - Validation:
+        * Reforger.AdminDevToolValidation(ply) → Ensures admin + devmode
+    - Command Registration:
+        * Reforger.CreateAdminCommand(name, desc, callback) → Creates prefixed admin command (dev.reforger.*)
+    - Helper:
+        * ValidateTraceEntity(ply) → Ensures player looks at a valid Reforger entity
+    - Command Categories:
+        * Framework:
+            - framework.init → Manual Reforger init
+            - framework.table → Print Reforger table
+            - framework.reload → Reload framework & modules
+        * Vehicle:
+            - vehicle.destroy → Explodes/destroys entity
+            - vehicle.type → Prints entity reforgerType
+            - vehicle.base → Prints entity reforgerBase
+            - vehicle.pair → Finds paired class objects in entity
+        * Dump:
+            - dump.net → Print entity ReforgerNet
+            - dump.entity → Recursive dump of entity data
+        * Data Ops:
+            - search.data → Search entity table by key/value
+        * Bot Ops:
+            - bot.seat → Places bot into vehicle seat
+    - Error Handling:
+        * Safe pcall in commands
+        * Logs internal errors to console & player
+    - Networking:
+        * Commands notify players via ChatPrint
+]]
+
 Reforger = Reforger or {}
 
 function Reforger.AdminDevToolValidation(ply)

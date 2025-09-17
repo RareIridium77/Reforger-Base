@@ -1,3 +1,53 @@
+--[[
+    Reforger Fake Player Collision Entity
+    - Purpose: Creates a proxy collision hitbox for players 
+               seated inside Reforger vehicles, enabling 
+               accurate bullet/trace damage handling 
+               (including headshots).
+
+    Properties:
+    * IsReforgerEntity     → Marks as Reforger entity
+    * ReforgerDamageable   → Damage can be redirected to player
+    * PhysgunDisabled      → Cannot be physgunned
+    * DoNotDuplicate       → Cannot be duplicated
+    * DisableDuplicator    → Blocks duplicator
+    * CallDamageHook       → Damage processed locally, not hook
+
+    Constants:
+    * COLLISION_UPDATE_INTERVAL → Interval for hitbox recalculation
+    * HEAD_ZONE_RATIO           → Proportion of box height for head zone
+    * DAMAGE_REDUCTION_*        → Multipliers for armored & traced damage
+    * EXTENT_SCALE / MARGIN     → Adjusts collision bounds size
+    * HEADSHOT_ZONE_*           → Defines headshot detection region
+    * TRACE_LENGTH / BACK_OFFSET→ Used for ray-OBB intersection checks
+
+    Lifecycle:
+    * InitReforgerEntity()
+        - Sets trigger, collision, bounding box defaults
+    * SetPlayer(ply)
+        - Assigns target player for damage redirection
+    * SetVehicle(veh)
+        - Parents entity to given vehicle
+    * Think()
+        - Updates pseudo collision bounds based on player animation
+        - Adjusts head hitbox using bone positions
+        - Updates collision bounds dynamically every ~25ms
+        - Debug overlays for developer mode
+    * OnTakeDamage(dmginfo)
+        - Filters invalid/ignored damage types
+        - Performs OBB intersection test for bullet direction
+        - Applies damage scaling for armored vehicles
+        - Detects headshots and applies bonus damage
+        - Calls `Reforger.Damage.ApplyPlayerDamage`
+        - Spawns blood effects unless suppressed
+
+    Special Features:
+    * Dynamic collision bounds adapt to player pose/animation
+    * Bone-based head adjustment ensures accurate headshot detection
+    * Trace check prevents "shooting through armor" unless valid
+    * Integrates with developer debugging via `Reforger.DevLog` and `debugoverlay`
+]]
+
 AddCSLuaFile()
 
 DEFINE_BASECLASS("reforger_base_entity")

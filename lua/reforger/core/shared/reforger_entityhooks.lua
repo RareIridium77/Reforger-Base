@@ -9,6 +9,29 @@
 
 -------------------------------------------------------------------------]]
 
+--[[
+    Reforger Entity Initialization & Networking
+    - Provides a compact system for syncing entity parameters
+    - Features:
+        * Networked parameters with default values and typed read/write
+        * Compact transmission using indexed mappings
+        * Entity module system with hooks
+        * Server-side delayed initialization for vehicles (armor, engines, rotors)
+    - Functions:
+        * Reforger._internal:WriteEntityNetData(ent) → Sends changed entity params
+        * Reforger._internal:ReadEntityNetData(ent) → Reads and applies params
+        * Reforger:AddEntityModule(idf, func, force) → Registers entity modules
+        * Reforger._internal:InitializeEntity(ent) → Sets up entity, caches systems, runs hooks
+        * Reforger:InitializeEntity(ent) → Public wrapper
+    - Networking:
+        * "Reforger.InitializeEntity" → Syncs entity state from server to clients
+    - Hooks:
+        * Reforger.EntityInitialized → Fired after initialization is complete
+    - Safety:
+        * Prevents duplicate entity modules unless forced
+        * Wraps entity module calls in pcall to avoid crashes
+]]
+
 Reforger = Reforger or {}
 Reforger._internal = Reforger._internal or {}
 Reforger.EntityHooks = Reforger.EntityHooks or {}

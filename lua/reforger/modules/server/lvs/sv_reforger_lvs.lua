@@ -1,3 +1,29 @@
+--[[
+    Reforger LVS Integration Module
+    - Extends LVS entities with hooks, projectiles, weapons, and bullet system modifications
+    - Sections:
+        * Bullet System → Hooks into LVS.FireBullet, adds filters, callbacks, and collision handling
+        * Explosion → Extends LVS entities with explosion hook
+        * Projectiles (Bombs & Missiles) → Adds hooks for activation, collision, detonation, and touch events
+        * Weapons → Hooks into LVS weapons for attack lifecycle events and weapon initialization
+    - Functions:
+        * Projectiles.IsProjectile(ent) → Checks if entity is any kind of projectile
+        * Projectiles.IsBomb(ent) → Checks if entity is a bomb
+        * Projectiles.IsMissile(ent) → Checks if entity is a missile
+        * Weapons.IsWeaponed(veh) → Checks if vehicle has weapons
+        * Weapons.Get(veh) → Returns vehicle weapon groups
+        * Weapons.GetActive(veh) → Returns currently selected weapon
+    - Hooks:
+        * Reforger.LVS_BulletFired
+        * Reforger.LVS_BulletOnCollide
+        * Reforger.LVS_BulletCallback
+        * Reforger.LVS_Exploded
+        * Reforger.LVS_BombTouch / Activated / Collide / Detonated
+        * Reforger.LVS_MissileTouch / Activated / Collide / Detonated
+        * Reforger.LVS_WeaponInit / StartAttack / CanAttack / Attack / FinishAttack
+        * Reforger.LVS_ProjectileTouch / Activated / Collide / Detonated
+]]
+
 if not LVS then return end
 
 local runhook   = hook.Run
