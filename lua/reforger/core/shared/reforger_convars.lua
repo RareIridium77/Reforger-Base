@@ -38,8 +38,19 @@ local FCVAR_CLIENT = bit.bor(FCVAR_ARCHIVE, FCVAR_SERVER_CAN_EXECUTE)
 Reforger = Reforger or {}
 Reforger.CreatedConvars = Reforger.CreatedConvars or {}
 
+local cachedConvars = cachedConvars or {}
+
 local server_prefix = "reforger."
 local client_prefix = "cl_reforger."
+
+function _cacheConvar(convar)
+    local fullname = convar:GetName()
+    cachedConvars[fullname] = convar:GetString() -- cache initial value
+
+    cvars.AddChangeCallback(fullname, function(name, old, new)
+        cachedConvars[name] = new
+    end, "Reforger_"..fullname)
+end
 
 --// NOTE CLIENT Convars will created with "cl_reforger." prefix
 --// NOTE SERVER Convars will created with "reforger." prefix
@@ -61,6 +72,7 @@ function Reforger.CreateConvar(name, value, helptext, min, max)
     if ConVarExists(fullname) then
         local cvar = GetConVar(fullname)
         Reforger.CreatedConvars[fullname] = cvar
+        _cacheConvar(cvar);
         return cvar
     end
 
@@ -69,6 +81,9 @@ function Reforger.CreateConvar(name, value, helptext, min, max)
     else
         Reforger.CreatedConvars[fullname] = CreateConVar(fullname, value, FCVAR_CLIENT, helptext, min, max)
     end
+
+    _cacheConvar(Reforger.CreatedConvars[fullname])
+
     return Reforger.CreatedConvars[fullname]
 end
 
@@ -92,21 +107,25 @@ function Reforger.Convar(name)
 end
 
 function Reforger.SafeCvar(name, mode, fallback)
-    local cvar = Reforger.Convar(name)
-    if not cvar then return fallback or -1 end
+    local prefix = SERVER and server_prefix or client_prefix
+    local fullname = prefix .. name
 
-    assert(isstring(mode), "mode is not STRING value")
+    local value = cachedConvars[fullname]
+
+    if not value then return fallback or -1 end
 
     mode = string.lower(mode)
 
-    if mode == "int" and isfunction(cvar.GetInt) then
-        return cvar:GetInt()
-    elseif mode == "float" and isfunction(cvar.GetFloat) then
-        return cvar:GetFloat()
-    elseif mode == "bool" and isfunction(cvar.GetBool) then
-        return cvar:GetBool()
-    elseif mode == "string" and isfunction(cvar.GetString) then
-        return cvar:GetString()
+    local numered = tonumber(value)
+
+    if mode == "int" then
+        return numered and math.floor(numered) or fallback
+    elseif mode == "float" then
+        return numered or fallback
+    elseif mode == "bool" then
+        return tobool(numered) or fallback
+    elseif mode == "string" then
+        return value
     end
 
     return fallback or -1
